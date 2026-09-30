@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import sys
+from concurrent.futures import ProcessPoolExecutor
 from html.parser import HTMLParser
 from pathlib import Path
 
@@ -37,14 +38,20 @@ class Checker(HTMLParser):
             self.stack.pop()
 
 
+def check(page: Path) -> tuple[str, list[str]] | None:
+    ch = Checker()
+    ch.feed(page.read_text(encoding="utf-8"))
+    if ch.errors or ch.stack:
+        return str(page.relative_to(DIST)), ch.errors[:3] + ([f"안 닫힘: {ch.stack[-3:]}"] if ch.stack else [])
+    return None
+
+
 def main() -> int:
-    bad = {}
-    for page in DIST.rglob("*.html"):
-        ch = Checker()
-        ch.feed(page.read_text(encoding="utf-8"))
-        if ch.errors or ch.stack:
-            bad[str(page.relative_to(DIST))] = ch.errors[:3] + ([f"안 닫힘: {ch.stack[-3:]}"] if ch.stack else [])
-    print(f"검사 {sum(1 for _ in DIST.rglob('*.html'))}개, 문제 {len(bad)}개")
+    """페이지가 4만 개가 넘어 코어마다 나눠 검사한다(한 코어로는 3분, 4코어면 1분 안쪽)."""
+    pages = list(DIST.rglob("*.html"))
+    with ProcessPoolExecutor() as ex:
+        bad = dict(r for r in ex.map(check, pages, chunksize=500) if r)
+    print(f"검사 {len(pages)}개, 문제 {len(bad)}개")
     for k, v in list(bad.items())[:10]:
         print(" ", k, v)
     return 1 if bad else 0
