@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{{ cx.name }} 실거래가 · 집값레이더 시안 v2</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root { --font: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", sans-serif;
+  --yellow: #FFE45E; --pink: #FFB8D9; --blue: #AECBFF; --green: #B9F0A0; --lime: #D4FA4B; --lav: #D9CCFF;
+  --up: #F04452; --down: #3182F6; --r: 26px; --r-s: 16px; }
+[data-theme="light"] { --bg: #F2F3F5; --card: #FFFFFF; --ink: #15171A; --ink-2: #4E5561; --muted: #8B929C; --line: #EBEDF0;
+  --soft: #F4F5F7; --hero: #15171A; --hero-ink: #FFFFFF; --vol: #DADDE2; --tint-q: #EEF4FF; --tint-hi: #FFF0F4; }
+[data-theme="dark"] { --bg: #0C0D0F; --card: #18191D; --ink: #F3F4F6; --ink-2: #B8BDC6; --muted: #7C838E; --line: #2A2C31;
+  --soft: #222428; --hero: #18191D; --hero-ink: #FFFFFF; --vol: #34373D; --tint-q: #1D2638; --tint-hi: #33202A; }
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 15px; line-height: 1.45;
+  letter-spacing: -0.02em; font-feature-settings: "tnum"; -webkit-font-smoothing: antialiased; }
+a { color: inherit; text-decoration: none; }
+h1, h2, h3, p { margin: 0; }
+img.i3d { display: block; object-fit: contain; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
+.up { color: var(--up); } .down { color: var(--down); } .muted { color: var(--muted); }
+
+/* 머리글 */
+.top { position: sticky; top: 0; z-index: 30; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(14px); }
+.top .bar { display: flex; align-items: center; gap: 14px; height: 64px; }
+.logo { display: flex; align-items: center; gap: 9px; font-weight: 800; font-size: 19px; letter-spacing: -0.04em; white-space: nowrap; }
+.logo svg { width: 34px; height: 34px; }
+.search { flex: 1; max-width: 420px; margin-left: 12px; display: flex; align-items: center; gap: 8px; background: var(--card);
+  border-radius: 999px; padding: 8px 14px; color: var(--muted); font-size: 14px; }
+.search img { width: 22px; height: 22px; }
+.nav { display: flex; gap: 4px; margin-left: auto; }
+.nav a { display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 999px; font-size: 14px; font-weight: 600; color: var(--ink-2); white-space: nowrap; }
+.nav a img { width: 20px; height: 20px; }
+.nav a.on { background: var(--card); color: var(--ink); }
+
+/* 히어로 */
+.hero { background: var(--hero); color: var(--hero-ink); border-radius: var(--r); padding: 26px 26px 22px; position: relative; overflow: hidden; margin-top: 8px; }
+.hero .loc { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; color: rgba(255,255,255,.72); }
+.hero .loc img { width: 18px; height: 18px; }
+.hero h1 { font-size: 40px; font-weight: 800; letter-spacing: -0.045em; margin: 6px 0 14px; }
+.hero .meta { display: flex; flex-wrap: wrap; gap: 6px; position: relative; z-index: 1; max-width: 70%; }
+.hero .meta span { background: rgba(255,255,255,.1); border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 600; }
+.hero .meta span b { color: var(--lime); }
+.hero .art { position: absolute; right: 18px; bottom: -14px; width: 190px; height: 190px; filter: drop-shadow(0 18px 30px rgba(0,0,0,.35)); }
+.hero .acts { display: flex; gap: 8px; margin-top: 18px; position: relative; z-index: 1; }
+.hero .acts a { background: var(--lime); color: #15171A; font-weight: 700; font-size: 14px; border-radius: 999px; padding: 9px 16px; }
+.hero .acts a.ghost { background: rgba(255,255,255,.12); color: #fff; }
+
+/* 평형 선택 */
+.types { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 16px 0 4px; }
+.types::-webkit-scrollbar { display: none; }
+.types button { font: inherit; border: 0; cursor: pointer; background: var(--card); color: var(--ink); border-radius: var(--r-s); padding: 10px 14px;
+  text-align: left; white-space: nowrap; flex: none; }
+.types button b { display: block; font-size: 15px; }
+.types button span { font-size: 12.5px; color: var(--muted); font-weight: 600; }
+.types button.on { background: var(--ink); color: var(--bg); }
+.types button.on span { color: var(--lime); }
+[data-theme="dark"] .types button.on { background: var(--lime); color: #15171A; }
+[data-theme="dark"] .types button.on span { color: #15171A; }
+
+/* 컬러 타일 */
+.tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 12px; }
+.tile { border-radius: var(--r); padding: 18px 18px 16px; color: #15171A; position: relative; min-height: 158px; overflow: hidden; }
+.tile .k { font-size: 14px; font-weight: 700; }
+.tile .v { font-size: 34px; font-weight: 800; letter-spacing: -0.045em; margin-top: 26px; line-height: 1; white-space: nowrap; }
+.tile .v small { font-size: 20px; font-weight: 700; }
+.tile .s { font-size: 13px; font-weight: 600; margin-top: 8px; opacity: .72; }
+.tile .s b { opacity: 1; }
+.tile img { position: absolute; right: 12px; top: 12px; width: 52px; height: 52px; }
+.t-yellow { background: var(--yellow); } .t-pink { background: var(--pink); } .t-blue { background: var(--blue); } .t-green { background: var(--green); }
+.t-lav { background: var(--lav); } .t-lime { background: var(--lime); }
+
+/* 카드 */
+.grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 12px; margin-top: 12px; }
+.c12 { grid-column: span 12; } .c8 { grid-column: span 8; } .c7 { grid-column: span 7; } .c6 { grid-column: span 6; } .c5 { grid-column: span 5; } .c4 { grid-column: span 4; }
+.card { background: var(--card); border-radius: var(--r); padding: 20px; min-width: 0; }
+.ch { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.ch img { width: 30px; height: 30px; flex: none; }
+.ch h2 { font-size: 18px; font-weight: 800; letter-spacing: -0.035em; }
+.ch .sub { font-size: 13px; color: var(--muted); font-weight: 600; margin-left: 2px; }
+.ch .seg { margin-left: auto; display: flex; background: var(--soft); border-radius: 999px; padding: 3px; }
+.ch .seg button { font: inherit; font-size: 13px; font-weight: 700; border: 0; background: none; color: var(--muted); padding: 6px 12px; border-radius: 999px; cursor: pointer; }
+.ch .seg button.on { background: var(--card); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+
+/* 위치 막대 */
+.pos { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 16px; }
+.pos .end b { display: block; font-size: 18px; font-weight: 800; }
+.pos .end span { font-size: 12.5px; color: var(--muted); font-weight: 600; }
+.pos .end.r { text-align: right; }
+.track { position: relative; height: 14px; border-radius: 999px; background: linear-gradient(90deg, var(--blue), var(--lav) 45%, var(--pink)); }
+.track .me { position: absolute; top: 50%; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%; background: var(--ink); border: 4px solid var(--card); box-shadow: 0 2px 6px rgba(0,0,0,.2); }
+.track .bub { position: absolute; bottom: 24px; transform: translateX(-50%); background: var(--ink); color: var(--bg); font-size: 13px; font-weight: 800; padding: 5px 10px; border-radius: 10px; white-space: nowrap; }
+.track .bub::after { content: ""; position: absolute; left: 50%; bottom: -5px; margin-left: -5px; border: 5px solid transparent; border-bottom: 0; border-top-color: var(--ink); }
+
+/* 차트 */
+svg.chart { width: 100%; height: auto; display: block; overflow: visible; }
+svg .axis { fill: var(--muted); font-size: 11px; font-weight: 600; }
+svg .grid { stroke: var(--line); }
+svg .line { fill: none; stroke: var(--ink); stroke-width: 2.4; }
+svg .dot { fill: var(--card); stroke: var(--ink); stroke-width: 2; }
+svg .dot.hi { fill: var(--up); stroke: var(--up); } svg .dot.lo { fill: var(--down); stroke: var(--down); }
+svg .dot.last { fill: var(--lime); stroke: var(--ink); stroke-width: 2.4; }
+svg .val { fill: var(--ink-2); font-size: 11px; font-weight: 700; paint-order: stroke; stroke: var(--card); stroke-width: 4px; stroke-linejoin: round; }
+svg .val.em { fill: var(--ink); font-size: 13px; font-weight: 800; }
+svg .vol { fill: var(--vol); }
+svg .pt.lo { fill: #B7BDC6; } svg .pt.mid { fill: #6B7380; } svg .pt.hi { fill: var(--ink); }
+svg .pt.x { stroke: var(--up); stroke-width: 1.8; fill: none; } svg .pt.dir { fill: none; stroke: #9AA1AB; stroke-width: 1.4; }
+svg .pt.out { fill: none; stroke: #F59E0B; stroke-width: 1.6; } svg .med { fill: none; stroke: var(--down); stroke-width: 2.2; }
+svg .g-sale { fill: var(--pink); } svg .g-jeonse { fill: var(--blue); }
+.narrow { display: none; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; font-weight: 600; color: var(--ink-2); margin-top: 8px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+
+/* 평형별 표(아파트썸식) */
+.qt { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 14px; }
+.qt th { font-size: 12px; color: var(--muted); font-weight: 700; padding: 8px 6px; text-align: right; white-space: nowrap; }
+.qt th:first-child, .qt td:first-child { text-align: left; }
+.qt td { padding: 10px 6px; text-align: right; border-top: 1px solid var(--line); white-space: nowrap; vertical-align: top; }
+.qt td b { font-size: 15.5px; font-weight: 800; display: block; }
+.qt td small { font-size: 11.5px; color: var(--muted); font-weight: 600; }
+.qt .qn { background: var(--tint-q); } .qt .qh { background: var(--tint-hi); }
+.qt .qh b { color: var(--up); }
+.qt tr:first-child th.qn { border-radius: 12px 12px 0 0; } .qt tr:first-child th.qh { border-radius: 12px 12px 0 0; }
+.qt tr.sel td { font-weight: 700; }
+.qt .tag { display: inline-block; background: var(--up); color: #fff; font-size: 10.5px; font-weight: 800; padding: 1px 6px; border-radius: 6px; margin-left: 4px; vertical-align: 2px; }
+.scroll-x { overflow-x: auto; scrollbar-width: none; }
+
+/* 층별 막대 */
+.fl { display: grid; grid-template-columns: 56px 1fr 72px; align-items: center; gap: 10px; padding: 9px 0; }
+.fl .n { font-weight: 800; font-size: 15px; } .fl .n small { display: block; font-size: 11.5px; color: var(--muted); font-weight: 600; }
+.fl .bar { height: 26px; border-radius: 9px; background: var(--soft); overflow: hidden; }
+.fl .bar i { display: block; height: 100%; border-radius: 9px; }
+.fl .p { text-align: right; font-weight: 800; } .fl .p small { display: block; font-size: 12px; font-weight: 700; }
+.fl.lo .bar i { background: var(--blue); } .fl.mid .bar i { background: var(--lav); } .fl.hi .bar i { background: var(--pink); }
+
+/* 비슷한 단지 가로 카드 */
+.sims { display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.sim { flex: none; width: 190px; border-radius: 20px; padding: 14px; color: #15171A; position: relative; min-height: 150px; }
+.sim img { width: 40px; height: 40px; }
+.sim .t { font-weight: 800; font-size: 15px; margin-top: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sim .s { font-size: 12px; font-weight: 600; opacity: .7; }
+.sim .p { font-size: 20px; font-weight: 800; margin-top: 8px; letter-spacing: -0.04em; }
+.sim .d { position: absolute; right: 12px; top: 14px; background: rgba(255,255,255,.7); border-radius: 999px; padding: 3px 8px; font-size: 12px; font-weight: 800; }
+
+/* 목록 */
+.rows .r { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 11px 0; border-top: 1px solid var(--line); align-items: center; }
+.rows .r:first-child { border-top: 0; }
+.rows .t { font-weight: 700; } .rows .s { font-size: 12.5px; color: var(--muted); font-weight: 600; }
+.rows .p { text-align: right; font-weight: 800; font-size: 16px; }
+.chip { display: inline-block; font-size: 11px; font-weight: 800; padding: 2px 7px; border-radius: 6px; margin-left: 6px; vertical-align: 1px; }
+.chip.hi { background: var(--up); color: #fff; } .chip.x { background: var(--soft); color: var(--muted); } .chip.dir { background: var(--soft); color: var(--ink-2); }
+.strike { text-decoration: line-through; color: var(--muted); }
+.warnbox { display: flex; gap: 12px; align-items: center; background: var(--soft); border-radius: 16px; padding: 12px 14px; font-size: 13.5px; font-weight: 600; color: var(--ink-2); margin-bottom: 8px; }
+.warnbox img { width: 34px; height: 34px; flex: none; }
+
+.foot { font-size: 12px; color: var(--muted); padding: 26px 0 110px; line-height: 1.6; }
+.tabbar { display: none; }
+.theme { position: fixed; right: 16px; bottom: 16px; z-index: 40; background: var(--ink); color: var(--bg); border: 0; font: 700 13px var(--font); padding: 10px 16px; border-radius: 999px; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,.2); }
+
+@media (max-width: 900px) {
+  .nav { display: none; }
+  .search { margin-left: auto; max-width: none; }
+  .tiles { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .tile { min-height: 140px; padding: 16px; }
+  .tile .v { font-size: 28px; margin-top: 30px; } .tile .v small { font-size: 17px; }
+  .tile img { width: 44px; height: 44px; }
+  .c8, .c7, .c6, .c5, .c4 { grid-column: span 12; }
+  .hero { padding: 22px 20px 20px; }
+  .hero h1 { font-size: 32px; }
+  .hero .art { width: 120px; height: 120px; right: 6px; bottom: auto; top: 14px; }
+  .hero .meta { max-width: none; }
+  .pos { grid-template-columns: 1fr 1fr; } .pos .track { grid-column: 1 / -1; grid-row: 1; margin-top: 36px; }
+  .tabbar { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--card); border-top: 1px solid var(--line);
+    padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); justify-content: space-around; }
+  .tabbar a { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 11px; font-weight: 700; color: var(--muted); flex: 1; }
+  .tabbar a img { width: 26px; height: 26px; }
+  .tabbar a.on { color: var(--ink); }
+  .theme { bottom: 80px; }
+}
+@media (max-width: 600px) { .wide { display: none; } .narrow { display: block; } }
+</style>
+</head>
+<body>
+{% macro i3d(k, size=30, cls='') %}<img class="i3d {{ cls }}" src="{{ I[k] }}" width="{{ size }}" height="{{ size }}" alt="" loading="lazy">{% endmacro %}
+<header class="top"><div class="wrap bar">
+  <a class="logo" href="#"><svg viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="10" fill="#15171A"/>
+    <path d="M8.5 26.5A18 18 0 0 1 26.5 8.5" stroke="#D4FA4B" stroke-width="2.6" fill="none" stroke-linecap="round" opacity=".35"/>
+    <path d="M8.5 26.5A11.5 11.5 0 0 1 20 15" stroke="#D4FA4B" stroke-width="2.6" fill="none" stroke-linecap="round" opacity=".7"/>
+    <path d="M8.5 26.5a5 5 0 0 1 5-5" stroke="#D4FA4B" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+    <circle cx="23.3" cy="13.2" r="2.8" fill="#D4FA4B"/><circle cx="8.5" cy="26.5" r="2" fill="#fff"/></svg>집값레이더</a>
+  <div class="search">{{ i3d('search', 22) }}단지·지역 검색</div>
+  <nav class="nav"><a href="#" class="on">{{ i3d('house', 20) }}아파트</a><a href="#">{{ i3d('fire', 20) }}신고가</a><a href="#">{{ i3d('budget', 20) }}예산별</a>
+    <a href="#">{{ i3d('offi', 20) }}오피·빌라</a><a href="#">{{ i3d('redev', 20) }}재개발</a></nav>
+</div></header>
+
+<main class="wrap">
+<section class="hero">
+  <div class="loc">{{ i3d('pin', 18) }}{{ r.sido_short }} {{ r.name }} {{ cx.umd }}</div>
+  <h1>{{ cx.name }}</h1>
+  <div class="meta"><span><b>{{ cx.build_year }}</b>년 준공</span><span>{{ age(cx.build_year, today.year) }}</span><span>최고 <b>{{ types[0].top_floor }}</b>층</span>
+    <span>3년 매매 <b>{{ cx.sales|rejectattr('cancelled')|list|length }}</b>건</span><span>전월세 <b>{{ '{:,}'.format(cx.rents|length) }}</b>건</span></div>
+  <div class="acts"><a href="#">＋ 비교에 담기</a><a class="ghost" href="#">☆ 관심 단지</a><a class="ghost" href="#">공유</a></div>
+  <img class="art" src="{{ I['city'] }}" alt="">
+</section>
+
+<nav class="types" id="types">
+{% for t in types %}<button data-k="{{ t.key }}" class="{{ 'on' if t.key == main_key }}"><b>{{ t.area|ptype|replace('평형','평') }} <small style="font-weight:600;opacity:.6">{{ t.key }}㎡</small></b><span>{{ t.now|eok }}</span></button>{% endfor %}
+</nav>
+
+{% for t in types %}
+<div class="pane" data-k="{{ t.key }}" {% if t.key != main_key %}hidden{% endif %}>
+<div class="tiles">
+  <div class="tile t-yellow">{{ i3d('coin', 52) }}<div class="k">지금 시세</div><div class="v">{% set b = bigsplit(t.now) %}{{ b[0] }}<small>{{ b[1] }}</small></div>
+    <div class="s">최근 3개월 {{ t.now_n }}건 중위</div></div>
+  <div class="tile t-pink">{{ i3d('fire', 52) }}<div class="k">3년 최고가</div><div class="v">{% set b = bigsplit(t.hi.price) %}{{ b[0] }}<small>{{ b[1] }}</small></div>
+    <div class="s">{{ t.hi.ymd|date }} · 지금 <b>{{ t.from_hi|pct }}</b></div></div>
+  <div class="tile t-blue">{{ i3d('key', 52) }}<div class="k">신규 전세</div><div class="v">{% set b = bigsplit(t.jeonse_new) %}{{ b[0] }}<small>{{ b[1] }}</small></div>
+    <div class="s">전세가율 <b>{{ t.jratio_new|ratio }}</b></div></div>
+  <div class="tile t-green">{{ i3d('gap', 52) }}<div class="k">갭</div><div class="v">{% set b = bigsplit(t.gap) %}{{ b[0] }}<small>{{ b[1] }}</small></div>
+    <div class="s">매매 − 신규 전세</div></div>
+</div>
+
+<div class="grid">
+  <div class="card c12">
+    {% set pos = (t.pos or 0) * 100 %}
+    <div class="pos">
+      <div class="end"><span>3년 최저</span><b class="down">{{ t.lo.price|eok }}</b><span>{{ t.lo.ymd|date }}</span></div>
+      <div class="track"><div class="me" style="left:{{ '%.1f'|format(pos) }}%"></div><div class="bub" style="left:{{ '%.1f'|format([[pos, 10]|max, 90]|min) }}%">지금 {{ t.now|eok }}</div></div>
+      <div class="end r"><span>3년 최고</span><b class="up">{{ t.hi.price|eok }}</b><span>{{ t.hi.ymd|date }}</span></div>
+    </div>
+  </div>
+
+  <div class="card c8">
+    <div class="ch">{{ i3d('chart') }}<h2>매매가 추이</h2><span class="sub">월 중위</span>
+      <div class="seg" data-seg><button class="on" data-v="line">흐름</button><button data-v="dots">모든 거래</button></div></div>
+    <div data-view="line"><div class="wide">{{ t.line|safe }}</div><div class="narrow">{{ t.line_n|safe }}</div>
+      <div class="legend"><span><i style="background:var(--up)"></i>최고</span><span><i style="background:var(--down)"></i>최저</span><span><i style="background:var(--lime);border:2px solid var(--ink)"></i>최근</span><span><i style="background:var(--vol);border-radius:3px"></i>거래량</span></div></div>
+    <div data-view="dots" hidden><div class="wide">{{ t.scatter|safe }}</div><div class="narrow">{{ t.scatter_n|safe }}</div>
+      <div class="legend"><span><i style="background:#B7BDC6"></i>저층</span><span><i style="background:#6B7380"></i>중층</span><span><i style="background:var(--ink)"></i>고층</span><span style="color:var(--up)">✕ 해제</span><span><i style="border:1.5px solid #9AA1AB"></i>직거래</span><span><i style="border:1.5px solid #F59E0B"></i>확인 필요</span></div></div>
+  </div>
+
+  <div class="card c4">
+    <div class="ch">{{ i3d('elevator') }}<h2>층별 가격</h2><span class="sub">최근 2년</span></div>
+    {% for f in t.floors %}<div class="fl {{ f.lv }}"><div class="n">{{ f.label }}<small>{{ f.n }}건</small></div><div class="bar"><i style="width:{{ '%.0f'|format(f.w) }}%"></i></div>
+      <div class="p">{{ f.median|eok }}{% if f.vs_mid is not none %}<small class="{{ f.vs_mid|delta }}">{{ f.vs_mid|pct }}</small>{% else %}<small class="muted">기준</small>{% endif %}</div></div>{% endfor %}
+    <div class="warnbox" style="margin:12px 0 0">{{ i3d('bulb', 30) }}<span>고층이 중층보다 {% set h = t.floors|selectattr('lv','equalto','hi')|list %}{{ (h[0].vs_mid|pct) if h and h[0].vs_mid is not none else '–' }} 비쌉니다</span></div>
+  </div>
+
+  <div class="card c7">
+    <div class="ch">{{ i3d('gap') }}<h2>전세·갭 추이</h2><span class="sub">분기 중위</span></div>
+    <div class="wide">{{ t.gap_chart|safe }}</div><div class="narrow">{{ t.gap_chart_n|safe }}</div>
+    <div class="legend"><span><i style="background:var(--pink);border-radius:3px"></i>매매</span><span><i style="background:var(--blue);border-radius:3px"></i>신규 전세</span><span>갱신 전세 {{ t.jeonse_renew|eok }}</span></div>
+  </div>
+
+  <div class="card c5">
+    <div class="ch">{{ i3d('receipt') }}<h2>최근 거래</h2></div>
+    <div class="rows">{% for s in t.recent[:7] %}<div class="r"><div><div class="t">{{ s.ymd|date }} · {{ s.floor }}층{% if s.flag %}<span class="chip hi">신고가</span>{% endif %}{% if s.cancelled %}<span class="chip x">해제</span>{% endif %}{% if s.direct %}<span class="chip dir">직거래</span>{% endif %}</div></div>
+      <div class="p {{ 'strike' if s.cancelled }}">{{ s.price|eok }}</div></div>{% endfor %}</div>
+  </div>
+
+  <div class="card c12">
+    <div class="ch">{{ i3d('search') }}<h2>이 돈이면 여기도</h2><span class="sub">{{ r.name }} · 같은 평형대 ±12%</span></div>
+    <div class="sims">{% set cols = ['t-yellow','t-pink','t-blue','t-green','t-lav','t-lime'] %}
+    {% for s in t.sim %}<a class="sim {{ cols[loop.index0 % 6] }}" href="#">{{ i3d('house', 40) }}<span class="d">{{ s.diff|pct }}</span>
+      <div class="t">{{ s.cx.name }}</div><div class="s">{{ s.cx.umd }} · {{ s.cx.build_year }}년 · {{ s.deal.area|ptype|replace('평형','평') }}</div><div class="p">{{ s.deal.price|eok }}</div></a>
+    {% else %}<div class="muted">비슷한 가격대 단지가 없어요</div>{% endfor %}</div>
+  </div>
+</div>
+</div>
+{% endfor %}
+
+<div class="grid">
+  <div class="card c7">
+    <div class="ch">{{ i3d('chart') }}<h2>평형별 요약</h2><span class="sub">분기 중위 · 건수</span></div>
+    <div class="scroll-x"><table class="qt"><tr><th>평형</th>{% for q in qs %}<th class="{{ 'qn' if loop.last }}">{{ q }}</th>{% endfor %}<th class="qh">최고가</th></tr>
+    {% for row in table %}<tr><td><b>{{ row.area|ptype|replace('평형','평') }}{% if row.at_high %}<span class="tag">최고가</span>{% endif %}</b><small>전용 {{ row.key }}㎡</small></td>
+      {% for v, n in row.cells %}<td class="{{ 'qn' if loop.last }}">{% if v %}<b>{{ v|eok|replace('억','') }}</b><small>{{ n }}건</small>{% else %}<small>–</small>{% endif %}</td>{% endfor %}
+      <td class="qh"><b>{{ row.hi.price|eok|replace('억','') }}</b><small>{{ row.hi.ymd[:7]|replace('-','.') }}</small></td></tr>{% endfor %}
+    </table></div>
+    <div class="legend"><span>단위 억 · 해제·직거래·확인 필요 거래 제외</span></div>
+  </div>
+  <div class="card c5">
+    <div class="ch">{{ i3d('warn') }}<h2>신고가 찍고 해제</h2></div>
+    <div class="warnbox">{{ i3d('bulb', 30) }}<span>최고가로 신고했다가 나중에 취소한 계약입니다. 호가를 띄우는 데 쓰였을 수 있습니다.</span></div>
+    <div class="rows">{% for h in ch[:5] %}<div class="r"><div><div class="t">{{ h.deal.ymd|date }} · {{ h.deal.area|ptype|replace('평형','평') }} · {{ h.deal.floor }}층</div><div class="s">직전 최고 {{ h.prev|eok }}</div></div>
+      <div class="p"><span class="strike">{{ h.deal.price|eok }}</span><div class="up" style="font-size:12px">{{ h.up|pct }}</div></div></div>
+      {% else %}<div class="muted">이 단지엔 없어요</div>{% endfor %}</div>
+  </div>
+</div>
+
+<p class="foot">출처: 국토교통부 실거래가 공개자료(계약일 기준) · 아이콘: Microsoft Fluent Emoji(MIT) · 시안 v2</p>
+</main>
+
+<nav class="tabbar"><a class="on" href="#">{{ i3d('house', 26) }}아파트</a><a href="#">{{ i3d('fire', 26) }}신고가</a><a href="#">{{ i3d('budget', 26) }}예산별</a>
+  <a href="#">{{ i3d('offi', 26) }}오피·빌라</a><a href="#">{{ i3d('redev', 26) }}재개발</a></nav>
+<button class="theme" id="theme">어둡게</button>
+<script>
+document.getElementById('types').addEventListener('click', function(e){ var b=e.target.closest('button'); if(!b) return;
+  this.querySelectorAll('button').forEach(function(x){x.classList.toggle('on', x===b)});
+  document.querySelectorAll('.pane').forEach(function(p){p.hidden = p.dataset.k !== b.dataset.k}); });
+var on=document.querySelector('#types .on'); if(on) on.scrollIntoView({inline:'center', block:'nearest'});
+document.querySelectorAll('[data-seg]').forEach(function(seg){ seg.addEventListener('click', function(e){ var b=e.target.closest('button'); if(!b) return;
+  seg.querySelectorAll('button').forEach(function(x){x.classList.toggle('on', x===b)});
+  var card=seg.closest('.card'); card.querySelectorAll('[data-view]').forEach(function(v){v.hidden = v.dataset.view !== b.dataset.v}); }); });
+var tb=document.getElementById('theme');
+function setT(t){ document.documentElement.dataset.theme=t; tb.textContent = t==='dark' ? '밝게' : '어둡게'; }
+tb.addEventListener('click', function(){ setT(document.documentElement.dataset.theme==='dark' ? 'light' : 'dark') });
+if (location.hash==='#dark') setT('dark');
+</script>
+</body>
+</html>

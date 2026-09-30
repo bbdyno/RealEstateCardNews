@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import icon, card_h, ad %}
+{% block title %}재개발·재건축 구역 진행 단계 — 정비사업 현황 | {{ site.brand }}{% endblock %}
+{% block main %}
+<div class="page-head">
+  <div><div class="crumbs"><a href="/">전국</a> › 재개발</div><h1>재개발·재건축 <span class="soft">진행 단계</span></h1></div>
+  <span class="asof">{{ icon('calendar') }}{{ asof }}<span data-collected></span></span>
+</div>
+{{ ad('top') }}
+<div class="card">
+  <div class="card-h"><div><h2>구역 {{ zones|length }}곳</h2><div class="sub">구역지정 → 추진위 → 조합설립 → 사업시행 → 관리처분 → 이주·철거 → 착공 → 준공</div></div>
+    <div class="pills scroll-x" data-pills="sido"><button class="on" data-key="all">전체</button>{% for s in sidos %}<button data-key="{{ s }}">{{ s[:2] }}</button>{% endfor %}</div></div>
+  {% for key in ['all'] + sidos %}
+  <div class="rows" data-pane="sido" data-key="{{ key }}" {% if key != 'all' %}hidden{% endif %}>
+  {% for z in zones if key == 'all' or z.sido == key %}
+    <a class="row" href="/redevelop/{{ z.id }}/"><span class="ico">{{ z.biz[:1] }}</span>
+      <span class="main"><div class="t">{{ z.zone }}</div><div class="s">{{ z.sgg_name }} {{ z.umd }} · {{ z.biz }} · {{ z.stage }}{% if z.households %} · {{ z.households|num }}세대{% endif %}</div></span>
+      <span class="val stage-val">{{ charts.stages(8, z.stage_no)|safe }}</span></a>
+  {% else %}<div class="empty">구역 자료가 없어요</div>{% endfor %}
+  </div>
+  {% endfor %}
+  <p class="note">지자체가 공개한 정비사업 현황을 모은 것입니다. 단계는 자료 기준일 이후 바뀌었을 수 있으니 구청·조합 공지를 확인하세요.</p>
+</div>
+{{ ad('bottom') }}
+{% endblock %}

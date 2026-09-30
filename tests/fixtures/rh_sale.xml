@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<response><header><resultCode>000</resultCode><resultMsg>OK</resultMsg></header>
+<body><items>
+<item><buildYear>1998</buildYear><cdealType> </cdealType><dealAmount>38,500</dealAmount><dealDay>21</dealDay><dealMonth>7</dealMonth><dealYear>2026</dealYear><dealingGbn>중개거래</dealingGbn><excluUseAr>49.8</excluUseAr><floor>2</floor><houseType>다세대</houseType><jibun>12-34</jibun><landAr>27.35</landAr><mhouseNm>샘플빌라</mhouseNm><sggCd>11440</sggCd><umdNm>망원동</umdNm></item>
+</items><numOfRows>1000</numOfRows><pageNo>1</pageNo><totalCount>1</totalCount></body></response>

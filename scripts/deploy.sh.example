@@ -1,0 +1,8 @@
+#!/bin/zsh
+# 배포 예시. 호스팅을 정한 뒤 이 파일을 scripts/deploy.sh 로 복사하고 실행 권한을 주면 daily.sh 가 부른다.
+# 바뀐 파일만 올라간다(빌드가 날마다 같은 내용이면 같은 파일을 만든다).
+set -e
+cd "$(dirname "$0")/.."
+# Netlify (NETLIFY_AUTH_TOKEN · NETLIFY_SITE_ID 는 .env 에)
+source .env
+npx --yes netlify-cli deploy --dir dist --prod --site "$NETLIFY_SITE_ID" --auth "$NETLIFY_AUTH_TOKEN"

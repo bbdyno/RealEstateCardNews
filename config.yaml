@@ -1,0 +1,25 @@
+site:
+  brand: 집값레이더                    # 2026-09-30 확정
+  tagline: 전국 아파트·오피스텔·빌라 실거래가와 재개발, 매일 갱신
+  base_url: https://example.kr         # 도메인이 정해지면 바꾼다(사이트맵·canonical 에 쓰인다)
+  contact_email: ""                    # 광고·제휴 문의 메일(비우면 문의 페이지에 '준비 중')
+  instagram: ""                        # 인스타 핸들(@ 없이). 비우면 링크를 숨긴다
+
+ads:                                   # 4단계(수익화). 승인 전에는 비워 둔다 — 비어 있으면 광고 자리를 그리지 않는다
+  adsense_client: ""                   # ca-pub-XXXXXXXXXXXXXXXX
+  adsense_slots:                       # 애드센스에서 만든 광고 단위 번호
+    top: ""
+    mid: ""
+    bottom: ""
+  coupang:
+    enabled: false
+    html: ""                           # 쿠팡 파트너스에서 받은 배너 코드(iframe). 켜면 공정위 고지 문구가 자동으로 붙는다
+
+verify:                                # 검색 등록 소유 확인 메타 태그의 content 값
+  google: ""
+  naver: ""
+
+build:
+  highs_days: 60                       # 신고가 목록에 넣을 최근 기간
+  budget_months: 6                     # 예산별 표에 넣을 최근 거래 기간
+  budget_max_eok: 30                   # 이 이상은 '30억 이상'으로 묶는다

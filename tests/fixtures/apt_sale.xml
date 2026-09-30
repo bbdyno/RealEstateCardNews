@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<response><header><resultCode>000</resultCode><resultMsg>OK</resultMsg></header>
+<body><items>
+<item><aptDong> </aptDong><aptNm>샘플마을1단지</aptNm><aptSeq>11680-9001</aptSeq><bonbun>0189</bonbun><bubun>0000</bubun><buildYear>2020</buildYear><buyerGbn>개인</buyerGbn><cdealDay> </cdealDay><cdealType> </cdealType><dealAmount>245,000</dealAmount><dealDay>12</dealDay><dealMonth>8</dealMonth><dealYear>2026</dealYear><dealingGbn>중개거래</dealingGbn><estateAgentSggNm>서울 강남구</estateAgentSggNm><excluUseAr>84.97</excluUseAr><floor>12</floor><jibun>189</jibun><sggCd>11680</sggCd><slerGbn>개인</slerGbn><umdCd>10300</umdCd><umdNm>개포동</umdNm></item>
+<item><aptDong> </aptDong><aptNm>샘플마을1단지</aptNm><aptSeq>11680-9001</aptSeq><buildYear>2020</buildYear><cdealDay>26.08.20</cdealDay><cdealType>O</cdealType><dealAmount>198,000</dealAmount><dealDay>3</dealDay><dealMonth>8</dealMonth><dealYear>2026</dealYear><dealingGbn>직거래</dealingGbn><excluUseAr>59.99</excluUseAr><floor>3</floor><jibun>189</jibun><sggCd>11680</sggCd><umdNm>개포동</umdNm></item>
+<item><aptNm>샘플마을1단지</aptNm><aptSeq>11680-9001</aptSeq><buildYear>2020</buildYear><cdealType> </cdealType><dealAmount>245,000</dealAmount><dealDay>12</dealDay><dealMonth>8</dealMonth><dealYear>2026</dealYear><dealingGbn>중개거래</dealingGbn><excluUseAr>84.97</excluUseAr><floor>12</floor><jibun>189</jibun><sggCd>11680</sggCd><umdNm>개포동</umdNm></item>
+</items><numOfRows>1000</numOfRows><pageNo>1</pageNo><totalCount>3</totalCount></body></response>

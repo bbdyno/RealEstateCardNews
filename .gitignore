@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+data/
+dist/
+.pytest_cache/
+scripts/deploy.sh
+proto/complex*.html
+.DS_Store

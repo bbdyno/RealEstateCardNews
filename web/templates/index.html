@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import icon, card_h, big, tile, delta_txt, high_row, ad, coupang %}
+{% block title %}{{ site.brand }} — 전국 아파트·오피스텔·빌라 실거래가, 신고가, 전세가율{% endblock %}
+{% block main %}
+<div class="page-head">
+  <div><div class="crumbs">국토교통부 실거래가 기반</div><h1>전국 집값, <span class="soft">실거래로 봅니다</span></h1></div>
+  <span class="asof">{{ icon('calendar') }}{{ asof }}<span data-collected></span></span>
+</div>
+
+<div class="grid">
+  <div class="s4">
+    <div class="hero">
+      <div class="label">전국 아파트 매매 · {{ base|month_long }}</div>
+      <div class="big">{{ home.count|num }}<span class="frac">건</span></div>
+      <div class="label">전월 대비 {{ home.count_chg|pct }} · 전년 같은 달 대비 {{ home.count_yoy|pct }}</div>
+      <div class="foot"><span>중위 평당가(전용 3.3㎡) <b>{{ home.ppp|won }}</b></span><span class="chip">{{ home.ppp_chg|arrow }} {{ home.ppp_chg|pct }} 3개월</span></div>
+    </div>
+    <div class="card only-mobile" style="margin-top:12px">
+      <nav class="quick">
+        <a href="/budget/"><span class="qi">{{ icon('wallet') }}</span>예산별</a>
+        <a href="/highs/"><span class="qi">{{ icon('trend') }}</span>신고가</a>
+        <a href="/jeonse/"><span class="qi">{{ icon('percent') }}</span>전세가율</a>
+        <a href="/offi/"><span class="qi">{{ icon('coin') }}</span>오피스텔</a>
+        <a href="/compare/"><span class="qi">{{ icon('grid') }}</span>단지 비교</a>
+      </nav>
+    </div>
+  </div>
+  <div class="s8 card">
+    {{ card_h('월별 아파트 거래량', '전국 · 계약일 기준 · 점선 막대는 신고가 모이는 중인 달', '/rank/', 'bars') }}
+    {{ ch.bars|safe }}
+  </div>
+</div>
+{{ ad('top') }}
+
+<div class="grid">
+  <div class="s4 card">
+    {{ card_h('한눈에 보기', base|month_long ~ ' 기준') }}
+    <div class="tiles">
+      {{ tile('중위 평당가', home.ppp|eok, home.ppp_chg, '3개월') }}
+      {{ tile('신고가', (home.highs|num) ~ '건', None, '최근 60일 · 3년 내 최고가') }}
+      {{ tile('아파트 전세가율', home.jeonse|ratio, None, '전세 ÷ 매매 중위') }}
+      {{ tile('오피스텔 수익률', home.offi_yield|pct(False), None, '연 월세 ÷ 실투자금') }}
+    </div>
+    <div style="margin-top:16px">{{ card_h('중위 평당가 흐름', '전국 아파트 · 전용 3.3㎡당') }}{{ ch.area_narrow|safe }}</div>
+  </div>
+  <div class="s8 card">
+    {{ card_h('시도별 아파트', '기준월 거래량 · 최근 3개월 중위 평당가 · 3개월 전 대비', '/rank/', 'grid') }}
+    <div class="rows">
+    {% for s in sido_rows %}
+      <a class="row" href="/r/{{ s.code }}/">
+        <span class="ico">{{ s.name[:1] }}</span>
+        <span class="main"><div class="t">{{ s.name }}</div><div class="s">거래 {{ s.count|num }}건 · 전월 대비 <span class="{{ s.count_chg|delta }}">{{ s.count_chg|pct }}</span></div></span>
+        {{ charts.spark(s.spark)|safe }}
+        <span class="val"><div class="p">{{ s.ppp|eok }}</div><div class="d">{{ delta_txt(s.ppp_chg) }}</div></span>
+      </a>
+    {% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="s6 card">
+    {{ card_h('최근 신고가', '같은 단지·같은 면적의 3년 내 최고가를 넘은 거래', '/highs/', 'trend') }}
+    <div class="rows">{% for h in highs %}{{ high_row(h) }}{% else %}<div class="empty">최근 신고가가 없어요</div>{% endfor %}</div>
+  </div>
+  <div class="s6 card">
+    {{ card_h('예산별 아파트', '최근 6개월 실거래 기준 · 거래가 많은 예산대', '/budget/', 'wallet') }}
+    <div class="rows">
+    {% for sc, e, n in budget_hot %}
+      <a class="row" href="/budget/{{ sc }}/{{ e }}/"><span class="ico">{{ e }}</span>
+        <span class="main"><div class="t">{{ sido_name(sc) }} {{ eok_label(e) }}</div><div class="s">단지 {{ n }}곳 · 평형대별 표</div></span>
+        <span class="round sm">{{ icon('arrow') }}</span></a>
+    {% else %}<div class="empty">아직 모인 거래가 없어요</div>{% endfor %}
+    </div>
+  </div>
+</div>
+{{ ad('mid') }}
+
+<div class="grid">
+  <div class="s6 card">
+    {{ card_h('빌라 대지지분 평당가', '거래 많은 동 · 최근 12개월 중위', '/villa/', 'building') }}
+    <div class="rows">
+    {% for x in villa_top %}
+      <a class="row" href="/v/{{ x.r.code }}/{{ x.v.umd }}/"><span class="ico">{{ x.v.umd[:1] }}</span>
+        <span class="main"><div class="t">{{ x.r.name }} {{ x.v.umd }}</div><div class="s">{{ x.r.sido_short }} · 거래 {{ x.v.n }}건</div></span>
+        <span class="val"><div class="p">{{ x.v.land_ppp|eok }}</div><div class="d muted">대지 3.3㎡당</div></span></a>
+    {% else %}<div class="empty">아직 모인 거래가 없어요</div>{% endfor %}
+    </div>
+  </div>
+  <div class="s6 card">
+    {{ card_h('오피스텔 수익률 상위', '최근 12개월 월세·매매 중위로 계산', '/offi/', 'coin') }}
+    <div class="rows">
+    {% for o in offi_top or [] %}
+      <a class="row" href="{{ cx_url(o) }}"><span class="ico">{{ o.name[:1] }}</span>
+        <span class="main"><div class="t">{{ o.name }}</div><div class="s">{{ region_name(o.sgg) }} {{ o.umd }} · 월세 {{ o.median_rent.rent|num }}만 / 보증금 {{ o.median_rent.deposit|won }}</div></span>
+        <span class="val"><div class="p">{{ o.yield_|pct(False) }}</div><div class="d muted">연 수익률</div></span></a>
+    {% else %}<div class="empty">아직 계산할 거래가 없어요</div>{% endfor %}
+    </div>
+  </div>
+</div>
+
+{% if zones %}
+<div class="grid"><div class="s12 card">
+  {{ card_h('재개발·재건축 진행 단계', '구역별 추진 단계', '/redevelop/', 'crane') }}
+  <div class="rows">
+  {% for z in zones[:6] %}
+    <a class="row" href="/redevelop/{{ z.id }}/"><span class="ico">{{ z.biz[:1] }}</span>
+      <span class="main"><div class="t">{{ z.zone }}</div><div class="s">{{ z.sgg_name }} {{ z.umd }} · {{ z.biz }} · {{ z.stage }}</div></span>
+      <span class="val stage-val">{{ charts.stages(8, z.stage_no)|safe }}</span></a>
+  {% endfor %}
+  </div>
+</div></div>
+{% endif %}
+{{ coupang() }}
+{{ ad('bottom') }}
+{% endblock %}

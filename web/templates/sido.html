@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import icon, card_h, big, tile, delta_txt, high_row, ad %}
+{% block title %}{{ name }} 아파트 실거래가·시군구별 시세 — {{ site.brand }}{% endblock %}
+{% block main %}
+<div class="page-head">
+  <div><div class="crumbs"><a href="/">전국</a> › {{ name }}</div><h1>{{ name }} <span class="soft">아파트 실거래</span></h1></div>
+  <span class="asof">{{ icon('calendar') }}{{ asof }}<span data-collected></span></span>
+</div>
+<div class="grid">
+  <div class="s4">
+    <div class="hero">
+      <div class="label">{{ name }} 아파트 매매 · 기준월</div>
+      <div class="big">{{ row.count|num }}<span class="frac">건</span></div>
+      <div class="label">전월 대비 {{ row.count_chg|pct }}</div>
+      <div class="foot"><span>중위 평당가 <b>{{ row.ppp|won }}</b></span><span class="chip">{{ row.ppp_chg|arrow }} {{ row.ppp_chg|pct }}</span></div>
+    </div>
+    {% if eoks %}<div class="card" style="margin-top:16px">{{ card_h('예산별로 보기', '최근 6개월 실거래') }}
+      <div class="chips">{% for e in eoks %}<a href="/budget/{{ sido_code }}/{{ e }}/">{{ eok_label(e) }}</a>{% endfor %}</div></div>{% endif %}
+  </div>
+  <div class="s8 card">{{ card_h('월별 거래량', '계약일 기준') }}{{ ch.bars|safe }}
+    <div style="margin-top:14px">{{ card_h('중위 평당가', '전용 3.3㎡당') }}{{ ch.area|safe }}</div></div>
+</div>
+{{ ad('top') }}
+<div class="grid">
+  <div class="s7 card">{{ card_h('시군구', '기준월 거래량 순') }}
+    <div class="rows">{% for s in regions %}
+      <a class="row" href="/r/{{ s.r.code }}/"><span class="ico">{{ s.r.name[:1] }}</span>
+        <span class="main"><div class="t">{{ s.r.name }}</div><div class="s">거래 {{ s.st.count_base|num }}건 · 전세가율 {{ s.st.jeonse_ratio|ratio }} · 신고가 {{ s.highs }}건</div></span>
+        {{ charts.spark(s.spark)|safe }}
+        <span class="val"><div class="p">{{ s.st.median_ppp|eok }}</div><div class="d">{{ delta_txt(s.st.ppp_change) }}</div></span></a>
+    {% endfor %}</div></div>
+  <div class="s5 card">{{ card_h('최근 신고가', '3년 내 최고가 경신', '/highs/', 'trend') }}
+    <div class="rows">{% for h in highs %}{{ high_row(h) }}{% else %}<div class="empty">최근 신고가가 없어요</div>{% endfor %}</div></div>
+</div>
+{{ ad('bottom') }}
+{% endblock %}

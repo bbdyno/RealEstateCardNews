@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+  html, body { margin: 0; width: 1200px; height: 630px; background: #F2F3F5; font-family: "Pretendard Variable", "Apple SD Gothic Neo", sans-serif; }
+  .card { position: absolute; inset: 40px; border-radius: 44px; padding: 64px 72px; color: #fff; overflow: hidden;
+    background: radial-gradient(120% 120% at 20% 10%, #262A31 0%, #111316 70%); }
+  .card::after { content: ""; position: absolute; right: -80px; bottom: -120px; width: 460px; height: 460px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(212,250,75,.18), rgba(212,250,75,0) 70%); }
+  .brand { display: flex; align-items: center; gap: 18px; font-size: 40px; font-weight: 700; letter-spacing: -0.02em; }
+  .mark { width: 72px; height: 72px; border-radius: 18px; display: block; }
+  h1 { font-size: 64px; line-height: 1.18; letter-spacing: -0.035em; margin: 54px 0 18px; font-weight: 700; }
+  h1 span { color: #D4FA4B; font-weight: 700; }
+  .chips { display: flex; gap: 12px; }
+  .chip { background: rgba(255,255,255,.1); border-radius: 999px; padding: 10px 22px; font-size: 24px; font-weight: 600; }
+  .bars { position: absolute; right: 72px; bottom: 64px; display: flex; align-items: flex-end; gap: 14px; }
+  .bars i { width: 34px; border-radius: 12px; }
+  .bars i:nth-child(6n+1) { background: #AECBFF; } .bars i:nth-child(6n+2) { background: #FFB8D9; } .bars i:nth-child(6n+3) { background: #FFE45E; }
+  .bars i:nth-child(6n+4) { background: #B9F0A0; } .bars i:nth-child(6n+5) { background: #D9CCFF; } .bars i:nth-child(6n) { background: #FFB8D9; } .bars i.hl { background: #D4FA4B; }
+</style></head>
+<body><div class="card">
+  <div class="brand"><img class="mark" src="{{ logo }}" alt="">{{ site.brand }}</div>
+  <h1>전국 집값,<br><span>실거래로 봅니다</span></h1>
+  <div class="chips"><span class="chip">아파트</span><span class="chip">오피스텔</span><span class="chip">빌라</span><span class="chip">재개발</span></div>
+  <div class="bars">{% for h in [120, 90, 150, 110, 170, 140, 210] %}<i class="{{ 'hl' if loop.last }}" style="height:{{ h }}px"></i>{% endfor %}</div>
+</div></body></html>

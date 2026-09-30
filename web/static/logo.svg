@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <title>집값레이더</title>
+  <defs>
+    <radialGradient id="jr-bg" cx="30%" cy="25%" r="90%"><stop offset="0" stop-color="#2A2E35"/><stop offset="1" stop-color="#0F1114"/></radialGradient>
+    <linearGradient id="jr-sweep" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#D4FA4B" stop-opacity="0"/><stop offset="1" stop-color="#D4FA4B" stop-opacity=".55"/></linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="116" fill="url(#jr-bg)"/>
+  <g fill="none" stroke="#D4FA4B" stroke-width="10">
+    <circle cx="256" cy="286" r="178" opacity=".16"/><circle cx="256" cy="286" r="122" opacity=".26"/><circle cx="256" cy="286" r="66" opacity=".4"/>
+  </g>
+  <path d="M256 286 L256 108 A178 178 0 0 1 410 197 Z" fill="url(#jr-sweep)"/>
+  <path d="M150 300 L256 206 L362 300 V392 a20 20 0 0 1 -20 20 H170 a20 20 0 0 1 -20 -20 Z" fill="#fff"/>
+  <path d="M126 306 L256 190 L386 306" fill="none" stroke="#fff" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="226" y="336" width="60" height="76" rx="10" fill="#15171A"/>
+  <circle cx="372" cy="176" r="26" fill="#D4FA4B"/><circle cx="372" cy="176" r="46" fill="none" stroke="#D4FA4B" stroke-width="8" opacity=".45"/>
+</svg>

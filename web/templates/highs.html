@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import icon, card_h, high_row, ad %}
+{% block title %}아파트 신고가 — 전국 3년 내 최고가 경신 실거래 | {{ site.brand }}{% endblock %}
+{% block main %}
+<div class="page-head">
+  <div><div class="crumbs"><a href="/">전국</a> › 신고가</div><h1>신고가 <span class="soft">최근 {{ days }}일</span></h1></div>
+  <span class="asof">{{ icon('calendar') }}{{ asof }}<span data-collected></span></span>
+</div>
+{{ ad('top') }}
+<div class="card">
+  <div class="card-h"><div><h2>{{ highs|length }}건</h2><div class="sub">같은 단지·같은 면적에서 수집 기간(3년) 안의 이전 최고가를 넘은 거래</div></div>
+    <div class="pills scroll-x" data-pills="sido"><button class="on" data-key="all">전체</button>{% for s in sidos %}<button data-key="{{ s }}">{{ sido_name(s) }}</button>{% endfor %}</div></div>
+  <div class="rows" data-pane="sido" data-key="all">{% for h in highs %}{{ high_row(h) }}{% else %}<div class="empty">신고가가 없어요</div>{% endfor %}</div>
+  {% for s in sidos %}<div class="rows" data-pane="sido" data-key="{{ s }}" hidden>{% for h in highs if h.cx.sgg[:2] == s %}{{ high_row(h) }}{% endfor %}</div>{% endfor %}
+  <p class="note">'▲'는 직전 최고가보다 오른 금액입니다. 수집 기간보다 오래전 최고가는 반영되지 않습니다.</p>
+</div>
+{{ ad('bottom') }}
+{% endblock %}

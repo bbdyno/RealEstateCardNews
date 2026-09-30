@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import icon, card_h, big, tile, ad %}
+{% block title %}{{ r.name }} {{ v.umd }} 빌라 시세·실거래가(대지지분 평당가) — {{ site.brand }}{% endblock %}
+{% block description %}{{ r.sido_short }} {{ r.name }} {{ v.umd }} 연립·다세대(빌라) 매매 실거래가와 대지지분 평당가. 최근 12개월 {{ v.n }}건, 중위 대지지분 평당가 {{ v.land_ppp|won }}원.{% endblock %}
+{% block main %}
+<div class="page-head">
+  <div><div class="crumbs"><a href="/">전국</a> › <a href="/villa/">빌라</a> › <a href="/r/{{ r.code }}/">{{ r.sido_short }} {{ r.name }}</a> › {{ v.umd }}</div>
+  <h1>{{ v.umd }} <span class="soft">빌라 시세</span></h1></div>
+  <span class="asof">{{ icon('calendar') }}{{ asof }}<span data-collected></span></span>
+</div>
+<div class="grid">
+  <div class="s4">
+    <div class="hero">
+      <div class="label">대지지분 평당가 · 최근 12개월 중위</div>
+      {{ big(v.land_ppp, 'big') }}
+      <div class="label">매매가 ÷ 대지권면적(3.3㎡)</div>
+      <div class="foot"><span>거래 {{ v.n }}건</span><span class="chip">중위 매매가 {{ v.price|eok }}</span></div>
+    </div>
+    {% if zones %}<div class="card" style="margin-top:16px">{{ card_h(v.umd ~ ' 정비사업', '', '/redevelop/', 'crane') }}
+      <div class="rows">{% for z in zones %}<a class="row" href="/redevelop/{{ z.id }}/"><span class="ico">{{ z.biz[:1] }}</span><span class="main"><div class="t">{{ z.zone }}</div><div class="s">{{ z.biz }} · {{ z.stage }}</div></span></a>{% endfor %}</div></div>{% endif %}
+  </div>
+  <div class="s8 card">{{ card_h('분기별 대지지분 평당가', '중위값 · 재개발 기대가 붙는 동은 이 값이 먼저 움직입니다', '', 'trend') }}
+    {{ chart|safe if chart else '<div class="empty">그릴 만큼 거래가 없어요</div>'|safe }}</div>
+</div>
+{{ ad('top') }}
+<div class="grid">
+  <div class="s8 card">{{ card_h('최근 매매', '연립·다세대') }}
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>계약일</th><th>건물(지번)</th><th>전용</th><th>대지권</th><th class="r">층</th><th class="r">거래가</th><th class="r">대지 3.3㎡당</th><th class="r">준공</th></tr></thead><tbody>
+    {% for d in v.recent %}<tr><td>{{ d.ymd|date }}</td><td>{{ d.name or '–' }} <span class="muted">{{ d.jibun }}</span></td><td>{{ d.area|sqm }}</td><td>{{ d.land_area|sqm }}</td>
+      <td class="r">{{ d.floor }}</td><td class="r"><b>{{ d.price|won }}</b></td><td class="r">{{ (d.price / (d.land_area / 3.3058))|eok if d.land_area else '–' }}</td><td class="r">{{ d.build_year or '–' }}</td></tr>{% endfor %}
+    </tbody></table></div></div>
+  <div class="s4 card">{{ card_h('전세가율 높은 건물', '같은 건물 전세 중위 ÷ 매매 중위 ≥ 80%') }}
+    <div class="rows">{% for h in v.high_ratio %}<div class="row"><span class="ico">{{ h.name[:1] if h.name else '·' }}</span><span class="main"><div class="t">{{ h.name or '이름 없음' }}</div><div class="s">{{ v.umd }} {{ h.jibun }}</div></span><span class="val"><span class="chip warn">{{ h.ratio|ratio }}</span></span></div>
+    {% else %}<div class="empty">해당하는 건물이 없어요</div>{% endfor %}</div>
+    <p class="note">전세가율이 높으면 매매가가 내려갈 때 보증금을 돌려받기 어려울 수 있습니다. 계약 전 등기부등본(선순위 채권)과 보증보험 가입 가능 여부를 확인하세요. 이 표는 참고용 계산값이며 특정 건물의 위험을 판정하지 않습니다.</p></div>
+</div>
+{{ ad('bottom') }}
+{% endblock %}

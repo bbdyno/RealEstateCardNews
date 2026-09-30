@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import icon, card_h, big, tile, ad %}
+{% block title %}{{ z.zone }} {{ z.biz }} 진행 단계 — {{ z.sgg_name }} {{ z.umd }} | {{ site.brand }}{% endblock %}
+{% block description %}{{ z.sgg_name }} {{ z.umd }} {{ z.zone }}({{ z.biz }}) 현재 단계 {{ z.stage }}. 구역 면적, 예정 세대수, 같은 동 빌라 대지지분 평당가.{% endblock %}
+{% block main %}
+<div class="page-head">
+  <div><div class="crumbs"><a href="/">전국</a> › <a href="/redevelop/">재개발</a> › {{ z.sgg_name }}</div><h1>{{ z.zone }} <span class="soft">{{ z.biz }}</span></h1></div>
+  <span class="asof">{{ z.address or (z.sgg_name ~ ' ' ~ z.umd) }}</span>
+</div>
+<div class="grid">
+  <div class="s5">
+    <div class="hero">
+      <div class="label">현재 단계{% if z.source_date %} · {{ z.source_date }} 자료{% endif %}</div>
+      <div class="big" style="font-size:34px">{{ z.stage or '확인 중' }}</div>
+      <div class="foot"><span>{{ z.biz }}</span>{% if z.stage_no is not none %}<span class="chip">{{ z.stage_no + 1 }} / 8단계</span>{% endif %}</div>
+    </div>
+    <div class="card" style="margin-top:16px"><div class="tiles">
+      {{ tile('구역 면적', ((z.area|num) ~ '㎡') if z.area else '–', None, ((z.area / 3.3058)|num ~ '평') if z.area else '') }}
+      {{ tile('예정 세대수', ((z.households|num) ~ '세대') if z.households else '–') }}
+      {{ tile('동 빌라 대지 3.3㎡당', villa.land_ppp|eok if villa else '–', None, '최근 12개월 중위') }}
+      {{ tile('동 빌라 거래', ((villa.n ~ '건') if villa else '–'), None, '최근 12개월') }}
+    </div></div>
+  </div>
+  <div class="s7 card">{{ card_h('진행 단계', '정비사업은 보통 아래 순서로 진행됩니다') }}
+    {{ charts.stages(8, z.stage_no)|safe }}
+    <div class="stage-names">{% for s in STAGES %}<span>{{ s }}</span>{% endfor %}</div>
+    {% if villa %}<div style="margin-top:22px">{{ card_h(z.umd ~ ' 빌라 시세', '구역 안팎을 합친 동 전체 값입니다', '/v/' ~ z.sgg ~ '/' ~ z.umd ~ '/', 'building') }}
+      <div class="rows">{% for d in villa.recent[:6] %}<div class="row"><span class="ico">{{ (d.name or '·')[:1] }}</span><span class="main"><div class="t">{{ d.name or '이름 없음' }} <span class="muted" style="font-weight:400">{{ d.jibun }}</span></div><div class="s">{{ d.ymd|date }} · 전용 {{ d.area|sqm }} · 대지 {{ d.land_area|sqm }}</div></span><span class="val"><div class="p">{{ d.price|eok }}</div></span></div>{% endfor %}</div></div>{% endif %}
+  </div>
+</div>
+<p class="note">출처: {{ z.source or '지자체 공개자료' }}. 구역 경계 안의 거래만 따로 가를 수 없어 같은 동 전체의 빌라 거래를 보여 줍니다.</p>
+{{ ad('bottom') }}
+{% endblock %}

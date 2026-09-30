@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import icon, card_h, big, tile, delta_txt, cx_row, high_row, ad %}
+{% block title %}{{ r.sido_short }} {{ r.name }} 아파트 실거래가·시세 — {{ site.brand }}{% endblock %}
+{% block description %}{{ r.sido }} {{ r.name }} 아파트·오피스텔·빌라 실거래가. {{ st.base|month_long }} 거래 {{ st.count_base }}건, 최근 3개월 중위 매매가 {{ st.median_price|won }}원, 전세가율 {{ st.jeonse_ratio|ratio }}.{% endblock %}
+{% block main %}
+<div class="page-head">
+  <div><div class="crumbs"><a href="/">전국</a> › <a href="/r/{{ sido_code }}/">{{ r.sido_short }}</a> › {{ r.name }}</div>
+  <h1>{{ r.name }} <span class="soft">아파트 실거래</span></h1></div>
+  <span class="asof">{{ icon('calendar') }}{{ asof }}<span data-collected></span></span>
+</div>
+
+<div class="grid">
+  <div class="s4">
+    <div class="hero">
+      <div class="label">최근 3개월 중위 매매가 · {{ st.base|month_long }}까지</div>
+      {{ big(st.median_price, 'big') }}
+      <div class="label">중위 평당가(전용 3.3㎡) {{ st.median_ppp|won }}</div>
+      <div class="foot"><span>직전 3개월 대비</span><span class="chip">{{ st.ppp_change|arrow }} {{ st.ppp_change|pct }}</span></div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <div class="tiles">
+        {{ tile(st.base|month ~ ' 거래', (st.count_base|num) ~ '건', (st.count_base / st.count_prev - 1) if st.count_prev else None, '전월 대비') }}
+        {{ tile('전년 같은 달', (st.count_yoy|num) ~ '건', None, '같은 달 거래 수') }}
+        {{ tile('전세가율', st.jeonse_ratio|ratio, None, '단지별 전세÷매매 중위') }}
+        {{ tile('신고가', (summary.highs|num) ~ '건', None, '최근 60일') }}
+      </div>
+    </div>
+  </div>
+  <div class="s8 card">
+    {{ card_h('중위 평당가 흐름', '전용 3.3㎡당 · 월별 · 집계 중인 달은 빼고 그림', '', 'trend') }}
+    {{ ch.area|safe }}
+    <div style="margin-top:14px">{{ card_h('월별 거래량', '점선 막대 = 신고가 모이는 중') }}{{ ch.bars|safe }}</div>
+  </div>
+</div>
+{{ ad('top') }}
+
+<div class="grid">
+  <div class="s7 card">
+    <div class="card-h"><div><h2>단지</h2><div class="sub">최근 6개월 거래 기준</div></div>
+      <div class="pills" data-pills="cx"><button class="on" data-key="count">거래 많은 순</button><button data-key="new">최근 거래</button><button data-key="drop">최고가 대비 하락</button></div></div>
+    <div class="rows" data-pane="cx" data-key="count">{% for cx in by_count %}{{ cx_row(cx, today_year) }}{% else %}<div class="empty">거래가 없어요</div>{% endfor %}</div>
+    <div class="rows" data-pane="cx" data-key="new" hidden>{% for cx in by_new %}{{ cx_row(cx, today_year) }}{% endfor %}</div>
+    <div class="rows" data-pane="cx" data-key="drop" hidden>{% for cx in by_drop %}{{ cx_row(cx, today_year) }}{% endfor %}</div>
+  </div>
+  <div class="s5 card">
+    {{ card_h('신고가', '같은 단지·같은 면적 3년 내 최고가 경신', '/highs/', 'trend') }}
+    <div class="rows">{% for h in highs %}{{ high_row(h, False) }}{% else %}<div class="empty">최근 60일 신고가가 없어요</div>{% endfor %}</div>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="s6 card">
+    {{ card_h('오피스텔', st_o.base|month ~ ' 거래 ' ~ (st_o.count_base|num) ~ '건 · 수익률 높은 순', '/offi/', 'coin') }}
+    <div class="rows">
+    {% for o in offi %}
+      <a class="row" href="{{ cx_url(o) }}"><span class="ico">{{ o.name[:1] }}</span>
+        <span class="main"><div class="t">{{ o.name }}</div><div class="s">{{ o.umd }} · 매매 {{ o.last_sale.price|eok }} · 월세 {{ o.median_rent.rent|num }}만</div></span>
+        <span class="val"><div class="p">{{ o.yield_|pct(False) }}</div><div class="d muted">연 수익률</div></span></a>
+    {% else %}<div class="empty">계산할 만큼 거래가 없어요</div>{% endfor %}
+    </div>
+  </div>
+  <div class="s6 card">
+    {{ card_h('빌라(연립·다세대) 동별', '대지지분 평당가 = 매매가 ÷ 대지권면적(3.3㎡) · 최근 12개월', '/villa/', 'building') }}
+    {% set top = (villa|map(attribute='land_ppp')|select|max) if villa else 0 %}
+    {% for v in villa %}
+      <a class="rank-row" href="/v/{{ r.code }}/{{ v.umd }}/"><span class="no">{{ loop.index }}</span><span class="t">{{ v.umd }} <span class="muted" style="font-weight:400">· {{ v.n }}건</span></span>
+        <span class="v">{{ v.land_ppp|eok }}</span><span class="meter"><i style="width:{{ ((v.land_ppp or 0) / top * 100) if top else 0 }}%"></i></span></a>
+    {% else %}<div class="empty">빌라 거래가 없어요</div>{% endfor %}
+  </div>
+</div>
+
+{% if zones %}
+<div class="grid"><div class="s12 card">
+  {{ card_h('재개발·재건축', r.name ~ ' 구역 진행 단계', '/redevelop/', 'crane') }}
+  <div class="rows">{% for z in zones %}
+    <a class="row" href="/redevelop/{{ z.id }}/"><span class="ico">{{ z.biz[:1] }}</span>
+      <span class="main"><div class="t">{{ z.zone }}</div><div class="s">{{ z.umd }} · {{ z.biz }} · {{ z.stage }}</div></span>
+      <span class="val stage-val">{{ charts.stages(8, z.stage_no)|safe }}</span></a>{% endfor %}</div>
+</div></div>
+{% endif %}
+<p class="note">매매가는 해제된 거래를 뺀 계약 금액입니다. 평당가는 국토부가 주는 전용면적으로 계산해 분양 평수 기준보다 높게 보입니다. 최근 한두 달은 신고가 계속 들어와 숫자가 늘어납니다. <a href="/methodology/" style="text-decoration:underline">계산 방법</a></p>
+{{ ad('bottom') }}
+{% endblock %}

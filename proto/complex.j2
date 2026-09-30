@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="ko" data-theme="a">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ cx.name }} 실거래가 · 시안</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500;600;700;800;900&display=swap">
+<style>
+/* ── 공통 뼈대 ─────────────────────────────────────────────── */
+:root { --kr: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", sans-serif;
+  --num: "Inter Tight", var(--kr); --up: #D8373E; --down: #2563C9; }
+* { box-sizing: border-box; }
+body { margin: 0; font-family: var(--kr); font-size: 15px; line-height: 1.5; background: var(--bg); color: var(--ink);
+  font-feature-settings: "tnum"; letter-spacing: -0.01em; -webkit-font-smoothing: antialiased; }
+a { color: inherit; text-decoration: none; }
+h1, h2, h3, p { margin: 0; }
+.wrap { max-width: 1160px; margin: 0 auto; padding: 0 16px; }
+.num { font-family: var(--num); font-variant-numeric: tabular-nums; }
+.up { color: var(--up); } .down { color: var(--down); } .muted { color: var(--muted); }
+.top .bar { display: flex; align-items: center; gap: 20px; height: 60px; }
+.brand { font-weight: 800; font-size: 18px; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+.brand i { width: 14px; height: 14px; background: var(--accent); display: inline-block; }
+.top nav { display: flex; gap: 18px; font-size: 14px; overflow-x: auto; scrollbar-width: none; }
+.top nav a { white-space: nowrap; color: var(--ink-2); }
+.top nav a.on { color: var(--ink); font-weight: 700; }
+.top .srch { margin-left: auto; font-size: 13px; color: var(--muted); border: 1px solid var(--line); padding: 7px 12px; white-space: nowrap; }
+.head { padding: 28px 0 18px; }
+.crumbs { font-size: 13px; color: var(--muted); }
+.head h1 { font-size: 52px; line-height: 1.05; font-weight: 800; letter-spacing: -0.04em; margin: 8px 0 12px; }
+.facts { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 14px; color: var(--ink-2); }
+.facts b { color: var(--ink); font-weight: 600; }
+.types { display: flex; gap: 0; overflow-x: auto; scrollbar-width: none; margin: 8px 0 20px; }
+.types button { font: inherit; cursor: pointer; background: none; border: 0; color: var(--ink-2); padding: 10px 16px; white-space: nowrap; text-align: left; }
+.types button b { display: block; font-size: 15px; color: var(--ink); }
+.types button span { font-size: 12px; color: var(--muted); }
+.sec { margin-bottom: 18px; }
+.sec-h { display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+.sec-h .no { font-family: var(--num); font-size: 13px; font-weight: 600; }
+.sec-h h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.03em; }
+.sec-h .sub { font-size: 13px; color: var(--muted); }
+.k { font-size: 13px; color: var(--muted); }
+.now-grid { display: grid; grid-template-columns: 1.1fr 1.3fr 1fr; gap: var(--gap); }
+.now .big { font-family: var(--num); font-size: 84px; line-height: .95; font-weight: var(--bigw); letter-spacing: -0.045em; margin: 10px 0 8px; }
+.now .big small { font-size: .42em; letter-spacing: -0.02em; margin-left: 2px; }
+.now .basis { font-size: 13px; }
+.range .rbar { position: relative; height: 10px; margin: 44px 0 10px; background: var(--track); }
+.range .rbar .fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--accent-2); }
+.range .rbar .pin { position: absolute; top: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px; background: var(--ink); border: 3px solid var(--card); border-radius: 50%; }
+.range .rbar .tag { position: absolute; bottom: 20px; transform: translateX(-50%); font-family: var(--num); font-weight: 700; font-size: 14px; white-space: nowrap; }
+.range .ends { display: flex; justify-content: space-between; font-size: 13px; }
+.range .ends b { font-family: var(--num); font-size: 16px; display: block; }
+.range .ends div:last-child { text-align: right; }
+.range .say { margin-top: 14px; font-size: 14px; }
+.last3 .r { display: flex; justify-content: space-between; align-items: baseline; padding: 9px 0; border-top: 1px solid var(--line); font-size: 14px; }
+.last3 .r:first-of-type { border-top: 0; }
+.last3 .r b { font-family: var(--num); font-size: 17px; }
+.box { background: var(--card); padding: var(--pad); min-width: 0; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--ink-2); margin-top: 10px; }
+.legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: 0; }
+.legend i.x { border-radius: 0; background: none !important; position: relative; }
+.legend i.x::before, .legend i.x::after { content: ""; position: absolute; left: 4px; top: -1px; width: 1.6px; height: 11px; background: var(--pt-x); transform: rotate(45deg); }
+.legend i.x::after { transform: rotate(-45deg); }
+.legend i.dir { background: none !important; border: 1.6px solid var(--pt-dir); }
+.legend i.out { background: none !important; border: 1.6px solid var(--pt-out); }
+.legend .ml { display: inline-block; width: 16px; height: 0; border-top: 2px solid var(--med); vertical-align: 3px; margin-right: 6px; }
+svg.chart { width: 100%; height: auto; display: block; overflow: visible; }
+svg .grid { stroke: var(--line); stroke-width: 1; }
+svg .axis { fill: var(--muted); font-size: 11px; font-family: var(--num); }
+svg .pt { stroke: none; }
+svg .pt.lo { fill: var(--pt-lo); } svg .pt.mid { fill: var(--pt-mid); } svg .pt.hi { fill: var(--pt-hi); }
+svg .pt.x { stroke: var(--pt-x); stroke-width: 1.8; fill: none; }
+svg .pt.dir { fill: none; stroke: var(--pt-dir); stroke-width: 1.4; }
+svg .pt.out { fill: none; stroke: var(--pt-out); stroke-width: 1.6; }
+svg .med { fill: none; stroke: var(--med); stroke-width: 2.2; }
+svg .g-sale { fill: var(--gap-sale); } svg .g-jeonse { fill: var(--gap-jeonse); }
+.narrow { display: none; }
+.floors { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap); }
+.floors .v { font-family: var(--num); font-size: 34px; font-weight: var(--midw); letter-spacing: -0.03em; margin-top: 6px; }
+.floors .d { font-size: 13px; margin-top: 4px; }
+.gapg { display: grid; grid-template-columns: 1fr 2fr; gap: var(--gap); }
+.gtiles { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); }
+.gtiles .v { font-family: var(--num); font-size: 28px; font-weight: var(--midw); letter-spacing: -0.03em; margin-top: 4px; }
+.gtiles .s { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); }
+.lst .r { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 11px 0; border-top: 1px solid var(--line); }
+.lst .r:first-child { border-top: 0; }
+.lst .t { font-weight: 600; }
+.lst .s { font-size: 12.5px; color: var(--muted); }
+.lst .p { font-family: var(--num); font-weight: 700; font-size: 17px; text-align: right; }
+.lst .p small { display: block; font-size: 12px; font-weight: 500; }
+.empty { color: var(--muted); font-size: 14px; padding: 8px 0; }
+.foot { font-size: 12.5px; color: var(--muted); padding: 24px 0 90px; }
+.switch { position: fixed; right: 16px; bottom: 16px; z-index: 50; display: flex; gap: 4px; background: #111; padding: 5px; border-radius: 999px; box-shadow: 0 6px 24px rgba(0,0,0,.25); }
+.switch button { font: 600 13px var(--kr); border: 0; background: transparent; color: #bbb; padding: 8px 14px; border-radius: 999px; cursor: pointer; }
+.switch button.on { background: #fff; color: #111; }
+@media (max-width: 860px) {
+  .now-grid, .gapg, .two { grid-template-columns: 1fr; }
+  .head h1 { font-size: 38px; }
+  .now .big { font-size: 64px; }
+  .wide { display: none; } .narrow { display: block; }
+  .floors .v { font-size: 24px; }
+  .top nav { display: none; }
+}
+
+/* ── A. 리포트형: 종이색 바탕 · 가는 먹선 · 주황 면 한 곳 · 큰 숫자 ─────────── */
+[data-theme="a"] { --bg: #EFEBE3; --card: transparent; --ink: #151412; --ink-2: #3E3A34; --muted: #847D72; --line: #CFC8BC;
+  --accent: #E1542C; --accent-2: #151412; --track: #D9D2C6; --gap: 0px; --pad: 20px 22px; --bigw: 500; --midw: 500;
+  --pt-lo: #B9B1A3; --pt-mid: #7C746A; --pt-hi: #151412; --pt-x: #E1542C; --pt-dir: #9D958A; --pt-out: #E1542C; --med: #E1542C;
+  --gap-sale: #151412; --gap-jeonse: #E1542C; }
+[data-theme="a"] .top { border-bottom: 1px solid var(--ink); }
+[data-theme="a"] .top .srch { border-color: var(--ink); color: var(--ink-2); }
+[data-theme="a"] .types { border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); }
+[data-theme="a"] .types button { border-right: 1px solid var(--line); }
+[data-theme="a"] .types button.on { background: var(--ink); color: var(--bg); }
+[data-theme="a"] .types button.on b, [data-theme="a"] .types button.on span { color: var(--bg); }
+[data-theme="a"] .sec { border-top: 1px solid var(--ink); padding-top: 14px; margin-bottom: 34px; }
+[data-theme="a"] .sec-h .no { color: var(--accent); }
+[data-theme="a"] .box { padding: 16px 20px 18px 0; }
+[data-theme="a"] .now-grid > .box + .box, [data-theme="a"] .floors > .box + .box, [data-theme="a"] .gtiles > .box:nth-child(even) { border-left: 1px solid var(--line); padding-left: 20px; }
+[data-theme="a"] .now { background: var(--accent); padding: 18px 20px !important; color: #151412; }
+[data-theme="a"] .now .k, [data-theme="a"] .now .muted { color: rgba(21,20,18,.7); }
+[data-theme="a"] .range .rbar { height: 2px; background: var(--ink); }
+[data-theme="a"] .range .rbar .fill { display: none; }
+[data-theme="a"] .range .rbar .pin { border-radius: 0; width: 14px; height: 14px; margin: -7px 0 0 -7px; background: var(--accent); border: 0; }
+[data-theme="a"] .gtiles > .box { border-top: 1px solid var(--line); }
+[data-theme="a"] .gtiles > .box:nth-child(-n+2) { border-top: 0; }
+[data-theme="a"] .two > .box + .box { border-left: 1px solid var(--line); padding-left: 20px; }
+@media (max-width: 860px) { [data-theme="a"] .now-grid > .box + .box, [data-theme="a"] .two > .box + .box { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); } }
+
+/* ── B. 스위스 타일형: 흰 바탕 · 회색 네모 타일 · 초록 한 색 · 얇고 큰 숫자 ────── */
+[data-theme="b"] { --bg: #FFFFFF; --card: #EEEEEC; --ink: #0E0F0E; --ink-2: #3A3C3A; --muted: #7E817E; --line: #DADAD6;
+  --accent: #6CB37D; --accent-2: #6CB37D; --track: #D9DAD6; --gap: 6px; --pad: 18px 20px 20px; --bigw: 300; --midw: 400;
+  --pt-lo: #B8BAB6; --pt-mid: #6E716D; --pt-hi: #0E0F0E; --pt-x: #E5484D; --pt-dir: #A2A5A0; --pt-out: #E5484D; --med: #3F9C57;
+  --gap-sale: #C9CBC6; --gap-jeonse: #6CB37D; }
+[data-theme="b"] .brand i { border-radius: 0; }
+[data-theme="b"] .top .srch { background: var(--card); border-color: var(--card); }
+[data-theme="b"] .head h1 { font-weight: 400; font-family: var(--num), var(--kr); font-size: 64px; letter-spacing: -0.05em; }
+[data-theme="b"] .types { gap: 6px; }
+[data-theme="b"] .types button { background: var(--card); padding: 12px 16px; min-width: 110px; }
+[data-theme="b"] .types button.on { background: var(--accent); }
+[data-theme="b"] .sec { margin-bottom: 6px; }
+[data-theme="b"] .sec-h { margin: 26px 0 8px; }
+[data-theme="b"] .sec-h h2 { font-weight: 500; font-size: 20px; }
+[data-theme="b"] .sec-h .no { color: var(--accent); }
+[data-theme="b"] .now { background: var(--accent) !important; }
+[data-theme="b"] .now .k, [data-theme="b"] .now .muted { color: rgba(14,15,14,.62); }
+[data-theme="b"] .now .big { font-size: 112px; }
+[data-theme="b"] .range .rbar { height: 56px; background: #fff; }
+[data-theme="b"] .range .rbar .fill { background: var(--accent); }
+[data-theme="b"] .range .rbar .pin { border-radius: 0; width: 3px; height: 72px; margin: -36px 0 0 -1.5px; border: 0; }
+[data-theme="b"] .range .rbar .tag { bottom: 64px; }
+[data-theme="b"] .range .rbar { margin-top: 56px; }
+[data-theme="b"] .floors .v, [data-theme="b"] .gtiles .v { font-weight: 300; font-size: 44px; }
+[data-theme="b"] .floors .box:nth-child(3) { background: #D9E9DC; }
+@media (max-width: 860px) { [data-theme="b"] .now .big { font-size: 84px; } [data-theme="b"] .head h1 { font-size: 44px; } }
+
+/* ── C. 브루탈리즘: 굵은 검정 테두리 · 딱딱한 그림자 · 라임 한 색 ───────────── */
+[data-theme="c"] { --bg: #F4F4EF; --card: #FFFFFF; --ink: #000; --ink-2: #222; --muted: #666; --line: #000;
+  --accent: #D4FF3A; --accent-2: #000; --track: #fff; --gap: 14px; --pad: 18px 20px 20px; --bigw: 800; --midw: 800;
+  --pt-lo: #A7A7A7; --pt-mid: #555; --pt-hi: #000; --pt-x: #FF3B30; --pt-dir: #888; --pt-out: #FF3B30; --med: #7B5CFF;
+  --gap-sale: #000; --gap-jeonse: #D4FF3A; }
+[data-theme="c"] .top { background: #000; color: #fff; }
+[data-theme="c"] .top nav a { color: #aaa; } [data-theme="c"] .top nav a.on { color: var(--accent); }
+[data-theme="c"] .top .srch { border: 2px solid #fff; color: #fff; }
+[data-theme="c"] .brand { color: var(--accent); text-transform: uppercase; }
+[data-theme="c"] .head h1 { font-weight: 900; font-size: 60px; }
+[data-theme="c"] .facts span { border: 2px solid #000; padding: 3px 10px; background: #fff; font-weight: 600; }
+[data-theme="c"] .types { gap: 8px; padding: 4px 4px 8px; }
+[data-theme="c"] .types button { border: 2px solid #000; background: #fff; box-shadow: 3px 3px 0 #000; }
+[data-theme="c"] .types button.on { background: var(--accent); }
+[data-theme="c"] .sec-h .no { background: #000; color: var(--accent); padding: 2px 8px; }
+[data-theme="c"] .sec-h h2 { font-weight: 900; font-size: 26px; }
+[data-theme="c"] .box { border: 2px solid #000; box-shadow: 5px 5px 0 #000; }
+[data-theme="c"] .now { background: #000 !important; color: #fff; }
+[data-theme="c"] .now .big { color: var(--accent); }
+[data-theme="c"] .now .k, [data-theme="c"] .now .muted { color: #aaa; }
+[data-theme="c"] .range .rbar { height: 22px; border: 2px solid #000; }
+[data-theme="c"] .range .rbar .fill { background: var(--accent); border-right: 2px solid #000; }
+[data-theme="c"] .range .rbar .pin { border-radius: 0; background: #000; border: 0; width: 6px; height: 34px; margin: -17px 0 0 -3px; }
+[data-theme="c"] .range .rbar .tag { bottom: 28px; background: #000; color: var(--accent); padding: 2px 8px; }
+[data-theme="c"] .last3 .r, [data-theme="c"] .lst .r { border-top: 2px solid #000; }
+[data-theme="c"] .floors .box:nth-child(3) { background: var(--accent); }
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap bar">
+  <a class="brand" href="#"><i></i>집값레이더</a>
+  <nav><a href="#">홈</a><a href="#">예산별</a><a href="#">신고가</a><a href="#">랭킹</a><a href="#" class="on">아파트</a><a href="#">오피스텔</a><a href="#">빌라</a><a href="#">재개발</a></nav>
+  <span class="srch">단지·지역 검색</span>
+</div></header>
+<main class="wrap">
+<section class="head">
+  <div class="crumbs">전국 › {{ r.sido_short }} › {{ r.name }} › {{ cx.umd }}</div>
+  <h1>{{ cx.name }}</h1>
+  <div class="facts"><span>아파트</span><span><b>{{ cx.build_year }}</b>년 준공 · {{ age(cx.build_year, today.year) }}</span>
+    <span>3년 매매 <b>{{ cx.sales|rejectattr('cancelled')|list|length }}</b>건</span><span>전월세 <b>{{ cx.rents|length }}</b>건</span><span>거래된 최고층 <b>{{ types[0].top_floor }}</b>층</span></div>
+</section>
+
+<nav class="types" id="types">
+{% for t in types %}<button data-k="{{ t.key }}" class="{{ 'on' if t.key == main_key }}"><b>{{ t.area|ptype }} · {{ t.key }}㎡</b><span>매매 {{ t.n_all }}건</span></button>{% endfor %}
+</nav>
+
+{% for t in types %}
+<div class="pane" data-k="{{ t.key }}" {% if t.key != main_key %}hidden{% endif %}>
+<section class="sec">
+  <div class="sec-h"><span class="no">01</span><h2>지금 얼마?</h2><span class="sub">전용 {{ t.area|sqm }} · 해제·직거래·확인 필요 거래 제외</span></div>
+  <div class="now-grid">
+    <div class="box now"><div class="k">지금 시세 · {{ t.now_basis }}</div>
+      <div class="big">{% set b = bigsplit(t.now) %}{{ b[0] }}<small>{{ b[1] }}</small></div>
+      <div class="basis muted">{{ t.now_n }}건 기준 · 호가가 아니라 실제 계약된 값</div></div>
+    <div class="box range"><div class="k">3년 동안의 가격 범위에서 지금 위치</div>
+      {% set pos = (t.pos or 0) * 100 %}
+      <div class="rbar"><div class="fill" style="width:{{ '%.1f'|format(pos) }}%"></div><div class="pin" style="left:{{ '%.1f'|format(pos) }}%"></div>
+        <div class="tag" style="left:{{ '%.1f'|format([[pos, 12]|max, 88]|min) }}%">지금 {{ t.now|eok }}</div></div>
+      <div class="ends"><div><span class="muted">최저</span><b>{{ t.lo.price|eok }}</b><span class="muted">{{ t.lo.ymd|date }}</span></div>
+        <div><span class="muted">최고</span><b>{{ t.hi.price|eok }}</b><span class="muted">{{ t.hi.ymd|date }}</span></div></div>
+      <div class="say">최고가보다 <b class="{{ t.from_hi|delta }}">{{ t.from_hi|pct }}</b>, 최저가보다 <b class="{{ t.from_lo|delta }}">{{ t.from_lo|pct }}</b></div></div>
+    <div class="box last3"><div class="k">최근 계약 3건</div>
+      {% for s in t.last3 %}<div class="r"><span>{{ s.ymd|date }} · {{ s.floor }}층</span><b>{{ s.price|eok }}</b></div>{% endfor %}</div>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="sec-h"><span class="no">02</span><h2>모든 거래</h2><span class="sub">점 하나가 계약 한 건 · 층이 높을수록 진하게 · 선은 달마다 중위값</span></div>
+  <div class="box">{{ t.scatter|safe }}
+    <div class="legend"><span><i style="background:var(--pt-lo)"></i>저층</span><span><i style="background:var(--pt-mid)"></i>중층</span><span><i style="background:var(--pt-hi)"></i>고층</span>
+      <span><i class="x"></i>해제</span><span><i class="dir"></i>직거래</span><span><i class="out"></i>확인 필요</span><span><span class="ml"></span>월 중위</span></div></div>
+</section>
+
+<section class="sec">
+  <div class="sec-h"><span class="no">03</span><h2>층에 따라 얼마나 다를까</h2><span class="sub">최근 2년 · 거래된 최고층({{ t.top_floor }}층)을 3등분</span></div>
+  <div class="floors">
+  {% for f in t.floors %}<div class="box"><div class="k">{{ f.label }} · {{ f.n }}건</div><div class="v">{{ f.median|eok }}</div>
+    <div class="d">{% if f.vs_mid is not none %}중층보다 <b class="{{ f.vs_mid|delta }}">{{ f.vs_mid|pct }}</b>{% elif f.lv == 'mid' %}<span class="muted">기준</span>{% else %}<span class="muted">거래가 적어 비교 생략</span>{% endif %}</div></div>{% endfor %}
+  </div>
+</section>
+
+<section class="sec">
+  <div class="sec-h"><span class="no">04</span><h2>전세와 갭</h2><span class="sub">최근 12개월 · 갱신 계약은 5% 상한이 있어 신규 계약으로 따로 본다</span></div>
+  <div class="gapg">
+    <div class="gtiles">
+      <div class="box"><div class="k">신규 전세</div><div class="v">{{ t.jeonse_new|eok }}</div><div class="s">{{ t.jeonse_n[0] }}건 중위</div></div>
+      <div class="box"><div class="k">갱신 전세</div><div class="v">{{ t.jeonse_renew|eok }}</div><div class="s">{{ t.jeonse_n[1] }}건 중위</div></div>
+      <div class="box"><div class="k">갭 (매매 − 신규 전세)</div><div class="v">{{ t.gap|eok }}</div><div class="s">집 한 채에 실제로 필요한 돈</div></div>
+      <div class="box"><div class="k">전세가율</div><div class="v">{{ t.jratio_new|ratio }}</div><div class="s">신규 전세 ÷ 매매</div></div>
+    </div>
+    <div class="box"><div class="k">분기별 매매(전체 막대)와 신규 전세(칠한 부분) — 위에 남는 만큼이 갭</div>
+      <div class="wide">{{ t.gap_chart|safe }}</div><div class="narrow">{{ t.gap_chart_n|safe }}</div></div>
+  </div>
+</section>
+<section class="sec">
+  <div class="sec-h"><span class="no">05</span><h2>이 돈이면 여기도</h2><span class="sub">{{ r.name }} 같은 평형대에서 최근 거래가가 지금 시세 ±12% 안인 단지</span></div>
+  <div class="box lst">{% for s in t.sim %}<a class="r" href="#"><div><div class="t">{{ s.cx.name }}</div><div class="s">{{ s.cx.umd }} · {{ s.cx.build_year }}년 · {{ s.deal.area|ptype }} · {{ s.deal.ymd|date }}</div></div>
+    <div class="p">{{ s.deal.price|eok }}<small class="{{ s.diff|delta }}">{{ s.diff|pct }}</small></div></a>
+    {% else %}<div class="empty">비슷한 가격대 단지가 없어요</div>{% endfor %}</div>
+</section>
+</div>
+{% endfor %}
+
+<section class="sec">
+  <div class="sec-h"><span class="no">06</span><h2>신고가 찍고 해제된 거래</h2><span class="sub">계약 당시 같은 면적 최고가를 넘겼다가 나중에 해제 — 집값 띄우기를 의심해 볼 신호</span></div>
+  <div class="two">
+    <div class="box lst">{% for h in ch[:6] %}<div class="r"><div><div class="t">{{ h.deal.ymd|date }} · {{ h.deal.area|ptype }} · {{ h.deal.floor }}층</div><div class="s">직전 최고 {{ h.prev|eok }}</div></div>
+      <div class="p" style="text-decoration:line-through">{{ h.deal.price|eok }}<small class="up">{{ h.up|pct }}</small></div></div>
+      {% else %}<div class="empty">이 단지에는 없어요. 최고가를 찍었다가 해제된 거래가 없습니다.</div>{% endfor %}</div>
+    <div class="box"><div class="k">왜 보나</div><p style="margin-top:8px;font-size:14px;line-height:1.7">높은 값에 계약을 신고해 두면 포털 시세와 호가가 따라 올라갑니다. 그 뒤 계약을 해제하면 최고가 기록만 남습니다. 국토부 자료에는 해제 여부가 나오므로, 여기서는 해제된 최고가를 따로 모아 보여 줍니다.</p></div>
+  </div>
+</section>
+
+<p class="foot">국토교통부 실거래가 공개자료(계약일 기준). 시안 페이지 — 화면 오른쪽 아래에서 A·B·C 디자인을 바꿔 볼 수 있습니다.</p>
+</main>
+<div class="switch" id="switch"><button data-t="a" class="on">A 리포트</button><button data-t="b">B 스위스 타일</button><button data-t="c">C 브루탈</button></div>
+<script>
+document.getElementById('types').addEventListener('click', function(e){ var b=e.target.closest('button'); if(!b) return;
+  this.querySelectorAll('button').forEach(function(x){x.classList.toggle('on', x===b)});
+  document.querySelectorAll('.pane').forEach(function(p){p.hidden = p.dataset.k !== b.dataset.k}); });
+var sw=document.getElementById('switch');
+function setT(t){ document.documentElement.dataset.theme=t; sw.querySelectorAll('button').forEach(function(x){x.classList.toggle('on', x.dataset.t===t)}); try{localStorage.setItem('proto-theme',t)}catch(e){} }
+sw.addEventListener('click', function(e){ var b=e.target.closest('button'); if(b) setT(b.dataset.t) });
+var q=location.hash.slice(1); setT(/^[abc]$/.test(q) ? q : ((function(){try{return localStorage.getItem('proto-theme')}catch(e){}})() || 'a'));
+</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{% extends 'page_base.html' %}
+{% block title %}광고·제휴 문의 — {{ site.brand }}{% endblock %}
+{% block crumb %}광고·제휴 문의{% endblock %}
+{% block h1 %}광고·제휴 <span class="soft">문의</span>{% endblock %}
+{% block body %}
+<p>{{ site.brand }}는 전국 아파트·오피스텔·빌라 실거래가와 재개발 정보를 찾는 실수요자가 방문하는 사이트입니다.</p>
+<h2>제휴 방식</h2>
+<ul>
+<li><b>분양 광고</b> — 입주자모집공고를 바탕으로 한 분양 정보 소개(광고 표시)</li>
+<li><b>배너</b> — 지역·단지 페이지의 배너 자리</li>
+<li><b>협찬 콘텐츠</b> — 프롭테크·금융 서비스 소개(광고 표시)</li>
+</ul>
+<h2>받지 않는 광고</h2>
+<p>개별 매물 광고는 받지 않습니다. 중개대상물의 표시·광고는 개업공인중개사만 할 수 있습니다(공인중개사법 제18조의2). 특정 단지의 가격을 올리거나 내리도록 유도하는 콘텐츠도 받지 않습니다.</p>
+<h2>문의</h2>
+<p>{% if site.contact_email %}<a href="mailto:{{ site.contact_email }}">{{ site.contact_email }}</a>{% else %}문의 메일은 준비 중입니다.{% endif %}</p>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import icon, card_h, ad %}
+{% block title %}빌라 시세 — 동별 대지지분 평당가·실거래가 | {{ site.brand }}{% endblock %}
+{% block main %}
+<div class="page-head">
+  <div><div class="crumbs"><a href="/">전국</a> › 빌라</div><h1>빌라 시세 <span class="soft">대지지분 평당가</span></h1></div>
+  <span class="asof">{{ icon('calendar') }}{{ asof }}<span data-collected></span></span>
+</div>
+<div class="card" style="margin-bottom:16px"><p class="note" style="margin:0">대지지분 평당가 = 매매가 ÷ 대지권면적(3.3㎡). 빌라는 건물보다 땅값으로 거래되는 경우가 많아, 재개발 기대가 있는 동은 이 숫자가 먼저 움직입니다. 최근 12개월 중위값입니다.</p></div>
+{{ ad('top') }}
+<div class="grid">
+  <div class="s5 card">{{ card_h('대지지분 평당가 상위 동', '', '', 'building') }}
+    {% set m = (top|map(attribute='v')|map(attribute='land_ppp')|max) if top else 1 %}
+    {% for x in top %}<a class="rank-row" href="/v/{{ x.r.code }}/{{ x.v.umd }}/"><span class="no">{{ loop.index }}</span><span class="t">{{ x.r.name }} {{ x.v.umd }}</span><span class="v">{{ x.v.land_ppp|eok }}</span><span class="meter"><i style="width:{{ x.v.land_ppp / m * 100 }}%"></i></span></a>
+    {% else %}<div class="empty">데이터가 없어요</div>{% endfor %}</div>
+  <div class="s7 card">{{ card_h('지역별', '동을 누르면 최근 거래와 분기 흐름') }}
+    {% for (sido, name, code), vs in groups %}
+      <div class="row" style="align-items:flex-start"><span class="ico">{{ name[:1] }}</span><div class="main"><div class="t"><a href="/r/{{ code }}/">{{ sido }} {{ name }}</a></div>
+        <div class="chips" style="margin-top:8px">{% for v in vs[:14] %}<a href="/v/{{ code }}/{{ v.umd }}/">{{ v.umd }} <span class="muted">{{ v.land_ppp|eok }}</span></a>{% endfor %}</div></div></div>
+    {% else %}<div class="empty">데이터가 없어요</div>{% endfor %}</div>
+</div>
+{{ ad('bottom') }}
+{% endblock %}

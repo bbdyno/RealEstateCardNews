@@ -1,0 +1,5 @@
+{% extends 'base.html' %}
+{% block main %}
+<div class="page-head"><div><div class="crumbs"><a href="/">전국</a> › {% block crumb %}{% endblock %}</div><h1>{% block h1 %}{% endblock %}</h1></div></div>
+<div class="card prose">{% block body %}{% endblock %}</div>
+{% endblock %}

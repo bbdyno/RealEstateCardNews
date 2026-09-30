@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import icon, card_h, ad %}
+{% block title %}단지 비교 — 아파트·오피스텔 실거래가 나란히 보기 | {{ site.brand }}{% endblock %}
+{% block description %}아파트·오피스텔 단지를 최대 3곳까지 골라 최근 실거래가, 3년 내 최고가 대비, 전세가율, 월별 시세 흐름을 나란히 비교합니다.{% endblock %}
+{% block main %}
+<div class="page-head">
+  <div><div class="crumbs"><a href="/">전국</a> › 단지 비교</div><h1>단지 <span class="soft">나란히 보기</span></h1></div>
+  <span class="asof">{{ icon('calendar') }}{{ asof }}<span data-collected></span></span>
+</div>
+<div class="card" style="margin-bottom:16px">
+  <div class="search-box">{{ icon('search') }}<input id="cmp-input" type="search" placeholder="비교할 단지 이름 (최대 3곳)" autocomplete="off"><div class="search-results" id="cmp-results"></div></div>
+  <div class="chips" id="cmp-chips" style="margin-top:12px"></div>
+</div>
+<div id="cmp-empty" class="card"><div class="empty">단지를 검색해 담으면 여기에서 나란히 비교합니다. 단지 페이지의 '비교에 담기'로도 시작할 수 있어요.</div></div>
+<div id="cmp-body" hidden>
+  <div class="grid">
+    <div class="s12 card">{{ card_h('월별 중위 매매가', '단지마다 거래가 가장 많은 평형대 기준 · 최근 24개월', '', 'trend') }}
+      <div id="cmp-chart"></div><div class="legend" id="cmp-legend"></div></div>
+  </div>
+  <div class="card"><div class="tbl-wrap"><table class="tbl" id="cmp-table"></table></div>
+    <p class="note">최근 거래가·최고가는 주력 평형과 다를 수 있는 가장 최근 거래 기준입니다(최고가는 그 거래와 같은 면적). 전세가율은 최근 12개월 같은 평형대 전세÷매매 중위.</p></div>
+</div>
+{{ ad('bottom') }}
+<script>
+(function(){
+  var MAX=3, state=[], cache={}, idx=null;
+  var COLORS=['var(--g-700)','var(--g-300)','var(--ink-2)'], DASH=['','','6 5'];
+  var $=function(id){return document.getElementById(id)};
+  function eok(v){ if(v==null) return '–'; if(v>=10000){ return (v/10000).toFixed(2).replace(/\.?0+$/,'')+'억' } return Math.round(v).toLocaleString()+'만' }
+  function pct(v,sign){ if(v==null) return '–'; var s=(v*100).toFixed(1)+'%'; return (sign!==false&&v>0?'+':'')+s.replace('-','−') }
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]}) }
+  function region(sgg){ return cache[sgg] || (cache[sgg]=fetch('/data/'+sgg+'.json').then(function(r){return r.json()})) }
+  function add(sgg,cid){
+    if(state.length>=MAX||state.some(function(x){return x.cid===cid})) return Promise.resolve();
+    return region(sgg).then(function(R){ var d=R.cx[cid]; if(!d) return; state.push({sgg:sgg,cid:cid,d:d,months:R.months}); render(); });
+  }
+  function remove(cid){ state=state.filter(function(x){return x.cid!==cid}); render(); }
+  function chart(){
+    var W=Math.max(300,$('cmp-chart').clientWidth||600),H=W<500?240:280,T=24,B=26,L=52,ms=state[0].months,n=ms.length,all=[];   // 실제 폭으로 그려 글자 크기가 화면과 같게
+    state.forEach(function(x){ x.d.s.forEach(function(v){ if(v) all.push(v) }) });
+    if(all.length<2) return '<div class="empty">그릴 만큼 거래가 없어요</div>';
+    var lo=Math.min.apply(null,all),hi=Math.max.apply(null,all),pad=(hi-lo)*0.15||hi*0.1; lo-=pad; hi+=pad;
+    var sx=function(i){return L+(W-L-8)*i/(n-1)}, sy=function(v){return T+(H-T-B)*(1-(v-lo)/(hi-lo))};
+    var out=['<svg class="chart" viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'">'];
+    for(var g=0;g<4;g++){ var y=T+(H-T-B)*g/3, val=hi-(hi-lo)*g/3;
+      out.push('<line x1="'+L+'" x2="'+W+'" y1="'+y+'" y2="'+y+'" class="grid"/><text x="'+(L-6)+'" y="'+(y+4)+'" text-anchor="end" class="axis">'+eok(val)+'</text>') }
+    var every=W<500?8:6; ms.forEach(function(m,i){ if(i%every===0||i===n-1) out.push('<text x="'+sx(i)+'" y="'+(H-6)+'" text-anchor="middle" class="axis">'+(+m.slice(5))+'월</text>') });
+    state.forEach(function(x,k){ var d='',last=null;
+      x.d.s.forEach(function(v,i){ if(!v) return; d+=(d?'L':'M')+sx(i).toFixed(1)+','+sy(v).toFixed(1); last=[sx(i),sy(v)] });
+      out.push('<path d="'+d+'" fill="none" stroke="'+COLORS[k]+'" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"'+(DASH[k]?' stroke-dasharray="'+DASH[k]+'"':'')+'/>');
+      if(last) out.push('<circle cx="'+last[0]+'" cy="'+last[1]+'" r="5" fill="'+COLORS[k]+'" stroke="#fff" stroke-width="2.5"/>'); });
+    out.push('</svg>'); return out.join('');
+  }
+  function row(label,f){ return '<tr><th>'+label+'</th>'+state.map(function(x){return '<td class="r">'+f(x.d)+'</td>'}).join('')+'</tr>' }
+  function render(){
+    $('cmp-chips').innerHTML=state.map(function(x,k){ return '<a href="#" data-rm="'+esc(x.cid)+'" style="border-left:4px solid '+COLORS[k]+'">'+esc(x.d.n)+' ✕</a>' }).join('');
+    $('cmp-empty').hidden=state.length>0; $('cmp-body').hidden=state.length===0;
+    history.replaceState(null,'',state.length?'?c='+state.map(function(x){return x.sgg+':'+x.cid}).join(','):location.pathname);
+    if(!state.length) return;
+    $('cmp-chart').innerHTML=chart();
+    $('cmp-legend').innerHTML=state.map(function(x,k){ return '<span><i style="background:'+COLORS[k]+'"></i>'+esc(x.d.n)+' · '+esc(x.d.b)+'</span>' }).join('');
+    var y=new Date().getFullYear();
+    $('cmp-table').innerHTML='<thead><tr><th></th>'+state.map(function(x){ return '<th class="r"><a href="/'+(x.d.k==='apt'?'c':'o')+'/'+esc(x.cid)+'/">'+esc(x.d.n)+'</a></th>' }).join('')+'</tr></thead><tbody>'+
+      row('동',function(d){return esc(d.u)})+row('연차',function(d){return d.y?(y-d.y+1)+'년차':'–'})+
+      row('주력 평형',function(d){return esc(d.b)})+row('최근 거래',function(d){return '<b>'+eok(d.p)+'</b> <span class="muted">'+d.d.slice(2).replace(/-/g,'.')+'</span>'})+
+      row('3년 내 최고가',function(d){return eok(d.pk)})+row('최고가 대비',function(d){return '<span class="'+(d.dr<-0.0005?'down':'muted')+'">'+pct(d.dr)+'</span>'})+
+      row('전세가율',function(d){return d.j?Math.round(d.j*100)+'%':'–'})+
+      (state.some(function(x){return x.d.yl})?row('월세 수익률',function(d){return d.yl?pct(d.yl,false):'–'}):'')+'</tbody>';
+  }
+  $('cmp-chips').addEventListener('click',function(e){ var a=e.target.closest('[data-rm]'); if(a){ e.preventDefault(); remove(a.dataset.rm) } });
+  var inp=$('cmp-input'), box=$('cmp-results');
+  function load(){ return idx?Promise.resolve(idx):fetch('/search.json').then(function(r){return r.json()}).then(function(d){ idx=d.filter(function(e){return e[3]&&/^\/[co]\//.test(e[2])}); return idx }) }
+  inp.addEventListener('focus',load);
+  inp.addEventListener('input',function(){ var q=inp.value.replace(/\s+/g,'').toLowerCase(); if(!q){box.classList.remove('open');return}
+    load().then(function(d){ var hits=d.filter(function(e){return e[0].replace(/\s+/g,'').toLowerCase().indexOf(q)>=0}).slice(0,10);
+      box.innerHTML=hits.length?hits.map(function(e){return '<a href="#" data-sgg="'+e[3]+'" data-cid="'+esc(e[2].split('/')[2])+'"><span>'+esc(e[0])+'</span><span class="s">'+esc(e[1])+'</span></a>'}).join(''):'<div class="empty">찾는 단지가 없어요</div>';
+      box.classList.add('open') }) });
+  box.addEventListener('click',function(e){ var a=e.target.closest('a[data-cid]'); if(!a) return; e.preventDefault(); add(a.dataset.sgg,a.dataset.cid); inp.value=''; box.classList.remove('open') });
+  var rt; window.addEventListener('resize',function(){ clearTimeout(rt); rt=setTimeout(function(){ if(state.length) $('cmp-chart').innerHTML=chart() },150) });
+  var q=new URLSearchParams(location.search).get('c');
+  if(q) q.split(',').slice(0,MAX).reduce(function(p,pair){ var s=pair.split(':'); return p.then(function(){ return add(s[0],s[1]) }) }, Promise.resolve());
+})();
+</script>
+{% endblock %}

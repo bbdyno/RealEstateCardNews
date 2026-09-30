@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import icon, card_h, ad %}
+{% block title %}오피스텔 수익률 — 월세 수익률 높은 오피스텔·지역 | {{ site.brand }}{% endblock %}
+{% block main %}
+<div class="page-head">
+  <div><div class="crumbs"><a href="/">전국</a> › 오피스텔</div><h1>오피스텔 <span class="soft">월세 수익률</span></h1></div>
+  <span class="asof">{{ icon('calendar') }}{{ asof }}<span data-collected></span></span>
+</div>
+<div class="card" style="margin-bottom:16px"><p class="note" style="margin:0">수익률 = 연 월세(중위 월세 × 12) ÷ (매매가 중위 − 월세 보증금 중위). 최근 12개월, 같은 오피스텔 안의 거래만으로 계산합니다. 세금·관리비·공실은 반영하지 않은 표면 수익률입니다.</p></div>
+{{ ad('top') }}
+<div class="grid">
+  <div class="s5 card">{{ card_h('시군구 중위 수익률', '', '', 'coin') }}
+    {% set top = (regions|map(attribute='offi_yield')|max) if regions else 1 %}
+    {% for s in regions %}<a class="rank-row" href="/r/{{ s.r.code }}/"><span class="no">{{ loop.index }}</span><span class="t">{{ s.r.sido_short }} {{ s.r.name }}</span><span class="v">{{ s.offi_yield|pct(False) }}</span><span class="meter"><i style="width:{{ s.offi_yield / top * 100 }}%"></i></span></a>
+    {% else %}<div class="empty">데이터가 없어요</div>{% endfor %}</div>
+  <div class="s7 card">{{ card_h('오피스텔', '수익률 높은 순') }}
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>오피스텔</th><th>지역</th><th class="r">매매 중위</th><th class="r">월세/보증금</th><th class="r">수익률</th></tr></thead><tbody>
+    {% for o in offi %}<tr><td><a href="{{ cx_url(o) }}">{{ o.name }}</a></td><td class="muted">{{ region_name(o.sgg) }} {{ o.umd }}</td><td class="r">{{ o.last_sale.price|eok }}</td>
+      <td class="r">{{ o.median_rent.rent|num }}만 / {{ o.median_rent.deposit|eok }}</td><td class="r"><b>{{ o.yield_|pct(False) }}</b></td></tr>
+    {% else %}<tr><td colspan="5" class="empty">계산할 만큼 거래가 없어요</td></tr>{% endfor %}
+    </tbody></table></div></div>
+</div>
+{{ ad('bottom') }}
+{% endblock %}

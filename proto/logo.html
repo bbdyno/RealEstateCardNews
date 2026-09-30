@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>집값레이더 아이콘 시안</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+body { margin: 0; background: #F2F3F5; color: #15171A; font-family: "Pretendard Variable", Pretendard, sans-serif; letter-spacing: -0.02em; }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 28px 16px 60px; }
+h1 { font-size: 26px; margin: 0 0 4px; } .lead { color: #6B7280; margin: 0 0 24px; font-size: 14px; }
+.opt { background: #fff; border-radius: 26px; padding: 22px; margin-bottom: 16px; display: grid; grid-template-columns: 220px 1fr; gap: 24px; align-items: center; }
+.opt h2 { font-size: 20px; margin: 0 0 6px; } .opt p { margin: 0 0 16px; color: #4E5561; font-size: 14px; line-height: 1.55; }
+.big svg { width: 220px; height: 220px; display: block; filter: drop-shadow(0 14px 24px rgba(0,0,0,.14)); border-radius: 50px; }
+.uses { display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-end; }
+.use { display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 12px; color: #6B7280; font-weight: 600; }
+.app svg { width: 64px; height: 64px; border-radius: 15px; display: block; }
+.ig { width: 76px; height: 76px; border-radius: 50%; padding: 3px; background: conic-gradient(#F9CE34, #EE2A7B, #6228D7, #F9CE34); }
+.ig .in { width: 100%; height: 100%; border-radius: 50%; border: 3px solid #fff; overflow: hidden; }
+.ig svg { width: 100%; height: 100%; display: block; }
+.tab { display: flex; align-items: center; gap: 7px; background: #E5E7EB; border-radius: 10px 10px 0 0; padding: 8px 14px; font-size: 12.5px; color: #15171A; }
+.tab svg { width: 16px; height: 16px; border-radius: 4px; display: block; }
+.head { display: flex; align-items: center; gap: 9px; font-weight: 800; font-size: 19px; background: #F2F3F5; padding: 10px 14px; border-radius: 14px; }
+.head svg { width: 34px; height: 34px; border-radius: 10px; display: block; }
+.dark .head { background: #0C0D0F; color: #fff; }
+@media (max-width: 720px) { .opt { grid-template-columns: 1fr; } .big svg { width: 160px; height: 160px; border-radius: 36px; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <!-- A. 레이더 스코프 위의 집: 어두운 판, 동심원, 쓸고 지나가는 빛, 지붕 꼭대기의 신호점 -->
+    <radialGradient id="a-bg" cx="30%" cy="25%" r="90%"><stop offset="0" stop-color="#2A2E35"/><stop offset="1" stop-color="#0F1114"/></radialGradient>
+    <linearGradient id="a-sweep" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#D4FA4B" stop-opacity="0"/><stop offset="1" stop-color="#D4FA4B" stop-opacity=".55"/></linearGradient>
+    <symbol id="logo-a" viewBox="0 0 512 512">
+      <rect width="512" height="512" rx="116" fill="url(#a-bg)"/>
+      <g fill="none" stroke="#D4FA4B" stroke-width="10">
+        <circle cx="256" cy="286" r="178" opacity=".16"/><circle cx="256" cy="286" r="122" opacity=".26"/><circle cx="256" cy="286" r="66" opacity=".4"/>
+      </g>
+      <path d="M256 286 L256 108 A178 178 0 0 1 410 197 Z" fill="url(#a-sweep)"/>
+      <path d="M150 300 L256 206 L362 300 V392 a20 20 0 0 1 -20 20 H170 a20 20 0 0 1 -20 -20 Z" fill="#fff"/>
+      <path d="M126 306 L256 190 L386 306" fill="none" stroke="#fff" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+      <rect x="226" y="336" width="60" height="76" rx="10" fill="#15171A"/>
+      <circle cx="372" cy="176" r="26" fill="#D4FA4B"/><circle cx="372" cy="176" r="46" fill="none" stroke="#D4FA4B" stroke-width="8" opacity=".45"/>
+    </symbol>
+
+    <!-- B. 라임 바탕 + 집 모양 레이더: 지붕선이 곧 레이더 전파, 가운데 신호점 -->
+    <linearGradient id="b-bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E4FF6E"/><stop offset="1" stop-color="#B6EC1F"/></linearGradient>
+    <symbol id="logo-b" viewBox="0 0 512 512">
+      <rect width="512" height="512" rx="116" fill="url(#b-bg)"/>
+      <g fill="none" stroke="#15171A" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M96 262 L256 128 L416 262" stroke-width="34"/>
+        <path d="M156 300 L256 216 L356 300" stroke-width="30" opacity=".55"/>
+      </g>
+      <path d="M206 404 V338 a50 50 0 0 1 100 0 V404" fill="#15171A"/>
+      <circle cx="256" cy="340" r="20" fill="#D4FA4B"/>
+      <rect x="120" y="398" width="272" height="30" rx="15" fill="#15171A"/>
+    </symbol>
+
+    <!-- C. 핀(위치) 안의 집 + 레이더 파동 — 지도 앱처럼 읽히는 안 -->
+    <linearGradient id="c-bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1F2227"/><stop offset="1" stop-color="#0E0F11"/></linearGradient>
+    <linearGradient id="c-pin" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E7FF7A"/><stop offset="1" stop-color="#B9EE22"/></linearGradient>
+    <symbol id="logo-c" viewBox="0 0 512 512">
+      <rect width="512" height="512" rx="116" fill="url(#c-bg)"/>
+      <g fill="none" stroke="#D4FA4B" stroke-linecap="round">
+        <path d="M150 420 a150 44 0 0 0 212 0" stroke-width="12" opacity=".35"/>
+        <path d="M112 432 a188 58 0 0 0 288 0" stroke-width="10" opacity=".18"/>
+      </g>
+      <path d="M256 430 C 196 356 142 300 142 226 a114 114 0 0 1 228 0 C 370 300 316 356 256 430 Z" fill="url(#c-pin)"/>
+      <path d="M204 238 L256 194 L308 238 V286 a10 10 0 0 1 -10 10 H214 a10 10 0 0 1 -10 -10 Z" fill="#15171A"/>
+      <rect x="244" y="258" width="24" height="38" rx="5" fill="#D4FA4B"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <h1>집값레이더 서비스 아이콘 시안</h1>
+  <p class="lead">세 안 모두 직접 그린 SVG입니다. 앱 아이콘, 인스타 프로필, 브라우저 탭, 사이트 머리글에 넣었을 때 모습을 함께 보여 드립니다.</p>
+
+  <div class="opt"><div class="big"><svg viewBox="0 0 512 512"><use href="#logo-a"/></svg></div><div><h2>A. 레이더 스코프 위의 집</h2><p>어두운 판 위에 레이더 동심원과 훑고 지나가는 빛이 있고, 가운데 흰 집, 오른쪽 위에 라임색 신호점이 있습니다. 이름을 그대로 그림으로 옮긴 안이라 설명이 필요 없습니다.</p>
+    <div class="uses">
+      <div class="use"><div class="app"><svg viewBox="0 0 512 512"><use href="#logo-a"/></svg></div>앱 아이콘</div>
+      <div class="use"><div class="ig"><div class="in"><svg viewBox="0 0 512 512"><use href="#logo-a"/></svg></div></div>인스타 프로필</div>
+      <div class="use"><div class="tab"><svg viewBox="0 0 512 512"><use href="#logo-a"/></svg>헬리오시티 실거래가</div>브라우저 탭</div>
+      <div class="use"><div class="head"><svg viewBox="0 0 512 512"><use href="#logo-a"/></svg>집값레이더</div>머리글</div>
+      <div class="use dark"><div class="head"><svg viewBox="0 0 512 512"><use href="#logo-a"/></svg>집값레이더</div>다크 모드</div>
+    </div></div></div>
+  <div class="opt"><div class="big"><svg viewBox="0 0 512 512"><use href="#logo-b"/></svg></div><div><h2>B. 라임 바탕, 지붕이 전파</h2><p>지붕선 두 겹이 레이더 전파처럼 퍼집니다. 밝은 라임 바탕이라 인스타 피드와 홈 화면에서 가장 잘 띕니다.</p>
+    <div class="uses">
+      <div class="use"><div class="app"><svg viewBox="0 0 512 512"><use href="#logo-b"/></svg></div>앱 아이콘</div>
+      <div class="use"><div class="ig"><div class="in"><svg viewBox="0 0 512 512"><use href="#logo-b"/></svg></div></div>인스타 프로필</div>
+      <div class="use"><div class="tab"><svg viewBox="0 0 512 512"><use href="#logo-b"/></svg>헬리오시티 실거래가</div>브라우저 탭</div>
+      <div class="use"><div class="head"><svg viewBox="0 0 512 512"><use href="#logo-b"/></svg>집값레이더</div>머리글</div>
+      <div class="use dark"><div class="head"><svg viewBox="0 0 512 512"><use href="#logo-b"/></svg>집값레이더</div>다크 모드</div>
+    </div></div></div>
+  <div class="opt"><div class="big"><svg viewBox="0 0 512 512"><use href="#logo-c"/></svg></div><div><h2>C. 위치 핀 안의 집</h2><p>지도 핀 안에 집이 들어 있고, 바닥에서 파동이 퍼집니다. 지역·단지를 찾는 서비스라는 게 바로 읽힙니다.</p>
+    <div class="uses">
+      <div class="use"><div class="app"><svg viewBox="0 0 512 512"><use href="#logo-c"/></svg></div>앱 아이콘</div>
+      <div class="use"><div class="ig"><div class="in"><svg viewBox="0 0 512 512"><use href="#logo-c"/></svg></div></div>인스타 프로필</div>
+      <div class="use"><div class="tab"><svg viewBox="0 0 512 512"><use href="#logo-c"/></svg>헬리오시티 실거래가</div>브라우저 탭</div>
+      <div class="use"><div class="head"><svg viewBox="0 0 512 512"><use href="#logo-c"/></svg>집값레이더</div>머리글</div>
+      <div class="use dark"><div class="head"><svg viewBox="0 0 512 512"><use href="#logo-c"/></svg>집값레이더</div>다크 모드</div>
+    </div></div></div>
+
+</div>
+</body>
+</html>

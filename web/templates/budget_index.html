@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import icon, card_h, ad %}
+{% block title %}예산별 아파트 — 시도·억대별 실거래 단지 목록 | {{ site.brand }}{% endblock %}
+{% block main %}
+<div class="page-head">
+  <div><div class="crumbs"><a href="/">전국</a> › 예산별</div><h1>내 예산으로 <span class="soft">어디까지?</span></h1></div>
+  <span class="asof">{{ icon('calendar') }}{{ asof }}<span data-collected></span></span>
+</div>
+<div class="grid">
+{% for sc, name, eoks in table %}
+  <div class="s6 card">{{ card_h(name, '최근 6개월 실거래 · 억대를 누르면 평형대별 단지 표', '/r/' ~ sc ~ '/', 'wallet') }}
+    <div class="chips">{% for e, n in eoks %}<a href="/budget/{{ sc }}/{{ e }}/">{{ eok_label(e) }} <span class="muted">{{ n }}</span></a>{% endfor %}</div></div>
+{% else %}<div class="s12 card"><div class="empty">아직 모인 거래가 없어요</div></div>{% endfor %}
+</div>
+{{ ad('bottom') }}
+{% endblock %}

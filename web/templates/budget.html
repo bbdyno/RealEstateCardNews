@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import icon, card_h, ad %}
+{% set label = eok_label(eok) %}
+{% block title %}{{ name }} {{ label }} 아파트 — 최근 실거래 기준 단지 목록 | {{ site.brand }}{% endblock %}
+{% block description %}{{ name }}에서 최근 6개월 실거래가가 {{ label }}인 아파트 단지를 평형대별로 모았습니다. 3년 내 최고가 대비 하락률, 연차, 거래일.{% endblock %}
+{% block main %}
+<div class="page-head">
+  <div><div class="crumbs"><a href="/">전국</a> › <a href="/budget/">예산별</a> › {{ name }}</div>
+  <h1>{{ name }} {{ label }} <span class="soft">아파트</span></h1></div>
+  <span class="asof">{{ icon('calendar') }}{{ asof }}<span data-collected></span></span>
+</div>
+<div class="card" style="margin-bottom:16px">
+  <div class="pills scroll-x">{% for e in eoks %}<a class="{{ 'on' if e == eok }}" href="/budget/{{ sido_code }}/{{ e }}/">{{ eok_label(e) }}</a>{% endfor %}</div>
+</div>
+{{ ad('top') }}
+<div class="card">
+  <div class="card-h"><div><h2>단지 목록</h2><div class="sub">가장 최근 매매가가 이 예산대인 단지 · 최고가 대비 하락이 큰 순</div></div>
+    <div class="pills scroll-x" data-pills="band">{% for p in panes %}<button class="{{ 'on' if loop.first }}" data-key="{{ p.band }}">{{ p.band }} {{ p.cxs|length }}</button>{% endfor %}</div></div>
+  {% for p in panes %}
+  <div data-pane="band" data-key="{{ p.band }}" {% if not loop.first %}hidden{% endif %}>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>지역</th><th>단지</th><th class="r">연차</th><th>평형</th><th class="r">최근 거래</th><th class="r">거래일</th><th class="r">3년 최고가</th><th class="r">최고가 대비</th></tr></thead><tbody>
+    {% for cx in p.cxs %}{% set s = cx.last_sale %}
+      <tr><td class="muted">{{ region_name(cx.sgg)[3:] }} {{ cx.umd }}</td><td><a href="{{ cx_url(cx) }}">{{ cx.name }}</a></td><td class="r">{{ age(cx.build_year, today_year) }}</td>
+        <td>{{ s.area|ptype }} <span class="muted">{{ s.area|sqm }}</span></td><td class="r"><b>{{ s.price|eok }}</b></td><td class="r">{{ s.ymd|date }}</td>
+        <td class="r">{{ cx.peak.price|eok }}</td><td class="r {{ cx.drop|delta }}">{{ cx.drop|pct }}</td></tr>
+    {% endfor %}</tbody></table></div>
+  </div>
+  {% endfor %}
+  <p class="note">실제로 나와 있는 매물이 아니라 국토부에 신고된 최근 거래입니다. 같은 가격에 지금 살 수 있다는 뜻은 아닙니다. 평형은 전용면적으로 어림한 공급 평형(전용률 75% 가정)입니다.</p>
+</div>
+{{ ad('bottom') }}
+{% endblock %}

@@ -1,0 +1,124 @@
+# 매일 06:00(한국 시각): DB 받기 → 국토부 수집 → DB 되올리기 → 테스트·빌드·검사 → GitHub Pages 배포
+# DB 는 릴리스 'db' 의 첨부 파일(realestate.db.zst)로 보관한다. 인증키는 저장소 Secrets 의 DATA_GO_KR_KEY.
+name: daily
+
+on:
+  schedule:
+    - cron: "0 21 * * *"          # UTC 21:00 = KST 06:00
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: "빌드가 끝나면 Pages 에 배포"
+        type: boolean
+        default: true
+      collect:
+        description: "국토부 수집을 돌린다"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write                  # 릴리스에 DB 올리기, 유지용 빈 커밋
+  pages: write
+  id-token: write
+
+concurrency:
+  group: daily
+  cancel-in-progress: false
+
+env:
+  TZ: Asia/Seoul                   # 기준월·수집 기간을 한국 날짜로 계산
+  PYTHONUNBUFFERED: "1"
+  SITE_LIMIT_MB: "950"             # GitHub Pages 사이트 한도 1GB
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    outputs:
+      deployable: ${{ steps.size.outputs.ok }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: DB 받기
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p data
+          gh release download db --pattern 'realestate.db.zst' --dir data
+          zstd -d --rm -f data/realestate.db.zst -o data/realestate.db
+          ls -la data
+
+      - name: 국토부 수집
+        if: github.event_name == 'schedule' || inputs.collect
+        env:
+          DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
+        run: python -m collector.collect
+
+      - name: DB 올리기
+        if: github.event_name == 'schedule' || inputs.collect
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sqlite3 data/realestate.db "PRAGMA wal_checkpoint(TRUNCATE);" || true
+          zstd -T0 -3 -q -f data/realestate.db -o data/realestate.db.zst
+          gh release upload db data/realestate.db.zst --clobber
+          ls -la data/realestate.db.zst
+
+      - name: 테스트
+        run: python -m pytest -q tests
+
+      - name: 샘플 데이터가 섞였으면 멈춘다
+        run: python -c "import sys; from collector import db; sys.exit('샘플(demo) 데이터가 있습니다' if db.has_demo(db.connect()) else 0)"
+
+      - name: 빌드
+        run: python -m web.build
+
+      - name: 링크·HTML 검사
+        run: |
+          python scripts/check_links.py
+          python scripts/check_html.py
+
+      - name: 용량 확인
+        id: size
+        run: |
+          mb=$(( $(du -sb dist | cut -f1) / 1048576 ))
+          files=$(find dist -type f | wc -l)
+          echo "dist ${mb}MB · 파일 ${files}개 (한도 ${SITE_LIMIT_MB}MB)"
+          if [ "$mb" -le "$SITE_LIMIT_MB" ]; then echo "ok=true" >> "$GITHUB_OUTPUT"
+          else echo "::warning::사이트가 ${mb}MB 로 GitHub Pages 한도를 넘어 배포를 건너뜁니다"; echo "ok=false" >> "$GITHUB_OUTPUT"; fi
+
+      - uses: actions/upload-pages-artifact@v3
+        if: steps.size.outputs.ok == 'true'
+        with:
+          path: dist
+
+      - name: 정기 실행 유지(60일 무활동이면 GitHub 가 끈다)
+        if: github.event_name == 'schedule'
+        run: |
+          age=$(( ( $(date +%s) - $(git log -1 --format=%ct) ) / 86400 ))
+          if [ "$age" -ge 45 ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit --allow-empty -m "chore: 정기 실행 유지"
+            git push
+          fi
+
+  deploy:
+    needs: build
+    if: needs.build.outputs.deployable == 'true' && (github.event_name == 'schedule' || inputs.deploy)
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

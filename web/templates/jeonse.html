@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import icon, card_h, ad %}
+{% block title %}전세가율 — 매매가 대비 전세가 비율 높은 지역·단지 | {{ site.brand }}{% endblock %}
+{% block main %}
+<div class="page-head">
+  <div><div class="crumbs"><a href="/">전국</a> › <a href="/rank/">랭킹</a> › 전세가율</div><h1>전세가율 <span class="soft">매매 대비 전세</span></h1></div>
+  <span class="asof">{{ icon('calendar') }}{{ asof }}<span data-collected></span></span>
+</div>
+<div class="card" style="margin-bottom:16px"><p class="note" style="margin:0">전세가율 = 같은 단지·같은 평형대의 최근 12개월 전세 보증금 중위 ÷ 매매가 중위. 높을수록 매매가가 내려갈 때 보증금을 돌려받기 어려워질 수 있습니다. 계약 전 등기부(선순위 채권)와 보증보험 가입 가능 여부를 확인하세요.</p></div>
+<div class="grid">
+  <div class="s5 card">{{ card_h('시군구', '아파트') }}
+    {% for s in regions %}<a class="rank-row" href="/r/{{ s.r.code }}/"><span class="no">{{ loop.index }}</span><span class="t">{{ s.r.sido_short }} {{ s.r.name }}</span><span class="v">{{ s.st.jeonse_ratio|ratio }}</span><span class="meter"><i style="width:{{ s.st.jeonse_ratio * 100 }}%"></i></span></a>
+    {% else %}<div class="empty">데이터가 없어요</div>{% endfor %}</div>
+  <div class="s7 card">{{ card_h('단지', '전세가율 높은 순') }}
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>단지</th><th>지역</th><th class="r">최근 매매</th><th class="r">전세가율</th></tr></thead><tbody>
+    {% for cx in cxs %}<tr><td><a href="{{ cx_url(cx) }}">{{ cx.name }}</a></td><td class="muted">{{ region_name(cx.sgg) }} {{ cx.umd }}</td><td class="r">{{ cx.last_sale.price|eok if cx.last_sale else '–' }}</td><td class="r"><b>{{ cx.jeonse_ratio|ratio }}</b></td></tr>{% endfor %}
+    </tbody></table></div></div>
+</div>
+{% if villa_high %}
+<div class="card">{{ card_h('빌라 — 전세가율 80% 이상 건물', '같은 건물의 최근 12개월 전세 중위 ÷ 매매 중위 · 참고용') }}
+  <div class="tbl-wrap"><table class="tbl"><thead><tr><th>지역</th><th>건물</th><th class="r">전세가율</th></tr></thead><tbody>
+  {% for r, umd, h in villa_high %}<tr><td><a href="/v/{{ r.code }}/{{ umd }}/">{{ r.name }} {{ umd }}</a></td><td>{{ h.name or '–' }} <span class="muted">{{ h.jibun }}</span></td><td class="r"><span class="chip warn">{{ h.ratio|ratio }}</span></td></tr>{% endfor %}
+  </tbody></table></div></div>
+{% endif %}
+{{ ad('bottom') }}
+{% endblock %}

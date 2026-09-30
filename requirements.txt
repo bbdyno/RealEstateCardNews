@@ -1,0 +1,7 @@
+httpx
+jinja2
+pyyaml
+python-dotenv
+pytest
+# 선택: 재개발 XLSX 파일을 읽을 때
+# openpyxl

@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import icon, card_h, ad %}
+{% block title %}아파트 랭킹 — 시군구 거래량·평당가·상승률·전세가율 순위 | {{ site.brand }}{% endblock %}
+{% macro rank(items, key, fmt_fn, sub='', link=True) -%}
+  {% set top = (items|map(attribute=key)|map('abs')|max) if items else 1 %}
+  {% for s in items %}{% set val = s[key] %}
+  <a class="rank-row" href="/r/{{ s.r.code }}/"><span class="no">{{ loop.index }}</span><span class="t">{{ s.r.sido_short }} {{ s.r.name }}</span>
+    <span class="v">{{ fmt_fn(val) }}</span><span class="meter"><i style="width:{{ (val|abs / top * 100) if top else 0 }}%"></i></span></a>
+  {% else %}<div class="empty">데이터가 없어요</div>{% endfor %}
+{%- endmacro %}
+{% block main %}
+<div class="page-head">
+  <div><div class="crumbs"><a href="/">전국</a> › 랭킹</div><h1>시군구 랭킹 <span class="soft">{{ base|month_long }}</span></h1></div>
+  <span class="asof">{{ icon('calendar') }}{{ asof }}<span data-collected></span></span>
+</div>
+{% set cnt = by_count|map(attribute='st')|list %}
+<div class="grid">
+  <div class="s6 card">{{ card_h('거래량', '기준월 아파트 매매 건수', '', 'bars') }}
+    {% set items = [] %}{% for s in by_count %}{% set _ = items.append({'r': s.r, 'v': s.st.count_base}) %}{% endfor %}
+    {{ rank(items, 'v', num) }}</div>
+  <div class="s6 card">{{ card_h('거래량 증가', '전년 같은 달 대비', '', 'trend') }}
+    {% set items = [] %}{% for s in by_yoy %}{% set _ = items.append({'r': s.r, 'v': s.st.count_base / s.st.count_yoy - 1}) %}{% endfor %}
+    {{ rank(items, 'v', pct) }}</div>
+</div>
+{{ ad('top') }}
+<div class="grid">
+  <div class="s6 card">{{ card_h('평당가 상위', '최근 3개월 중위 · 전용 3.3㎡당', '', 'coin') }}
+    {% set items = [] %}{% for s in by_ppp %}{% set _ = items.append({'r': s.r, 'v': s.st.median_ppp}) %}{% endfor %}
+    {{ rank(items, 'v', eok) }}</div>
+  <div class="s6 card">{{ card_h('전세가율 상위', '단지별 전세÷매매 중위의 중위', '/jeonse/', 'percent') }}
+    {% set items = [] %}{% for s in by_jeonse %}{% set _ = items.append({'r': s.r, 'v': s.st.jeonse_ratio}) %}{% endfor %}
+    {{ rank(items, 'v', ratio) }}</div>
+</div>
+<div class="grid">
+  <div class="s6 card">{{ card_h('평당가 상승', '직전 3개월 대비', '', 'trend') }}
+    {% set items = [] %}{% for s in by_up %}{% set _ = items.append({'r': s.r, 'v': s.st.ppp_change}) %}{% endfor %}
+    {{ rank(items, 'v', pct) }}</div>
+  <div class="s6 card">{{ card_h('평당가 하락', '직전 3개월 대비', '', 'trend') }}
+    {% set items = [] %}{% for s in by_down %}{% set _ = items.append({'r': s.r, 'v': s.st.ppp_change}) %}{% endfor %}
+    {{ rank(items, 'v', pct) }}</div>
+</div>
+<p class="note">거래가 적은 지역은 몇 건만으로 크게 움직입니다. 기준월 거래가 없는 지역은 빠집니다.</p>
+{{ ad('bottom') }}
+{% endblock %}
