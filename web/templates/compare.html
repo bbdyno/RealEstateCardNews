@@ -24,7 +24,7 @@
 <script>
 (function(){
   var MAX=3, state=[], cache={}, idx=null;
-  var COLORS=['var(--g-700)','var(--g-300)','var(--ink-2)'], DASH=['','','6 5'];
+  var COLORS=['var(--ink)','var(--up)','var(--down)'], DASH=['','','6 5'];
   var $=function(id){return document.getElementById(id)};
   function eok(v){ if(v==null) return '–'; if(v>=10000){ return (v/10000).toFixed(2).replace(/\.?0+$/,'')+'억' } return Math.round(v).toLocaleString()+'만' }
   function pct(v,sign){ if(v==null) return '–'; var s=(v*100).toFixed(1)+'%'; return (sign!==false&&v>0?'+':'')+s.replace('-','−') }

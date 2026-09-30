@@ -155,3 +155,20 @@
     try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) { toKakao(g); }
   });
 })();
+
+/* 방문 통계(GA4). config analytics.ga4 가 있을 때만 gtag 가 있다 — 페이지뷰·방문자·유입 경로는 GA4 가 자동으로 모으고,
+   여기서는 무엇을 누르는지(평형 탭·그래프 전환·비슷한 단지·검색·광고/제휴 클릭)를 이벤트로 남긴다. */
+(function(){
+  function track(name, p){ if (window.gtag) { try { window.gtag('event', name, p || {}); } catch (e) {} } }
+  document.addEventListener('click', function(e){
+    var a = e.target.closest('a,button'); if (!a) return;
+    if (a.closest('[data-types]')) track('select_area_type', {area: a.dataset.k});
+    else if (a.closest('[data-seg]')) track('chart_view', {view: a.dataset.v});
+    else if (a.classList.contains('sim')) track('similar_click', {to: a.getAttribute('href')});
+    else if (a.classList.contains('sponsor')) track('sponsor_click', {url: a.href});
+    else if (a.closest('.coupang')) track('coupang_click');
+    else if (a.closest('.search-results')) track('search_select', {to: a.getAttribute('href')});
+    else if (a.closest('.cx-hero .acts')) track('compare_add');
+    else if (a.closest('.quick')) track('quick_menu', {to: a.getAttribute('href')});
+  }, true);
+})();

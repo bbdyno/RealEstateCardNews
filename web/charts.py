@@ -61,6 +61,11 @@ def bars(values: list[float | None], labels: list[str], *, highlight: int | None
     return "".join(out)
 
 
+def _poly(pts: list[tuple[float, float]]) -> str:
+    """점과 점을 곧게 잇는다. 곡선 보간은 실제 없는 오르내림을 그려 넣을 수 있어 값 그래프에는 이것을 쓴다."""
+    return " ".join(f"{'L' if i else 'M'}{x:.1f},{y:.1f}" for i, (x, y) in enumerate(pts))
+
+
 def _smooth(pts: list[tuple[float, float]]) -> str:
     """점들을 지나는 부드러운 곡선(카트멀-롬 → 베지어)."""
     if len(pts) < 2:
@@ -94,7 +99,7 @@ def area(values: list[float | None], labels: list[str], *, highlight: int | None
     sy = lambda v: top + ph * (1 - (v - lo) / (hi - lo))
     pts = [(sx(i), sy(v)) for i, v in known]
     gid = _uid("fade", values, second, labels, width, height)
-    path = _smooth(pts)
+    path = _poly(pts)
     out = [f'<svg class="chart area" viewBox="0 0 {w} {height}" role="img" preserveAspectRatio="none">',
            f'<defs><linearGradient id="{gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="fade-top"/>'
            f'<stop offset="1" class="fade-bottom"/></linearGradient></defs>']
@@ -107,7 +112,7 @@ def area(values: list[float | None], labels: list[str], *, highlight: int | None
     if second:
         sp = [(sx(i), sy(v)) for i, v in enumerate(second) if v]
         if len(sp) >= 2:
-            out.append(f'<path d="{_smooth(sp)}" class="line-2"/>')
+            out.append(f'<path d="{_poly(sp)}" class="line-2"/>')
     out.append(f'<path d="{path}" class="line"/>')
     if highlight is not None and known:
         hi_i = highlight % n
@@ -154,7 +159,7 @@ def scatter(points: list[dict], months: list[str], *, med: list[float | None] | 
     if med:
         mp = [(left + colw * (i + 0.5), sy(v)) for i, v in enumerate(med) if v]
         if len(mp) >= 2:
-            out.append(f'<path d="{_smooth(mp)}" class="med"/>')
+            out.append(f'<path d="{_poly(mp)}" class="med"/>')
     order = {"x": 0, "dir": 1, "out": 2, "lo": 3, "mid": 3, "hi": 3}
     for p in sorted(pts, key=lambda p: order.get(p["cls"], 3)):
         x, y = sx(p["ym"], p["day"]), sy(p["price"])
@@ -229,7 +234,7 @@ def labeled_line(values: list[float | None], labels: list[str], *, counts: list[
                 h = vol_h * 0.9 * c / cmax
                 out.append(f'<rect x="{sx(i) - bw / 2:.1f}" y="{base - h:.1f}" width="{bw:.1f}" height="{h:.1f}" rx="1.5" class="vol">'
                            f'<title>{escape(labels[i])} {c}건</title></rect>')
-    out.append(f'<path d="{_smooth(pts)}" class="line"/>')
+    out.append(f'<path d="{_poly(pts)}" class="line"/>')
     i_max = max(known, key=lambda p: p[1])[0]
     i_min = min(known, key=lambda p: p[1])[0]
     i_last = known[-1][0]
@@ -263,7 +268,7 @@ def spark(values: list[float | None], *, up_is: str = "up") -> str:
     pts = [(2 + (w - 4) * i / max(1, n - 1), 3 + (h - 6) * (1 - (v - lo) / rng)) for i, v in known]
     trend = "up" if known[-1][1] >= known[0][1] else "down"
     return (f'<svg class="spark {trend}" viewBox="0 0 {w} {h}" aria-hidden="true">'
-            f'<path d="{_smooth(pts)}"/></svg>')
+            f'<path d="{_poly(pts)}"/></svg>')
 
 
 def stages(n_total: int, current: int | None) -> str:

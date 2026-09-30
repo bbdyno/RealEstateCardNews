@@ -32,17 +32,46 @@ def test_new_high_needs_an_earlier_deal_and_ignores_cancelled():
     assert c.last_sale["price"] == 99000 and c.peak["price"] == 99000   # 최근 거래(59㎡) 기준 같은 면적 최고가
 
 
+def _three(f, *days):
+    return [f(d) for d in days]
+
+
 def test_jeonse_ratio_uses_same_band_and_only_jeonse():
-    rows = [_sale("2026-06-01", 100000), _rent("2026-06-05", 60000), _rent("2026-06-06", 5000, rent=150)]
+    rows = (_three(lambda d: _sale(d, 100000), "2026-06-01", "2026-06-02", "2026-06-03")
+            + _three(lambda d: _rent(d, 60000), "2026-06-05", "2026-06-07", "2026-06-08")
+            + [_rent("2026-06-06", 5000, rent=150)])
     c = next(iter(core.build_complexes(rows, "apt").values()))
     assert abs(c.jeonse_ratio - 0.6) < 1e-9                     # 월세 계약은 빠진다
 
 
+def test_jeonse_ratio_needs_three_each_and_a_believable_value():
+    few = [_sale("2026-06-01", 100000), _rent("2026-06-05", 60000)]
+    assert next(iter(core.build_complexes(few, "apt").values())).jeonse_ratio is None      # 한 건씩이면 내지 않는다
+    odd = (_three(lambda d: _sale(d, 20000), "2026-06-01", "2026-06-02", "2026-06-03")
+           + _three(lambda d: _rent(d, 50000), "2026-06-05", "2026-06-06", "2026-06-07"))
+    assert next(iter(core.build_complexes(odd, "apt").values())).jeonse_ratio is None      # 250% 는 오류로 본다
+
+
+def _offi_sale(d, price=20000):
+    return dict(_sale(d, price, 24.5, name="오"), kind="offi", apt_seq=None)
+
+
 def test_officetel_yield_is_annual_rent_over_net_investment():
-    rows = [dict(_sale("2026-05-01", 20000, 24.5, name="오"), kind="offi", apt_seq=None),
-            _rent("2026-05-02", 1000, 80, 24.5, "offi", "오")]
+    rows = (_three(_offi_sale, "2026-05-01", "2026-05-03", "2026-05-04")
+            + _three(lambda d: _rent(d, 1000, 80, 24.5, "offi", "오"), "2026-05-02", "2026-05-05", "2026-05-06"))
     o = next(iter(core.build_complexes(rows, "offi").values()))
     assert abs(o.yield_ - 80 * 12 / (20000 - 1000)) < 1e-9
+
+
+def test_officetel_yield_skips_half_jeonse_and_absurd_values():
+    rows = (_three(_offi_sale, "2026-05-01", "2026-05-03", "2026-05-04")
+            + _three(lambda d: _rent(d, 1000, 80, 24.5, "offi", "오"), "2026-05-02", "2026-05-05", "2026-05-06")
+            + [_rent("2026-05-07", 18000, 30, 24.5, "offi", "오")])          # 보증금이 매매가의 90% — 빼야 한다
+    o = next(iter(core.build_complexes(rows, "offi").values()))
+    assert o.median_rent["deposit"] == 1000 and o.median_rent["n"] == 3
+    cheap = (_three(lambda d: _offi_sale(d, 3000), "2026-05-01", "2026-05-03", "2026-05-04")
+             + _three(lambda d: _rent(d, 500, 80, 24.5, "offi", "오"), "2026-05-02", "2026-05-05", "2026-05-06"))
+    assert next(iter(core.build_complexes(cheap, "offi").values())).yield_ is None      # 38% 는 싣지 않는다
 
 
 def test_size_bands_and_labels():

@@ -81,7 +81,9 @@ class Site:
             STAGES=STAGES, KIND_LABEL=KIND_LABEL, I3D=I3D, today_year=today.year, ads=cfg["ads"], site=cfg["site"], **fmt.FILTERS)
         self.env = env
         self.sponsors = load_sponsors(today)
-        self.base = {"site": cfg["site"], "ads": cfg["ads"], "verify": cfg["verify"], "nav": NAV, "tabs": TABS,
+        self.base = {"site": cfg["site"], "ads": cfg["ads"], "verify": cfg["verify"], "nav": NAV if has_redevelop else [n for n in NAV if n[0] != "/redevelop/"],
+                     # 재개발 자료가 없으면 빈 페이지로 보내지 않는다 — 하단 탭 자리는 랭킹이 대신한다
+                     "tabs": TABS if has_redevelop else [t if t[0] != "/redevelop/" else ("/rank/", "랭킹", "rank") for t in TABS],
                      "analytics": cfg.get("analytics") or {},
                      "demo": demo, "asof": asof, "has_redevelop": has_redevelop,
                      # 페이지 내용이 날마다 바뀌지 않게: 캐시 번호는 CSS 내용 해시, 수집일은 /meta.json 에서 채운다
@@ -360,7 +362,8 @@ def build(out: Path, today: dt.date, only: str | None = None) -> dict:
     ranked = [s for s in summaries if s["st"].count_base]
     site.render("rank.html", "/rank/", section="/rank/", base=base,
                 by_count=sorted(ranked, key=lambda s: -s["st"].count_base)[:20],
-                by_yoy=sorted((s for s in ranked if s["st"].count_yoy), key=lambda s: -(s["st"].count_base / s["st"].count_yoy))[:20],
+                # 거래량 증가는 작년 같은 달이 30건 이상인 곳만(몇 건짜리 군 지역이 +400% 로 위를 채우지 않게)
+                by_yoy=sorted((s for s in ranked if (s["st"].count_yoy or 0) >= 30), key=lambda s: -(s["st"].count_base / s["st"].count_yoy))[:20],
                 by_ppp=sorted((s for s in ranked if s["st"].median_ppp), key=lambda s: -s["st"].median_ppp)[:20],
                 by_up=sorted((s for s in ranked if s["st"].ppp_change is not None), key=lambda s: -s["st"].ppp_change)[:20],
                 by_down=sorted((s for s in ranked if s["st"].ppp_change is not None), key=lambda s: s["st"].ppp_change)[:20],
@@ -375,8 +378,9 @@ def build(out: Path, today: dt.date, only: str | None = None) -> dict:
                 groups=_group_villa(villa_all), top=sorted((x for x in villa_all if x["v"]["land_ppp"]),
                                                            key=lambda x: -x["v"]["land_ppp"])[:15])
     zones_sorted = sorted(zones_all, key=lambda z: (z["sido"], z["sgg_name"], -(z["stage_no"] or 0)))
-    site.render("redevelop_index.html", "/redevelop/", section="/redevelop/", zones=zones_sorted,
-                sidos=sorted({z["sido"] for z in zones_all}), bizs=sorted({z["biz"] for z in zones_all if z["biz"]}))
+    if zones_all:
+        site.render("redevelop_index.html", "/redevelop/", section="/redevelop/", zones=zones_sorted,
+                    sidos=sorted({z["sido"] for z in zones_all}), bizs=sorted({z["biz"] for z in zones_all if z["biz"]}))
     villa_key = {(x["r"]["code"], x["v"]["umd"]): x["v"] for x in villa_all}
     for z in zones_all:
         site.render("redevelop_zone.html", f"/redevelop/{z['id']}/", section="/redevelop/", z=z,

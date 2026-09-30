@@ -146,6 +146,10 @@ def build_complexes(rows, kind: str) -> dict[str, Complex]:
     return out
 
 
+MIN_N = 3                # 전세가율·수익률을 내는 최소 거래 수(표본 한두 건이면 값이 튄다)
+RATIO_OK = (0.2, 1.2)    # 단지 전세가율로 믿을 범위. 밖이면 평형 섞임·신고 오류로 본다
+YIELD_MAX = 0.15         # 오피스텔 월세 수익률 상한(넘으면 표본 오류로 본다)
+
 OUTLIER_BAND = 0.12      # 이 안의 가격이면 서로 '받쳐 주는' 거래
 OUTLIER_DEV = 0.20       # 받쳐 주는 거래 없이 이만큼 벗어나면 이상 거래
 OUTLIER_DAYS = 365
@@ -206,18 +210,23 @@ def _fill(cx: Complex) -> None:
             sp = [s["price"] for s in live if band(s["area"]) == b and month_key(s["ymd"]) >= horizon]
             jd = [r["deposit"] for r in cx.rents if band(r["area"]) == b and r["rent"] == 0 and r["deposit"]
                   and month_key(r["ymd"]) >= horizon]
-            if sp and jd:
-                ratios.append(median(jd) / median(sp))
+            if len(sp) >= MIN_N and len(jd) >= MIN_N:
+                r = median(jd) / median(sp)
+                if RATIO_OK[0] <= r <= RATIO_OK[1]:
+                    ratios.append(r)
         cx.jeonse_ratio = median(ratios)
     # 오피스텔 수익률: 연 월세 / (매매가 - 월세 보증금), 최근 12개월 중위값
     if cx.kind == "offi" and live:
         horizon = add_months(month_key(live[0]["ymd"]), -12)
-        wol = [r for r in cx.rents if r["rent"] and month_key(r["ymd"]) >= horizon]
-        price = median([s["price"] for s in live if month_key(s["ymd"]) >= horizon])
-        if wol and price:
+        sales12 = [s["price"] for s in live if month_key(s["ymd"]) >= horizon]
+        price = median(sales12)
+        wol = [r for r in cx.rents if r["rent"] and month_key(r["ymd"]) >= horizon
+               and price and (r["deposit"] or 0) <= price * 0.5]
+        if len(wol) >= MIN_N and len(sales12) >= MIN_N and price:
             rent, dep = median([r["rent"] for r in wol]), median([r["deposit"] or 0 for r in wol])
-            if price > dep:
-                cx.yield_ = rent * 12 / (price - dep)
+            y = rent * 12 / (price - dep) if price > dep else None
+            if y and y <= YIELD_MAX:
+                cx.yield_ = y
                 cx.median_rent = {"rent": rent, "deposit": dep, "n": len(wol)}
 
 
@@ -313,7 +322,7 @@ def villa_by_dong(rows, today: dt.date) -> list[dict]:
         for k, prices in bld.items():
             if rents.get(k):
                 ratio = median(rents[k]) / median(prices)
-                if ratio >= 0.8:
+                if 0.8 <= ratio <= 1.5:
                     high_ratio.append({"jibun": k[1], "name": k[2], "ratio": ratio})
         out.append({
             "umd": umd, "n": len(recent), "land_ppp": median(land), "price": median(d["price"] for d in recent),
@@ -384,8 +393,11 @@ def type_insight(cx: Complex, key: int, today: dt.date) -> dict | None:
     out["jeonse_renew"] = median(renew) if len(renew) >= 2 else None
     out["jeonse_n"] = (len(new), len(renew))
     sp = median(s12)
+    jr_new = out["jeonse_new"] / sp if sp and out["jeonse_new"] else None
+    if jr_new is not None and not (RATIO_OK[0] <= jr_new <= RATIO_OK[1]):
+        jr_new, out["jeonse_new"] = None, None           # 믿기 어려운 값이면 신규 전세·갭을 보여 주지 않는다
+    out["jratio_new"] = jr_new
     out["gap"] = sp - out["jeonse_new"] if sp and out["jeonse_new"] else None
-    out["jratio_new"] = out["jeonse_new"] / sp if sp and out["jeonse_new"] else None
     # 분기별 갭 흐름
     q = defaultdict(lambda: ([], []))
     for s in live:

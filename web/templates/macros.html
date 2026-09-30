@@ -54,7 +54,7 @@
 {%- set kf = ads.adfit.units.get(slot) or {} -%}
 {% if gs or kf.id %}
 <div class="ad-slot ad-{{ slot }}"><div class="lab">광고</div>
-{% if gs %}<ins class="adsbygoogle" style="display:block" data-ad-client="{{ ads.adsense.client }}" data-ad-slot="{{ gs }}" data-ad-format="auto" data-full-width-responsive="true"{% if kf.id %} data-fallback="{{ kf.id }}:{{ kf.w }}x{{ kf.h }}"{% endif %}></ins>
+{% if gs %}<ins class="adsbygoogle" style="display:block" data-ad-client="{{ ads.adsense.client }}" data-ad-slot="{{ gs }}" {% if slot == 'related' %}data-ad-format="autorelaxed"{% else %}data-ad-format="auto" data-full-width-responsive="true"{% endif %}{% if kf.id %} data-fallback="{{ kf.id }}:{{ kf.w }}x{{ kf.h }}"{% endif %}></ins>
 {% else %}<ins class="kakao_ad_area" style="display:none" data-ad-unit="{{ kf.id }}" data-ad-width="{{ kf.w }}" data-ad-height="{{ kf.h }}" data-ad-onfail="adFail"></ins>{% endif %}
 </div>
 {% endif %}

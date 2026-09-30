@@ -8,15 +8,20 @@ site:
 ads:                                   # docs/MONETIZATION.md 3절. 값이 비어 있으면 그 광고는 그리지 않는다(승인 전에는 비워 둔다)
   adsense:
     client: ""                         # ca-pub-XXXXXXXXXXXXXXXX (ads.txt 도 이 값으로 만든다)
-    slots:                             # 애드센스에서 만든 광고 단위 번호. 자리 이름: top · mid · bottom
-      top: ""
-      mid: ""
-      bottom: ""
+    # 자동 광고: client 만 넣으면 모든 페이지 <head> 에 애드센스 코드가 들어간다. 그다음 애드센스 화면 → 광고 → 사이트별
+    # '자동 광고'에서 전면 광고(페이지 이동 사이 전체 화면, vignette)·앵커(하단 고정)·사이드 레일을 켜면 코드 수정 없이 붙는다.
+    slots:                             # 애드센스에서 만든 '디스플레이' 광고 단위 번호(반응형)
+      top: ""                          # 요약 아래 첫 광고
+      mid: ""                          # 본문 중간
+      bottom: ""                       # 바닥글 위
+      list: ""                         # 긴 목록(신고가 등) 10줄마다, 최대 2번
+      related: ""                      # '멀티플렉스' 광고 단위 번호 — 페이지 끝 추천 광고 묶음(autorelaxed)
   adfit:                               # 카카오 애드핏(초대·승인제). 애드센스가 채우지 못한 자리에만 순서대로 넣는다
     units:                             # 자리별 {id: DAN-..., w: 320, h: 100} — 웹 배너 크기 320x100·300x250·728x90 등
       top: {}
       mid: {}
       bottom: {}
+      list: {}
   coupang:                             # 쿠팡 파트너스. 켜면 대가성 고지 문구가 블록 맨 위에 자동으로 붙는다
     enabled: false
     banners:                           # 쿠팡에서 받은 배너 코드(iframe). 맥락: 책 · 이사 · 가전. 빈 맥락은 book 으로 대신한다

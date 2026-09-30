@@ -11,8 +11,8 @@ collector/   국토부 실거래 수집(8종) · 재개발 파일 가져오기 �
   sigungu.json   전국 250개 시군구(2022 법정동 코드 + 이후 행정구역 변경 보정)
 analytics/   단지·지역 통계(기준월, 평당가, 신고가, 전세가율, 오피스텔 수익률, 빌라 대지지분 평당가)
 web/         정적 사이트 빌드(Jinja2 템플릿 · 서버 렌더 SVG 차트 · CSS)
-scripts/     daily.sh(수집→빌드→검사→배포) · install_launchagent.sh · check_links.py
-docs/        DESIGN.md(핀터레스트 레퍼런스) · MORNING.md(다음 할 일)
+scripts/     check_links·check_html · make_icons·make_og · daily.sh(로컬에서 돌릴 때만 — 평소엔 GitHub Actions)
+docs/        MORNING.md(지금 상태·할 일) · MONETIZATION.md(광고·유료 설계) · DESIGN.md
 data/        realestate.db (git 제외)
 dist/        빌드 결과 (git 제외)
 ```

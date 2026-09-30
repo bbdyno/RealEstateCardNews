@@ -264,6 +264,8 @@ table.qt { width: 100%; border-collapse: separate; border-spacing: 0; font-size:
 /* 광고 자리 · 직접 광고 · 제휴 고지. 자리 높이를 미리 잡아 화면이 밀리지 않게 하고, 안 채워지면 접는다(app.js) */
 .ad-slot { margin: 12px 0; text-align: center; min-height: 120px; }
 .ad-slot.ad-mid, .ad-slot.ad-bottom { min-height: 270px; }
+.ad-slot.ad-related { min-height: 320px; }
+.rows .ad-slot { margin: 6px 0; border-top: 1px solid var(--line); padding-top: 8px; }
 .ad-slot .lab { font-size: 11px; color: var(--muted); margin-bottom: 4px; font-weight: 600; }
 .sponsor { display: block; margin: 12px 0; background: var(--lime); color: var(--ink); border-radius: var(--r-card); padding: 18px 20px; position: relative; }
 .sponsor .lab { font-size: 12px; font-weight: 800; opacity: .7; }

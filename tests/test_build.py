@@ -62,13 +62,14 @@ def test_no_ad_markup_until_ids_are_configured(demo_db, tmp_path):
 
 def test_adsense_slot_carries_adfit_fallback(demo_db, tmp_path, monkeypatch):
     cfg = build.load_cfg()
-    cfg["ads"]["adsense"] = {"client": "ca-pub-1", "slots": {"top": "111", "mid": "", "bottom": "333"}}
+    cfg["ads"]["adsense"] = {"client": "ca-pub-1", "slots": {"top": "111", "mid": "", "bottom": "333", "list": "", "related": "555"}}
     cfg["ads"]["adfit"] = {"units": {"top": {}, "mid": {}, "bottom": {"id": "DAN-x", "w": 300, "h": 250}}}
     monkeypatch.setattr(build, "load_cfg", lambda: cfg)
     out = tmp_path / "dist"
     build.build(out, dt.date(2026, 9, 29))
     page = max(_complex_pages(out), key=lambda p: p.stat().st_size).read_text()   # 거래 많은 단지(광고 최대)
-    assert page.count('class="adsbygoogle"') == 2
+    assert page.count('class="adsbygoogle"') == 3                      # top · bottom · 멀티플렉스
+    assert 'data-ad-slot="555" data-ad-format="autorelaxed"' in page
     assert 'data-ad-slot="333" data-ad-format="auto" data-full-width-responsive="true" data-fallback="DAN-x:300x250"' in page
     assert (out / "ads.txt").read_text().startswith("google.com, pub-1, DIRECT")
 

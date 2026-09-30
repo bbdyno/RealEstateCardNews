@@ -37,11 +37,11 @@ jobs:
     outputs:
       deployable: ${{ steps.size.outputs.ok }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 1
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.14"
           cache: pip
@@ -96,7 +96,7 @@ jobs:
           if [ "$mb" -le "$SITE_LIMIT_MB" ]; then echo "ok=true" >> "$GITHUB_OUTPUT"
           else echo "::warning::사이트가 ${mb}MB 로 GitHub Pages 한도를 넘어 배포를 건너뜁니다"; echo "ok=false" >> "$GITHUB_OUTPUT"; fi
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         if: steps.size.outputs.ok == 'true'
         with:
           path: dist
@@ -121,4 +121,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
