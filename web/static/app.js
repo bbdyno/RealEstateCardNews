@@ -133,3 +133,25 @@
   var rt; window.addEventListener('resize', function(){ clearTimeout(rt); rt = setTimeout(drawAll, 150); });
   drawAll();
 })();
+
+/* 광고 자리: 한 자리에 광고 하나를 순서대로(docs/MONETIZATION.md 3절).
+   애드센스를 요청하고, 안 채워지면(data-ad-status="unfilled") 애드핏으로 바꾸고, 애드핏도 없으면 자리를 접는다. */
+(function(){
+  var slots = document.querySelectorAll('.ad-slot'); if (!slots.length) return;
+  var kakao = false;
+  function fold(el){ var s = el.closest('.ad-slot'); if (s) s.hidden = true; }
+  window.adFail = fold;                                   // 애드핏 NO-AD 콜백(data-ad-onfail)
+  function loadKakao(){ if (kakao) return; kakao = true;
+    var sc = document.createElement('script'); sc.async = true; sc.src = 'https://t1.daumcdn.net/kas/static/ba.min.js'; document.body.appendChild(sc); }
+  function toKakao(ins){ var f = (ins.dataset.fallback || '').match(/^(.+):(\d+)x(\d+)$/); if (!f) return fold(ins);
+    var k = document.createElement('ins'); k.className = 'kakao_ad_area'; k.style.display = 'none';
+    k.setAttribute('data-ad-unit', f[1]); k.setAttribute('data-ad-width', f[2]); k.setAttribute('data-ad-height', f[3]); k.setAttribute('data-ad-onfail', 'adFail');
+    ins.replaceWith(k); loadKakao(); }
+  slots.forEach(function(s){
+    var g = s.querySelector('ins.adsbygoogle');
+    if (!g){ if (s.querySelector('ins.kakao_ad_area')) loadKakao(); return; }
+    new MutationObserver(function(){ if (g.dataset.adStatus === 'unfilled') toKakao(g); })
+      .observe(g, {attributes: true, attributeFilter: ['data-ad-status']});
+    try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) { toKakao(g); }
+  });
+})();

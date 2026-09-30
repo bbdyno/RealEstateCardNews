@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% from 'macros.html' import icon, card_h, big, tile, delta_txt, cx_row, high_row, ad %}
+{% from 'macros.html' import sponsor_card, coupang, icon, card_h, big, tile, delta_txt, cx_row, high_row, ad %}
 {% block title %}{{ r.sido_short }} {{ r.name }} 아파트 실거래가·시세 — {{ site.brand }}{% endblock %}
 {% block description %}{{ r.sido }} {{ r.name }} 아파트·오피스텔·빌라 실거래가. {{ st.base|month_long }} 거래 {{ st.count_base }}건, 최근 3개월 중위 매매가 {{ st.median_price|won }}원, 전세가율 {{ st.jeonse_ratio|ratio }}.{% endblock %}
 {% block main %}
@@ -32,7 +32,7 @@
     <div style="margin-top:14px">{{ card_h('월별 거래량', '점선 막대 = 신고가 모이는 중') }}{{ ch.bars|safe }}</div>
   </div>
 </div>
-{{ ad('top') }}
+{% if sponsor %}{{ sponsor_card(sponsor) }}{% else %}{{ ad('top') }}{% endif %}
 
 <div class="grid">
   <div class="s7 card">
@@ -79,5 +79,6 @@
 </div></div>
 {% endif %}
 <p class="note">매매가는 해제된 거래를 뺀 계약 금액입니다. 평당가는 국토부가 주는 전용면적으로 계산해 분양 평수 기준보다 높게 보입니다. 최근 한두 달은 신고가 계속 들어와 숫자가 늘어납니다. <a href="/methodology/" style="text-decoration:underline">계산 방법</a></p>
+{{ coupang('book') }}
 {{ ad('bottom') }}
 {% endblock %}

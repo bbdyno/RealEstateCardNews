@@ -5,15 +5,27 @@ site:
   contact_email: ""                    # 광고·제휴 문의 메일(비우면 문의 페이지에 '준비 중')
   instagram: ""                        # 인스타 핸들(@ 없이). 비우면 링크를 숨긴다
 
-ads:                                   # 4단계(수익화). 승인 전에는 비워 둔다 — 비어 있으면 광고 자리를 그리지 않는다
-  adsense_client: ""                   # ca-pub-XXXXXXXXXXXXXXXX
-  adsense_slots:                       # 애드센스에서 만든 광고 단위 번호
-    top: ""
-    mid: ""
-    bottom: ""
-  coupang:
+ads:                                   # docs/MONETIZATION.md 3절. 값이 비어 있으면 그 광고는 그리지 않는다(승인 전에는 비워 둔다)
+  adsense:
+    client: ""                         # ca-pub-XXXXXXXXXXXXXXXX (ads.txt 도 이 값으로 만든다)
+    slots:                             # 애드센스에서 만든 광고 단위 번호. 자리 이름: top · mid · bottom
+      top: ""
+      mid: ""
+      bottom: ""
+  adfit:                               # 카카오 애드핏(초대·승인제). 애드센스가 채우지 못한 자리에만 순서대로 넣는다
+    units:                             # 자리별 {id: DAN-..., w: 320, h: 100} — 웹 배너 크기 320x100·300x250·728x90 등
+      top: {}
+      mid: {}
+      bottom: {}
+  coupang:                             # 쿠팡 파트너스. 켜면 대가성 고지 문구가 블록 맨 위에 자동으로 붙는다
     enabled: false
-    html: ""                           # 쿠팡 파트너스에서 받은 배너 코드(iframe). 켜면 공정위 고지 문구가 자동으로 붙는다
+    banners:                           # 쿠팡에서 받은 배너 코드(iframe). 맥락: 책 · 이사 · 가전. 빈 맥락은 book 으로 대신한다
+      book: ""
+      move: ""
+      appliance: ""
+
+analytics:
+  ga4: ""                              # 구글 애널리틱스 4 측정 ID(G-XXXXXXXXXX)
 
 verify:                                # 검색 등록 소유 확인 메타 태그의 content 값
   google: ""

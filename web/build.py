@@ -46,6 +46,19 @@ I3D = {k: _FLUENT.format(n.replace(" ", "%20"), n.lower().replace(" ", "_")) for
     "calendar": "Spiral calendar", "grid": "Classical building", "receipt": "Receipt", "bulb": "Light bulb"}.items()}
 
 
+def load_sponsors(today: dt.date, f: Path | None = None) -> list[dict]:
+    """sponsors.yaml 에서 오늘 게재 중인 직접 광고만."""
+    f = f or ROOT / "sponsors.yaml"
+    items = (yaml.safe_load(f.read_text(encoding="utf-8")) or {}).get("sponsors") or [] if f.exists() else []
+    out = []
+    for sp in items:
+        start, end = (dt.date.fromisoformat(str(sp[k])) if sp.get(k) else None for k in ("start", "end"))
+        if (start and today < start) or (end and today > end) or not (sp.get("url") and sp.get("title")):
+            continue
+        out.append({**sp, "regions": [str(r) for r in sp.get("regions") or []]})
+    return out
+
+
 def load_cfg() -> dict:
     return yaml.safe_load((ROOT / "config.yaml").read_text(encoding="utf-8"))
 
@@ -67,12 +80,21 @@ class Site:
             eok_label=lambda e: "1억 미만" if e == 0 else (f"{e}억 이상" if e >= cfg["build"]["budget_max_eok"] else f"{e}억대"),
             STAGES=STAGES, KIND_LABEL=KIND_LABEL, I3D=I3D, today_year=today.year, ads=cfg["ads"], site=cfg["site"], **fmt.FILTERS)
         self.env = env
+        self.sponsors = load_sponsors(today)
         self.base = {"site": cfg["site"], "ads": cfg["ads"], "verify": cfg["verify"], "nav": NAV, "tabs": TABS,
+                     "analytics": cfg.get("analytics") or {},
                      "demo": demo, "asof": asof, "has_redevelop": has_redevelop,
                      # 페이지 내용이 날마다 바뀌지 않게: 캐시 번호는 CSS 내용 해시, 수집일은 /meta.json 에서 채운다
                      "build_id": hashlib.sha1(b"".join((HERE / "static" / f).read_bytes()
                                                       for f in ("style.css", "app.js", "../templates/macros.html"))).hexdigest()[:8]}
         env.globals["build_id"] = self.base["build_id"]        # 가져온 매크로(icon)에서도 쓰도록
+
+    def sponsor(self, code: str | None = None):
+        """이 페이지(시군구 5자리·시도 2자리·전국 None)에 넣을 직접 광고 하나. 좁은 지역 계약을 먼저."""
+        for sp in sorted(self.sponsors, key=lambda x: -max((len(r) for r in x["regions"]), default=0)):
+            if not sp["regions"] or (code and any(code.startswith(r) for r in sp["regions"])):
+                return sp
+        return None
 
     # 주소
     @staticmethod
@@ -202,6 +224,7 @@ def build(out: Path, today: dt.date, only: str | None = None) -> dict:
     since_highs = (today - dt.timedelta(days=cfg["build"]["highs_days"])).isoformat()
     since_budget = core.add_months(base, -(cfg["build"]["budget_months"] - 1)) + "-01"
     thin_max = cfg["build"].get("tiers", {}).get("thin_max", 4)
+    rich_min = cfg["build"].get("tiers", {}).get("rich_min", 20)
 
     nat, sido_agg = Agg(), defaultdict(Agg)
     summaries, highs_all, offi_all, villa_all, search = [], [], [], [], []
@@ -245,7 +268,7 @@ def build(out: Path, today: dt.date, only: str | None = None) -> dict:
         site.render("region.html", f"/r/{r['code']}/", section="", r=r, st=st, st_o=st_o, st_v=st_v,
                     ch=month_charts(st.months, st.base), highs=highs[:12], by_count=by_count[:15],
                     by_drop=by_drop[:15], by_new=sorted(live_apts, key=lambda cx: cx.last_sale["ymd"], reverse=True)[:15],
-                    offi=offi_list[:8], villa=villa[:12], zones=zones, summary=summary,
+                    offi=offi_list[:8], villa=villa[:12], zones=zones, summary=summary, sponsor=site.sponsor(r["code"]),
                     sido_code=r["code"][:2])
         n_pages += 1
         dong_cx = defaultdict(list)
@@ -257,7 +280,9 @@ def build(out: Path, today: dt.date, only: str | None = None) -> dict:
                 continue
             pool = list(apts.values()) if cx.kind == "apt" else list(offis.values())
             types, cdata, qs, qtable = complex_view(cx, pool, today)
+            n_trades = sum(1 for x in cx.sales if not x["cancelled"]) + len(cx.rents)
             site.render("complex.html", site.cx_url(cx), section="/offi/" if cx.kind == "offi" else "", cx=cx, r=r,
+                        rich=n_trades >= rich_min, sponsor=site.sponsor(cx.sgg), coupang_ctx=coupang_context(cx, today),
                         types=types, cdata=cdata, qs=qs, qtable=qtable, cancelled_highs=core.cancelled_highs(cx)[:5],
                         neighbors=[x for x in dong_cx.get(cx.umd, []) if x.cid != cx.cid][:8],
                         zones=[z for z in zones if z["umd"] == cx.umd])
@@ -297,7 +322,7 @@ def build(out: Path, today: dt.date, only: str | None = None) -> dict:
                           "count_chg": core.change(now_c, prev_c), "ppp": agg.window(base),
                           "ppp_chg": core.change(agg.window(base), agg.window(base, 3)),
                           "spark": [p for _, _, p, pend in ms if not pend][-12:]})
-        site.render("sido.html", f"/r/{code}/", sido_code=code, name=site.sido[code],
+        site.render("sido.html", f"/r/{code}/", sido_code=code, name=site.sido[code], sponsor=site.sponsor(code),
                     ch=month_charts(ms, base), row=sido_rows[-1],
                     regions=sorted(by_sido[code], key=lambda s: -(s["st"].count_base or 0)),
                     highs=sorted([h for h in highs_all if h["cx"].sgg[:2] == code], key=lambda h: h["deal"]["ymd"], reverse=True)[:10],
@@ -374,7 +399,7 @@ def build(out: Path, today: dt.date, only: str | None = None) -> dict:
     (out / "_headers").write_text("/static/*\n  Cache-Control: public, max-age=31536000, immutable\n", encoding="utf-8")
     robots = "User-agent: *\nDisallow: /\n" if demo else f"User-agent: *\nAllow: /\nSitemap: {base_url}/sitemap.xml\n"
     (out / "robots.txt").write_text(robots, encoding="utf-8")
-    client = cfg["ads"]["adsense_client"]
+    client = cfg["ads"]["adsense"]["client"]
     if client:
         (out / "ads.txt").write_text(f"google.com, {client.replace('ca-', '')}, DIRECT, f08c47fec0942fa0\n", encoding="utf-8")
     return {"pages": len(site.pages), "regions_with_data": len(summaries), "seconds_regions": round(t_regions, 1),
@@ -389,6 +414,15 @@ def write_icon_sprite(env, path: Path) -> None:
     mod = env.get_template("macros.html").make_module({"build_id": ""})
     syms = "".join(f'<symbol id="i-{n}" viewBox="0 0 24 24">{mod.icon_paths(n)}</symbol>' for n in ICONS)
     path.write_text(f'<svg xmlns="http://www.w3.org/2000/svg">{syms}</svg>', encoding="utf-8")
+
+
+def coupang_context(cx, today: dt.date) -> str:
+    """쿠팡 블록 맥락: 5년차 이내 새 단지 → 가전·살림, 전월세가 매매의 두 배 넘게 많은 단지 → 이사, 그 밖 → 책."""
+    if cx.build_year and today.year - cx.build_year + 1 <= 5:
+        return "appliance"
+    if len(cx.rents) > 2 * sum(1 for x in cx.sales if not x["cancelled"]):
+        return "move"
+    return "book"
 
 
 MAX_TYPES = 4            # 단지 페이지 평형 탭 수(거래 많은 순). 나머지 평형은 평형별 요약 표에만 나온다

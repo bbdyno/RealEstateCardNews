@@ -47,18 +47,39 @@
 <div class="tile"><div class="k">{{ k }}</div><div class="v">{{ v }}</div>{% if d is not none %}<div class="d">{{ delta_txt(d) }} <span class="muted">{{ dlabel }}</span></div>{% elif dlabel %}<div class="d muted">{{ dlabel }}</div>{% endif %}</div>
 {%- endmacro %}
 
+{# 광고 자리 하나에 광고 하나: 애드센스 → (안 채워지면) 애드핏 → (그것도 없으면) 자리를 접는다. app.js 가 처리한다.
+   애드센스가 없고 애드핏만 있으면 애드핏을 바로 넣는다. 둘 다 비어 있으면 아무것도 그리지 않는다. #}
 {% macro ad(slot) -%}
-{% if ads.adsense_client and ads.adsense_slots.get(slot) %}
-<div class="ad-slot"><div class="lab">광고</div>
-<ins class="adsbygoogle" style="display:block" data-ad-client="{{ ads.adsense_client }}" data-ad-slot="{{ ads.adsense_slots[slot] }}" data-ad-format="auto" data-full-width-responsive="true"></ins>
-<script>(adsbygoogle = window.adsbygoogle || []).push({});</script></div>
+{%- set gs = ads.adsense.slots.get(slot) if ads.adsense.client else '' -%}
+{%- set kf = ads.adfit.units.get(slot) or {} -%}
+{% if gs or kf.id %}
+<div class="ad-slot ad-{{ slot }}"><div class="lab">광고</div>
+{% if gs %}<ins class="adsbygoogle" style="display:block" data-ad-client="{{ ads.adsense.client }}" data-ad-slot="{{ gs }}" data-ad-format="auto" data-full-width-responsive="true"{% if kf.id %} data-fallback="{{ kf.id }}:{{ kf.w }}x{{ kf.h }}"{% endif %}></ins>
+{% else %}<ins class="kakao_ad_area" style="display:none" data-ad-unit="{{ kf.id }}" data-ad-width="{{ kf.w }}" data-ad-height="{{ kf.h }}" data-ad-onfail="adFail"></ins>{% endif %}
+</div>
 {% endif %}
 {%- endmacro %}
 
-{% macro coupang() -%}
-{% if ads.coupang.enabled and ads.coupang.html %}
-<div class="card"><div class="card-h"><h2>함께 보면 좋은 책</h2></div>{{ ads.coupang.html|safe }}
-<div class="partner-note">이 배너는 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</div></div>
+{# 직접 판매 광고(분양·협찬) — sponsors.yaml. '광고 · 광고주'를 첫 줄에 표시한다(추천·보증 심사지침) #}
+{% macro sponsor_card(sp) -%}
+{% if sp %}
+<a class="sponsor" href="{{ sp.url }}" rel="sponsored noopener" target="_blank">
+  <div class="lab">광고 · {{ sp.advertiser }}</div>
+  <div class="t">{{ sp.title }}</div>{% if sp.text %}<div class="s">{{ sp.text }}</div>{% endif %}
+  <span class="go">자세히 보기 ›</span>
+</a>
+{% endif %}
+{%- endmacro %}
+
+{# 쿠팡 파트너스 블록. 맥락(ctx)에 맞는 배너를 고르고, 대가성 고지를 맨 위에 둔다(쿠팡 가이드) #}
+{% macro coupang(ctx='book') -%}
+{%- set html = ads.coupang.banners.get(ctx) or ads.coupang.banners.get('book') -%}
+{% if ads.coupang.enabled and html %}
+<div class="card coupang">
+  <div class="partner-note">이 게시물은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</div>
+  <div class="card-h"><div class="icon-title">{{ i3d({'move': 'key', 'appliance': 'bulb'}.get(ctx, 'receipt'), 30, 'ic') }}<div><h2>{{ {'move': '이사 준비물', 'appliance': '새집에 들일 살림'}.get(ctx, '부동산 공부에 도움 되는 책') }}</h2></div></div></div>
+  <div class="coupang-body">{{ html|safe }}</div>
+</div>
 {% endif %}
 {%- endmacro %}
 

@@ -105,26 +105,22 @@
   4. 구독 설정(관심 단지·조건)은 메일 속 링크(서명된 1회용 주소)로 바꾼다 — 비밀번호·로그인 없음
 - **표시 의무:** 결제 페이지에 상호·연락처·청약철회 제한 사실(제공 시작 뒤 철회 제한, 무료 체험 제공), 개인정보 수집 항목(이메일·결제 정보는 결제대행사 위탁).
 
-## 6. 설정 구조(구현 예정)
+## 6. 설정(구현됨, 09-30)
 
-```yaml
-build:
-  tiers: {rich_min: 20, thin_max: 9}      # 3년 거래 수 기준
-ads:
-  adsense: {client: "", slots: {top: "", mid: "", bottom: "", list: ""}}
-  adfit:   {units: {top_pc: "", top_m: "", mid: "", bottom: ""}}   # 승인 후
-  coupang: {enabled: false, banners: {move: "", appliance: "", book: ""}}
-  max_per_page: 3
-analytics: {ga4: ""}
-plus: {enabled: false, price: 4900, checkout_url: ""}
-```
+- `config.yaml` 의 `ads.adsense`(client·slots), `ads.adfit.units`(자리별 id·w·h), `ads.coupang`(enabled·banners: book·move·appliance), `analytics.ga4`.
+  비어 있는 값은 그리지 않는다 — 승인 전에는 비워 둔다. `ads.txt` 는 애드센스 client 로 자동 생성.
+- 자리: 단지 페이지는 3년 거래 20건 이상(`build.tiers.rich_min`)이면 top+bottom, 그 밖은 bottom 만. 지역·시도는 top+bottom, 홈은 top·mid·bottom.
+- 순서: `web/static/app.js` 가 애드센스를 요청하고 `data-ad-status="unfilled"` 면 애드핏(`data-fallback`)으로 바꾸고, 애드핏 `data-ad-onfail` 이면 자리를 접는다.
+- 직접 광고: 저장소 루트 `sponsors.yaml`(기간·지역). 시군구·단지·시도 페이지의 top 자리에 '광고 · 광고주' 카드로 들어가고 링크는 `rel="sponsored"`.
+- 쿠팡: 단지 페이지는 맥락(5년차 이내 → 가전·살림, 전월세가 매매의 2배 넘으면 → 이사, 그 밖 → 책), 지역·홈은 책. 고지 문구는 블록 맨 위.
+- 테스트: `tests/test_build.py` — 광고 ID 가 없으면 광고 표시가 전혀 없음, 애드센스 자리에 애드핏 대체 정보, 직접 광고 기간·지역.
 
 ## 7. 해야 할 일
 
 **제가 할 일(0원)**
-1. 얇은 페이지 정리·등급별 광고 개수(2절) — v2 디자인·용량 줄이기와 함께
-2. 광고 자리·순차 채우기·높이 예약·'광고' 표시(3절), 쿠팡 맥락 블록
-3. 개인정보처리방침·약관 보강, GA4 자리, 스폰서 카드
+1. ~~얇은 페이지 정리·등급별 광고 개수(2절)~~ — 09-30 완료
+2. ~~광고 자리·순차 채우기·높이 예약·'광고' 표시(3절), 쿠팡 맥락 블록~~ — 09-30 완료
+3. ~~개인정보처리방침 보강, GA4 자리, 스폰서 카드~~ — 09-30 완료
 4. (3단계) 결제 웹훅 함수·구독자 DB·알림 메일 발송
 
 **직접 하실 일**
