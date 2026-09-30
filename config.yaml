@@ -29,7 +29,7 @@ analytics:
 
 verify:                                # 검색 등록 소유 확인 메타 태그의 content 값
   google: ""
-  naver: ""
+  naver: "475840f2435b764e6005e9c22968d65bf715d83f"   # 네이버 서치어드바이저 HTML 태그(2026-10-01)
 
 build:
   highs_days: 60                       # 신고가 목록에 넣을 최근 기간
