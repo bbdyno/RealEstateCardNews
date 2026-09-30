@@ -150,6 +150,11 @@ class Agg:
     def __init__(self):
         self.count = defaultdict(int)
         self.ppp = defaultdict(list)
+        self.ratios = defaultdict(list)          # 같은 단지 비교 비율(core.same_complex_ratios) — 시군구 것을 모은다
+
+    def add_ratios(self, ratios: dict) -> None:
+        for m, v in ratios.items():
+            self.ratios[m].extend(v)
 
     def add(self, rows) -> None:
         for r in rows:
@@ -159,17 +164,34 @@ class Agg:
                 if not r["direct"]:
                     self.ppp[m].append(r["price"] / (r["area"] / core.PY))
 
+    def _rwin(self, base: str, back: int) -> list[float]:
+        return [v for i in range(3) for v in self.ratios.get(core.add_months(base, -back - i), [])]
+
     def months(self, today: dt.date, base: str, n: int = 24) -> list[tuple]:
+        """월별 (월, 거래 수, 평당가, 집계중). 평당가 흐름은 같은 단지 비교로 내고 수준만 최근 3개월 중위 평당가에 맞춘다
+        (거래 구성에 따른 출렁임 제거 — core.same_complex_ratios). 비교할 거래가 모자라면 원래 중위값."""
         cur = today.strftime("%Y-%m")
+        now, level = self._rwin(base, 0), self.window(base)
+        scale = level / core.median(now) if level and len(now) >= 3 * core.INDEX_MIN else None
         out, m = [], core.add_months(cur, -(n - 1))
         while m <= cur:
-            out.append((m, self.count.get(m, 0), core.median(self.ppp.get(m, [])), m > base))
+            r = self.ratios.get(m, [])
+            p = core.median(r) * scale if scale and len(r) >= core.INDEX_MIN else (None if scale else core.median(self.ppp.get(m, [])))
+            out.append((m, self.count.get(m, 0), p, m > base))
             m = core.add_months(m, 1)
         return out
 
     def window(self, base: str, back: int = 0) -> float | None:
+        """최근 3개월(back 개월 전부터) 중위 평당가 — 지금 수준."""
         ms = [core.add_months(base, -back - i) for i in range(3)]
         return core.median([v for m in ms for v in self.ppp.get(m, [])])
+
+    def change(self, base: str) -> float | None:
+        """직전 3개월 대비 변화 — 같은 단지 비교(모자라면 원래 중위값)."""
+        now, prev = self._rwin(base, 0), self._rwin(base, 3)
+        if len(now) >= 3 * core.INDEX_MIN and len(prev) >= 3 * core.INDEX_MIN:
+            return core.change(core.median(now), core.median(prev))
+        return core.change(self.window(base), self.window(base, 3))
 
 
 def light(cx):
@@ -250,6 +272,9 @@ def build(out: Path, today: dt.date, only: str | None = None) -> dict:
         sido_agg[r["code"][:2]].add(rows)
         apts = core.build_complexes(rows, "apt")
         offis = core.build_complexes(rows, "offi")
+        ratios = core.same_complex_ratios(apts)
+        nat.add_ratios(ratios)
+        sido_agg[r["code"][:2]].add_ratios(ratios)
         for cx in list(apts.values()) + list(offis.values()):
             # 3년 매매(해제 제외)+전월세가 기준 이하이면 단지 페이지를 만들지 않는다(가치 낮은 대량 페이지 방지, Pages 용량)
             cx.page = sum(1 for s in cx.sales if not s["cancelled"]) + len(cx.rents) > thin_max
@@ -322,7 +347,7 @@ def build(out: Path, today: dt.date, only: str | None = None) -> dict:
         prev_c = agg.count.get(core.add_months(base, -1), 0)
         sido_rows.append({"code": code, "name": site.sido[code], "count": now_c,
                           "count_chg": core.change(now_c, prev_c), "ppp": agg.window(base),
-                          "ppp_chg": core.change(agg.window(base), agg.window(base, 3)),
+                          "ppp_chg": agg.change(base),
                           "spark": [p for _, _, p, pend in ms if not pend][-12:]})
         site.render("sido.html", f"/r/{code}/", sido_code=code, name=site.sido[code], sponsor=site.sponsor(code),
                     ch=month_charts(ms, base), row=sido_rows[-1],
@@ -334,7 +359,7 @@ def build(out: Path, today: dt.date, only: str | None = None) -> dict:
     nat_prev = nat.count.get(core.add_months(base, -1), 0)
     nat_yoy = nat.count.get(core.add_months(base, -12), 0)
     home = {"count": nat_now, "count_chg": core.change(nat_now, nat_prev), "count_yoy": core.change(nat_now, nat_yoy),
-            "ppp": nat.window(base), "ppp_chg": core.change(nat.window(base), nat.window(base, 3)),
+            "ppp": nat.window(base), "ppp_chg": nat.change(base),
             "jeonse": core.median(s["st"].jeonse_ratio for s in summaries),
             "offi_yield": core.median(o.yield_ for o in offi_all), "highs": len(highs_all)}
     site.render("index.html", "/", section="/", home=home, ch=month_charts(base_months, base), sido_rows=sido_rows,
@@ -365,8 +390,9 @@ def build(out: Path, today: dt.date, only: str | None = None) -> dict:
                 # 거래량 증가는 작년 같은 달이 30건 이상인 곳만(몇 건짜리 군 지역이 +400% 로 위를 채우지 않게)
                 by_yoy=sorted((s for s in ranked if (s["st"].count_yoy or 0) >= 30), key=lambda s: -(s["st"].count_base / s["st"].count_yoy))[:20],
                 by_ppp=sorted((s for s in ranked if s["st"].median_ppp), key=lambda s: -s["st"].median_ppp)[:20],
-                by_up=sorted((s for s in ranked if s["st"].ppp_change is not None), key=lambda s: -s["st"].ppp_change)[:20],
-                by_down=sorted((s for s in ranked if s["st"].ppp_change is not None), key=lambda s: s["st"].ppp_change)[:20],
+                # 상승·하락률은 같은 단지 비교로 낸 곳만(거래 몇 건짜리 군 지역의 ±100% 가 위를 채우지 않게)
+                by_up=sorted((s for s in ranked if s["st"].change_sure), key=lambda s: -s["st"].ppp_change)[:20],
+                by_down=sorted((s for s in ranked if s["st"].change_sure), key=lambda s: s["st"].ppp_change)[:20],
                 by_jeonse=sorted((s for s in summaries if s["st"].jeonse_ratio), key=lambda s: -s["st"].jeonse_ratio)[:20])
     site.render("jeonse.html", "/jeonse/", section="/rank/",
                 regions=sorted((s for s in summaries if s["st"].jeonse_ratio), key=lambda s: -s["st"].jeonse_ratio),

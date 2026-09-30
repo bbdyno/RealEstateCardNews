@@ -112,3 +112,18 @@ def test_direct_deals_count_as_volume_but_not_price():
     assert st.count_base == 3 and st.median_price == 100500
     c = next(iter(core.build_complexes(rows, "apt").values()))
     assert c.last_sale["price"] == 101000
+
+
+def test_region_trend_ignores_which_complexes_traded():
+    """싼 단지가 먼저, 비싼 단지가 나중에 거래돼도 각 단지 가격이 그대로면 흐름·변화율은 평평해야 한다."""
+    rows = []
+    for m in range(1, 13):
+        ym = f"2026-{m:02d}"
+        cheap, pricey = (6, 1) if m <= 6 else (1, 6)                # 앞 6개월은 싼 단지, 뒤 6개월은 비싼 단지 거래가 몰림
+        rows += [_sale(f"{ym}-{d:02d}", 50000, name="싼") | {"apt_seq": "A"} for d in range(1, cheap + 1)]
+        rows += [_sale(f"{ym}-{d:02d}", 150000, name="비싼") | {"apt_seq": "B"} for d in range(1, pricey + 1)]
+    cx = core.build_complexes(rows, "apt")
+    st = core.region_stats(rows, "apt", dt.date(2026, 12, 31) + dt.timedelta(days=25), cx)
+    assert st.indexed and abs(st.ppp_change) < 1e-9                 # 원래 중위값이면 +200% 로 튄다
+    vals = [p for m, _, p, _ in st.months if p and "2026-01" <= m <= "2026-12"]
+    assert max(vals) - min(vals) < 1e-6

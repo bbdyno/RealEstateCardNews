@@ -260,6 +260,8 @@ class RegionStats:
     ppp_change: float | None = None                # 직전 3개월 대비
     jeonse_ratio: float | None = None
     highs: int = 0
+    indexed: bool = False                          # 흐름을 같은 단지 비교로 냈는지
+    change_sure: bool = False                      # 변화율을 같은 단지 비교로 냈는지(아니면 거래 몇 건의 중위값이라 랭킹에서 뺀다)
 
 
 def region_stats(rows, kind: str, today: dt.date, complexes: dict[str, Complex] | None = None) -> RegionStats:
@@ -289,7 +291,45 @@ def region_stats(rows, kind: str, today: dt.date, complexes: dict[str, Complex] 
     st.ppp_change = change(st.median_ppp, median(ppp(r["price"], r["area"]) for r in p3))
     if complexes:
         st.jeonse_ratio = median(cx.jeonse_ratio for cx in complexes.values() if cx.jeonse_ratio)
+        _same_complex(st, complexes, base)
     return st
+
+
+INDEX_MIN = 5            # 한 달 지수를 내는 최소 거래 수(같은 단지 비교에 쓸 수 있는 거래)
+
+
+def same_complex_ratios(complexes: dict[str, Complex]) -> dict[str, list[float]]:
+    """달마다, 각 거래가 '같은 단지·같은 면적 타입의 3년 중위값'보다 얼마나 비싼지(비율). 타입마다 3건 이상일 때만.
+    지역 중위 평당가는 그달 어떤 단지가 거래됐는지에 따라 출렁이는데(비싼 단지 거래가 몰리면 시세가 안 올라도 뛴다),
+    같은 단지끼리 비교하면 그 구성 효과가 빠진다."""
+    out: dict[str, list[float]] = defaultdict(list)
+    for cx in complexes.values():
+        g = defaultdict(list)
+        for x in priced(cx.sales):
+            g[area_key(x["area"])].append(x)
+        for v in g.values():
+            if len(v) < 3:
+                continue
+            b = median(x["price"] for x in v)
+            for x in v:
+                out[month_key(x["ymd"])].append(x["price"] / b)
+    return out
+
+
+def _same_complex(st: RegionStats, complexes: dict[str, Complex], base: str) -> None:
+    """흐름(st.months 의 평당가)과 직전 3개월 대비 변화를 같은 단지 비교로 바꾼다. 수준은 최근 3개월 중위 평당가에 맞춘다."""
+    ratios = same_complex_ratios(complexes)
+    win = lambda back: [r for i in range(back, back + 3) for r in ratios.get(add_months(base, -i), [])]
+    now, prev = win(0), win(3)
+    if len(now) >= 3 * INDEX_MIN and len(prev) >= 3 * INDEX_MIN:
+        st.ppp_change = change(median(now), median(prev))
+        st.change_sure = True
+    if not (st.median_ppp and len(now) >= 3 * INDEX_MIN):
+        return                                            # 비교할 거래가 모자라면 원래 중위값 흐름을 그대로 쓴다
+    scale = st.median_ppp / median(now)
+    st.months = [(m, n, (median(ratios[m]) * scale if len(ratios.get(m, [])) >= INDEX_MIN else None), pend)
+                 for m, n, _, pend in st.months]
+    st.indexed = True
 
 
 def villa_by_dong(rows, today: dt.date) -> list[dict]:

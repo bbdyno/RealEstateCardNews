@@ -15,7 +15,7 @@
       <div class="label">최근 3개월 중위 매매가 · {{ st.base|month_long }}까지</div>
       {{ big(st.median_price, 'big') }}
       <div class="label">중위 평당가(전용 3.3㎡) {{ st.median_ppp|won }}</div>
-      <div class="foot"><span>직전 3개월 대비</span><span class="chip">{{ st.ppp_change|arrow }} {{ st.ppp_change|pct }}</span></div>
+      <div class="foot"><span>직전 3개월 대비{% if st.indexed %} · 같은 단지 비교{% endif %}</span><span class="chip">{{ st.ppp_change|arrow }} {{ st.ppp_change|pct }}</span></div>
     </div>
     <div class="card" style="margin-top:16px">
       <div class="tiles">
@@ -27,7 +27,7 @@
     </div>
   </div>
   <div class="s8 card">
-    {{ card_h('중위 평당가 흐름', '전용 3.3㎡당 · 월별 · 집계 중인 달은 빼고 그림', '', 'trend') }}
+    {{ card_h('평당가 흐름', ('같은 단지끼리 비교해 거래 구성에 따른 출렁임을 뺀 흐름 · 전용 3.3㎡당' if st.indexed else '전용 3.3㎡당 · 월별 중위') ~ ' · 집계 중인 달은 빼고 그림', '', 'trend') }}
     {{ ch.area|safe }}
     <div style="margin-top:14px">{{ card_h('월별 거래량', '점선 막대 = 신고가 모이는 중') }}{{ ch.bars|safe }}</div>
   </div>
