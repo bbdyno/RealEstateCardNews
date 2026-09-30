@@ -1,7 +1,7 @@
 site:
   brand: 집값레이더                    # 2026-09-30 확정
   tagline: 전국 아파트·오피스텔·빌라 실거래가와 재개발, 매일 갱신
-  base_url: https://example.kr         # 도메인이 정해지면 바꾼다(사이트맵·canonical 에 쓰인다)
+  base_url: https://jipgapradar.kr     # 2026-09-30 등록(가비아). 사이트맵·canonical 에 쓰인다
   contact_email: ""                    # 광고·제휴 문의 메일(비우면 문의 페이지에 '준비 중')
   instagram: ""                        # 인스타 핸들(@ 없이). 비우면 링크를 숨긴다
 
