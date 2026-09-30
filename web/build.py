@@ -389,6 +389,9 @@ def build(out: Path, today: dt.date, only: str | None = None) -> dict:
 
     # 정적 파일 · 검색 색인 · 사이트맵
     shutil.copytree(HERE / "static", out / "static")
+    for f in sorted((HERE / "root").glob("*")):          # 검색엔진 소유 확인 파일 등(사이트 맨 위)
+        if f.suffix in (".html", ".txt"):
+            shutil.copy2(f, out / f.name)
     write_icon_sprite(site.env, out / "static" / "icons.svg")
     (out / "search.json").write_text(json.dumps(search, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     (out / "meta.json").write_text(json.dumps({"collected": collected, "base_month": base}), encoding="utf-8")
