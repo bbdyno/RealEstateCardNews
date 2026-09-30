@@ -109,6 +109,7 @@ class Complex:
     median_rent: dict | None = None
     series: list = field(default_factory=list)     # [(YYYY-MM, 중위 평당가, 거래 수)]
     by_band: dict = field(default_factory=dict)    # 평형대 → {last, peak, drop, n}
+    page: bool = True             # 단지 페이지를 만드는지(거래가 너무 적으면 시군구 페이지로 보낸다)
 
 
 # ── 계산 ──────────────────────────────────────────────────────────────────
@@ -432,3 +433,50 @@ def similar(cx: Complex, pool: list[Complex], area: float, price: float, n: int 
             out.append({"cx": o, "deal": last, "diff": d})
     out.sort(key=lambda x: abs(x["diff"]))
     return out[:n]
+
+
+def type_keys(cx: Complex) -> list[int]:
+    """면적 타입(area_key)을 거래가 많은 순으로."""
+    cnt = defaultdict(int)
+    for s in priced(cx.sales):
+        cnt[area_key(s["area"])] += 1
+    return sorted(cnt, key=lambda k: (-cnt[k], k))
+
+
+def _q(ymd: str) -> str:
+    return f"{ymd[2:4]}년 {(int(ymd[5:7]) - 1) // 3 + 1}분기"
+
+
+def quarter_table(cx: Complex, today: dt.date, n: int = 4) -> tuple[list[str], list[dict]]:
+    """평형(면적 타입)별 최근 n개 분기 중위 매매가·건수와 3년 최고가. 마지막 분기 값이 최고가 수준이면 at_high."""
+    qs, m = [], today.strftime("%Y-%m")
+    while len(qs) < n:
+        q = _q(m + "-01")
+        if q not in qs:
+            qs.append(q)
+        m = add_months(m, -1)
+    qs = qs[::-1]
+    live = priced(cx.sales)
+    rows = []
+    for k in sorted({area_key(s["area"]) for s in live}):
+        ss = [s for s in live if area_key(s["area"]) == k]
+        byq = defaultdict(list)
+        for s in ss:
+            byq[_q(s["ymd"])].append(s["price"])
+        hi = max(ss, key=lambda s: s["price"])
+        cells = [(median(byq[q]) if byq[q] else None, len(byq[q])) for q in qs]
+        last = next((v for v, _ in reversed(cells) if v), None)
+        rows.append({"key": k, "area": ss[0]["area"], "cells": cells, "hi": hi,
+                     "at_high": bool(last and last >= hi["price"] * 0.995)})
+    return qs, rows
+
+
+def recent_flagged(cx: Complex, key: int, n: int = 8) -> list[dict]:
+    """면적 타입의 최근 매매(해제·직거래 포함)에 신고가 표시를 붙인다."""
+    best, flags = 0, set()
+    for s in sorted((s for s in cx.sales if area_key(s["area"]) == key and s["price"]), key=lambda s: s["ymd"]):
+        if not s["cancelled"] and not s["direct"] and not s.get("outlier"):
+            if best and s["price"] > best:
+                flags.add(s["uid"])
+            best = max(best, s["price"])
+    return [dict(s, high=s["uid"] in flags) for s in cx.sales if area_key(s["area"]) == key][:n]

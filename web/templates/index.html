@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% from 'macros.html' import icon, card_h, big, tile, delta_txt, high_row, ad, coupang %}
+{% from 'macros.html' import i3d, icon, card_h, big, tile, delta_txt, high_row, ad, coupang %}
 {% block title %}{{ site.brand }} — 전국 아파트·오피스텔·빌라 실거래가, 신고가, 전세가율{% endblock %}
 {% block main %}
 <div class="page-head">
@@ -17,11 +17,11 @@
     </div>
     <div class="card only-mobile" style="margin-top:12px">
       <nav class="quick">
-        <a href="/budget/"><span class="qi">{{ icon('wallet') }}</span>예산별</a>
-        <a href="/highs/"><span class="qi">{{ icon('trend') }}</span>신고가</a>
-        <a href="/jeonse/"><span class="qi">{{ icon('percent') }}</span>전세가율</a>
-        <a href="/offi/"><span class="qi">{{ icon('coin') }}</span>오피스텔</a>
-        <a href="/compare/"><span class="qi">{{ icon('grid') }}</span>단지 비교</a>
+        <a href="/budget/"><span class="qi">{{ i3d('wallet', 34) }}</span>예산별</a>
+        <a href="/highs/"><span class="qi">{{ i3d('fire', 34) }}</span>신고가</a>
+        <a href="/jeonse/"><span class="qi">{{ i3d('percent', 34) }}</span>전세가율</a>
+        <a href="/offi/"><span class="qi">{{ i3d('offi', 34) }}</span>오피스텔</a>
+        <a href="/compare/"><span class="qi">{{ i3d('compare', 34) }}</span>단지 비교</a>
       </nav>
     </div>
   </div>

@@ -1,4 +1,4 @@
-{% from 'macros.html' import icon %}<!doctype html>
+{% from 'macros.html' import icon, i3d %}<!doctype html>
 <html lang="ko">
 <head>
 <meta charset="utf-8">
@@ -30,10 +30,10 @@
 {% if demo %}<div class="demo-banner"><b>샘플 데이터</b>로 만든 화면입니다 — 실제 시세가 아닙니다. 공공데이터 인증키를 넣고 수집하면 실데이터로 바뀝니다.</div>{% endif %}
 <header class="top"><div class="wrap bar">
   <a class="brand" href="/"><img class="mark" src="/static/logo.svg" width="34" height="34" alt="">{{ site.brand }}</a>
+  <button class="search-pill" id="search-toggle" aria-label="단지·지역 검색">{{ i3d('search', 22) }}<span>단지·지역 검색</span></button>
   <nav class="nav" aria-label="주 메뉴">
-    {% for href, label in nav %}<a href="{{ href }}" class="{{ 'on' if section == href }}">{{ label }}</a>{% endfor %}
+    {% for href, label, ic in nav %}<a href="{{ href }}"{% if section == href %} class="on"{% endif %}><i class="i3 i3-{{ ic }} z20"></i>{{ label }}</a>{% endfor %}
   </nav>
-  <button class="round" id="search-toggle" aria-label="단지·지역 검색">{{ icon('search') }}</button>
 </div>
 <div class="wrap search-panel" id="search-panel"><div class="search-box">{{ icon('search') }}
   <input id="search-input" type="search" placeholder="단지명·지역 검색 (예: 래미안, 강남구, 망원동)" autocomplete="off">
@@ -45,35 +45,11 @@
 <footer><div class="wrap">
   <div class="links"><a href="/about/">서비스 소개</a><a href="/methodology/">계산 방법</a><a href="/ads/">광고·제휴 문의</a><a href="/terms/">이용약관</a><a href="/privacy/">개인정보처리방침</a>{% if site.instagram %}<a href="https://instagram.com/{{ site.instagram }}">인스타그램</a>{% endif %}</div>
   <div>출처: 국토교통부 실거래가 공개시스템(공공데이터포털 오픈API){% if has_redevelop %}, 지자체 정비사업 공개자료{% endif %}. {{ asof }}<span data-collected></span>. 계약일 기준이며 신고 기한(30일) 때문에 최근 거래는 늘어날 수 있습니다.</div>
-  <div>이 사이트의 정보는 참고용이며 투자 권유가 아닙니다. 거래 전 등기부·현장 확인을 꼭 하세요. © {{ site.brand }}</div>
+  <div>이 사이트의 정보는 참고용이며 투자 권유가 아닙니다. 거래 전 등기부·현장 확인을 꼭 하세요. 아이콘: Microsoft Fluent Emoji(MIT). © {{ site.brand }}</div>
 </div></footer>
 <nav class="tabbar" aria-label="하단 메뉴">
-  {% for href, label, ic in tabs %}<a href="{{ href }}" class="{{ 'on' if section == href }}">{{ icon(ic) }}<span>{{ label }}</span></a>{% endfor %}
+  {% for href, label, ic in tabs %}<a href="{{ href }}"{% if section == href %} class="on"{% endif %}><i class="i3 i3-{{ ic }} z26"></i><span>{{ label }}</span></a>{% endfor %}
 </nav>
-<script>
-(function(){
-  fetch('/meta.json').then(function(r){return r.json()}).then(function(m){ if(!m.collected) return;
-    document.querySelectorAll('[data-collected]').forEach(function(e){ e.textContent=' · '+m.collected+' 수집' }); }).catch(function(){});
-  var btn=document.getElementById('search-toggle'),panel=document.getElementById('search-panel'),
-      inp=document.getElementById('search-input'),box=document.getElementById('search-results'),idx=null,sel=-1;
-  function load(){ if(idx) return Promise.resolve(idx);
-    return fetch('/search.json?v={{ build_id }}').then(function(r){return r.json()}).then(function(d){idx=d;return d}); }
-  function norm(s){return s.replace(/\s+/g,'').toLowerCase()}
-  function show(q){ q=norm(q); if(!q){box.classList.remove('open');return}
-    load().then(function(d){ var out=[],i; for(i=0;i<d.length&&out.length<12;i++){ if(norm(d[i][0]).indexOf(q)>=0) out.push(d[i]) }
-      box.innerHTML=out.length?out.map(function(r){return '<a href="'+r[2]+'"><span>'+r[0].replace(/</g,'&lt;')+'</span><span class="s">'+r[1]+'</span></a>'}).join(''):'<div class="empty">찾는 결과가 없어요</div>';
-      box.classList.add('open'); sel=-1; }); }
-  btn.addEventListener('click',function(){ panel.classList.toggle('open'); if(panel.classList.contains('open')){inp.focus();load()} });
-  inp.addEventListener('input',function(){show(inp.value)});
-  inp.addEventListener('keydown',function(e){ var a=box.querySelectorAll('a'); if(!a.length) return;
-    if(e.key==='ArrowDown'||e.key==='ArrowUp'){ e.preventDefault(); sel=(sel+(e.key==='ArrowDown'?1:-1)+a.length)%a.length;
-      a.forEach(function(x,i){x.classList.toggle('sel',i===sel)}) }
-    if(e.key==='Enter'){ location.href=(a[sel]||a[0]).href } });
-  document.querySelectorAll('[data-pills]').forEach(function(g){
-    g.querySelectorAll('button').forEach(function(b){ b.addEventListener('click',function(){
-      g.querySelectorAll('button').forEach(function(x){x.classList.toggle('on',x===b)});
-      document.querySelectorAll('[data-pane="'+g.dataset.pills+'"]').forEach(function(p){ p.hidden=p.dataset.key!==b.dataset.key }); }) }) });
-})();
-</script>
+<script src="/static/app.js?v={{ build_id }}" defer></script>
 </body>
 </html>

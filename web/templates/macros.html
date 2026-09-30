@@ -1,6 +1,6 @@
 {# 선 아이콘(24 기준). 레퍼런스의 얇은 선 아이콘 느낌 #}
-{% macro icon(name) -%}
-<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+{# 아이콘 모양(스프라이트 /static/icons.svg 를 만들 때만 쓴다) #}
+{% macro icon_paths(name) -%}
 {%- if name == 'home' %}<path d="M3.5 10.5 12 3.5l8.5 7V20a1 1 0 0 1-1 1H15v-6H9v6H4.5a1 1 0 0 1-1-1z"/>
 {%- elif name == 'wallet' %}<rect x="3" y="6" width="18" height="14" rx="3"/><path d="M16 13h2M3 10h18M6 6l9-3 1.5 3"/>
 {%- elif name == 'trend' %}<path d="m3 17 6-6 4 4 8-8"/><path d="M15 7h6v6"/>
@@ -14,12 +14,23 @@
 {%- elif name == 'house' %}<path d="M4 11 12 4l8 7M6 9.5V20h12V9.5M10 20v-5h4v5"/>
 {%- elif name == 'coin' %}<circle cx="12" cy="12" r="8.5"/><path d="M9.5 9.5h4a1.8 1.8 0 0 1 0 3.6h-3a1.8 1.8 0 0 0 0 3.6h4M12 7.5v1.8M12 16.7v1.8"/>
 {%- elif name == 'grid' %}<rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/>
-{%- endif %}</svg>
+{%- endif %}
+{%- endmacro %}
+
+{# 선 아이콘(24 기준). 모양은 스프라이트 한 파일에 두고 페이지에는 참조만 넣는다(페이지 용량) #}
+{% macro icon(name) -%}
+<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="/static/icons.svg?v={{ build_id }}#i-{{ name }}"/></svg>
+{%- endmacro %}
+
+{# 3D 아이콘(Microsoft Fluent Emoji, MIT). 이름 → 주소는 build.py 의 I3D #}
+{# 그림 주소는 style.css 끝의 .i3-<이름> 한 곳에만 있다(페이지마다 긴 주소를 되풀이하지 않게). 크기는 z<숫자> #}
+{% macro i3d(name, size=30, cls='i3d') -%}
+<i class="i3 {{ cls }} i3-{{ name }} z{{ size }}"></i>
 {%- endmacro %}
 
 {% macro card_h(title, sub='', href='', ic='') -%}
 <div class="card-h">
-  <div class="icon-title">{% if ic %}<span class="ic">{{ icon(ic) }}</span>{% endif %}<div><h2>{{ title }}</h2>{% if sub %}<div class="sub">{{ sub }}</div>{% endif %}</div></div>
+  <div class="icon-title">{% if ic %}{{ i3d(ic, 30, 'ic') }}{% endif %}<div><h2>{{ title }}</h2>{% if sub %}<div class="sub">{{ sub }}</div>{% endif %}</div></div>
   {% if href %}<a class="round sm" href="{{ href }}" aria-label="{{ title }} 더 보기">{{ icon('arrow') }}</a>{% endif %}
 </div>
 {%- endmacro %}

@@ -1,70 +1,128 @@
 {% extends 'base.html' %}
-{% from 'macros.html' import icon, card_h, big, tile, delta_txt, cx_row, ad %}
+{% from 'macros.html' import i3d, cx_row, ad, big, icon %}
 {% set kl = KIND_LABEL[cx.kind] %}
+{% set apt = cx.kind == 'apt' %}
 {% block title %}{{ cx.name }} 실거래가 — {{ r.name }} {{ cx.umd }} {{ kl }} | {{ site.brand }}{% endblock %}
-{% block description %}{{ r.sido_short }} {{ r.name }} {{ cx.umd }} {{ cx.name }}({{ kl }}) 매매·전월세 실거래가.{% if cx.last_sale %} 최근 거래 {{ cx.last_sale.ymd }} {{ cx.last_sale.price|won }}원({{ cx.last_sale.area|ptype(cx.kind) }}).{% endif %} 3년 내 최고가, 전세가율, 평형별 시세 흐름.{% endblock %}
+{% block description %}{{ r.sido_short }} {{ r.name }} {{ cx.umd }} {{ cx.name }}({{ kl }}) 매매·전월세 실거래가.{% if cx.last_sale %} 최근 거래 {{ cx.last_sale.ymd }} {{ cx.last_sale.price|won }}원({{ cx.last_sale.area|ptype(cx.kind) }}).{% endif %} 평형별 지금 시세, 3년 최고가, 층별 가격, 신규 전세와 갭.{% endblock %}
 {% block main %}
-<div class="page-head">
-  <div><div class="crumbs"><a href="/">전국</a> › <a href="/r/{{ r.code[:2] }}/">{{ r.sido_short }}</a> › <a href="/r/{{ r.code }}/">{{ r.name }}</a> › {{ cx.umd }}</div>
-  <h1>{{ cx.name }} <span class="soft">{{ kl }} 실거래가</span></h1></div>
-  <div style="display:flex;gap:8px;flex-wrap:wrap"><span class="asof">{{ r.sido_short }} {{ r.name }} {{ cx.umd }} {{ cx.jibun }} · {{ age(cx.build_year, today_year) }}</span>
-    {% if cx.last_sale %}<a class="asof" href="/compare/?c={{ r.code }}:{{ cx.cid }}" style="color:var(--g-700);font-weight:600">＋ 비교에 담기</a>{% endif %}</div>
+<div class="crumbs"><a href="/">전국</a> › <a href="/r/{{ r.code[:2] }}/">{{ r.sido_short }}</a> › <a href="/r/{{ r.code }}/">{{ r.name }}</a> › {{ cx.umd }}</div>
+<section class="cx-hero">
+  <div class="loc">{{ i3d('pin', 18) }}{{ r.sido_short }} {{ r.name }} {{ cx.umd }} {{ cx.jibun }}</div>
+  <h1>{{ cx.name }}<span> {{ kl }} 실거래가</span></h1>
+  <div class="meta">
+    {% if cx.build_year %}<span><b>{{ cx.build_year }}</b>년 준공</span><span>{{ age(cx.build_year, today_year) }}</span>{% endif %}
+    {% if types %}<span>최고 <b>{{ types[0].top_floor }}</b>층</span>{% endif %}
+    <span>3년 매매 <b>{{ cx.sales|rejectattr('cancelled')|list|length }}</b>건</span><span>전월세 <b>{{ '{:,}'.format(cx.rents|length) }}</b>건</span>
+  </div>
+  {% if cx.last_sale %}<div class="acts"><a href="/compare/?c={{ r.code }}:{{ cx.cid }}">＋ 비교에 담기</a></div>{% endif %}
+  {{ i3d('city' if apt else 'offi', 180, 'art') }}
+</section>
+
+{% if types %}
+<nav class="types scroll-x" data-types aria-label="평형 선택">
+{% for t in types %}<button data-k="{{ t.key }}" class="{{ 'on' if loop.first }}"><b>{{ t.area|ptype(cx.kind)|replace('평형', '평') }}{% if apt %} <small>{{ t.key }}㎡</small>{% endif %}</b><span>{{ t.now|eok }}</span></button>{% endfor %}
+</nav>
+
+{% set ns = namespace(sim=false) %}{% for t in types %}{% if t.sim %}{% set ns.sim = true %}{% endif %}{% endfor %}
+<div class="tiles">
+{% for t in types %}<div class="tk tset" data-k="{{ t.key }}"{% if not loop.first %} hidden{% endif %}>
+  <div class="tile">{{ i3d('coin', 52) }}<div class="k">지금 시세</div>{{ big(t.now) }}<div class="d">{{ t.now_basis }} · {{ t.now_n }}건</div></div>
+  <div class="tile">{{ i3d('fire', 52) }}<div class="k">3년 최고가</div>{{ big(t.hi.price) }}<div class="d">{{ t.hi.ymd|date }} · 지금 <b>{{ t.from_hi|pct }}</b></div></div>
+  <div class="tile">{{ i3d('key', 52) }}<div class="k">신규 전세</div>{{ big(t.jeonse_new) }}<div class="d">전세가율 <b>{{ t.jratio_new|ratio }}</b></div></div>
+  {% if cx.kind == 'offi' and cx.yield_ %}<div class="tile">{{ i3d('gap', 52) }}<div class="k">월세 수익률</div><div class="big-num">{{ cx.yield_|pct(False) }}</div><div class="d">연 월세 ÷ (매매 − 보증금)</div></div>
+  {% else %}<div class="tile">{{ i3d('gap', 52) }}<div class="k">갭</div>{{ big(t.gap) }}<div class="d">매매 − 신규 전세</div></div>{% endif %}
+</div>{% endfor %}
 </div>
 
 <div class="grid">
-  <div class="s4">
-    {% set s = cx.last_sale %}
-    <div class="hero">
-      <div class="label">최근 매매 {% if s %}· {{ s.ymd|date }}{% endif %}</div>
-      {{ big(s.price if s else none, 'big') }}
-      {% if s %}<div class="label">{{ s.area|ptype(cx.kind) }}{% if cx.kind == 'apt' %}(전용 {{ s.area|sqm }}){% endif %} · {{ s.floor }}층{% if s.direct %} · 직거래{% endif %}</div>{% endif %}
-      <div class="foot"><span>같은 면적 3년 내 최고가 {{ cx.peak.price|eok if cx.peak else '–' }}</span>
-        {% if cx.drop is not none %}<span class="chip">{% if cx.drop < -0.0005 %}최고가 대비 {{ cx.drop|pct }}{% else %}최고가{% endif %}</span>{% endif %}</div>
-    </div>
-    <div class="card" style="margin-top:16px"><div class="tiles">
-      {{ tile('3년 거래', (cx.sales|rejectattr('cancelled')|list|length) ~ '건', None, '해제 제외') }}
-      {{ tile('전세가율', cx.jeonse_ratio|ratio, None, '최근 12개월 같은 평형') }}
-      {% if cx.kind == 'offi' %}{{ tile('월세 수익률', cx.yield_|pct(False), None, '연 월세 ÷ (매매−보증금)') }}
-      {% else %}{{ tile('전월세 계약', (cx.rents|length) ~ '건', None, '3년') }}{% endif %}
-      {{ tile('준공', (cx.build_year ~ '년') if cx.build_year else '–', None, age(cx.build_year, today_year)) }}
-    </div></div>
+  <div class="card s12">
+  {% for t in types %}{% set pos = (t.pos or 0) * 100 %}
+    <div class="tk pos" data-k="{{ t.key }}"{% if not loop.first %} hidden{% endif %}>
+      <div class="end"><span>3년 최저</span><b class="down">{{ t.lo.price|eok }}</b><span>{{ t.lo.ymd|date }}</span></div>
+      <div class="track"><i class="me" style="left:{{ '%.1f'|format(pos) }}%"></i><span class="bub" style="left:{{ '%.1f'|format([[pos, 12]|max, 88]|min) }}%">지금 {{ t.now|eok }}</span></div>
+      <div class="end r"><span>3년 최고</span><b class="up">{{ t.hi.price|eok }}</b><span>{{ t.hi.ymd|date }}</span></div>
+    </div>{% endfor %}
   </div>
-  <div class="s8 card">
-    <div class="card-h"><div><h2>평형별 시세 흐름</h2><div class="sub">월별 중위 매매가(실선) · 전세 보증금(점선)</div></div>
-      {% if panes|length > 1 %}<div class="pills scroll-x" data-pills="band">{% for p in panes %}<button class="{{ 'on' if loop.first }}" data-key="{{ p.band }}">{{ p.band }}</button>{% endfor %}</div>{% endif %}</div>
-    {% for p in panes %}
-    <div data-pane="band" data-key="{{ p.band }}" {% if not loop.first %}hidden{% endif %}>
-      {{ p.chart|safe if p.chart else '<div class="empty">그릴 만큼 거래가 없어요</div>'|safe }}
-      <div class="legend"><span><i></i>매매 {{ p.n_sale }}건</span><span><i class="dash"></i>전세 {{ p.n_jeonse }}건</span><span>{{ BAND_HINT[p.band] }}</span>
-        {% if p.info %}<span>최근 {{ p.info.last.price|eok }} · 최고 {{ p.info.peak.price|eok }}({{ p.info.peak.ymd|date }})</span>{% endif %}</div>
-    </div>
-    {% else %}<div class="empty">매매·전세 거래가 아직 없어요</div>{% endfor %}
+
+  <div class="card s8">
+    <div class="card-h"><div class="icon-title">{{ i3d('chart', 30, 'ic') }}<div><h2>매매가 추이</h2><div class="sub">월 중위 · 해제·직거래·확인 필요 제외</div></div></div>
+      <div class="seg" data-seg><button class="on" data-v="line">흐름</button><button data-v="dots">모든 거래</button></div></div>
+    <div class="cx-chart" data-v="line" role="img" aria-label="{{ cx.name }} 월별 중위 매매가"></div>
+    <div class="legend" data-legend="line"><span><i class="c-up"></i>최고</span><span><i class="c-down"></i>최저</span><span><i class="c-last"></i>최근</span><span><i class="c-vol"></i>거래량</span></div>
+    <div class="legend" data-legend="dots" hidden><span><i class="c-lo"></i>저층</span><span><i class="c-mid"></i>중층</span><span><i class="c-hi"></i>고층</span><span class="up">✕ 해제</span><span><i class="c-ring"></i>직거래</span><span><i class="c-warn"></i>확인 필요</span></div>
   </div>
+
+  <div class="card s4">
+    <div class="card-h"><div class="icon-title">{{ i3d('elevator', 30, 'ic') }}<div><h2>층별 가격</h2><div class="sub">최근 2년 · 거래된 최고층 기준 3등분</div></div></div></div>
+    {% for t in types %}<div class="tk" data-k="{{ t.key }}"{% if not loop.first %} hidden{% endif %}>
+    {% for f in t.floors %}<div class="fl {{ f.lv }}"><div class="n">{{ f.label }}<small>{{ f.n }}건</small></div><div class="bar"><i style="width:{{ '%.0f'|format(f.w) }}%"></i></div>
+      <div class="p">{{ f.median|eok }}{% if f.vs_mid is not none %}<small class="{{ f.vs_mid|delta }}">{{ f.vs_mid|pct }}</small>{% elif f.lv == 'mid' %}<small class="muted">기준</small>{% endif %}</div></div>{% endfor %}
+    </div>{% endfor %}
+  </div>
+
+  <div class="card s7">
+    <div class="card-h"><div class="icon-title">{{ i3d('gap', 30, 'ic') }}<div><h2>전세·갭 추이</h2><div class="sub">분기 중위 · 갱신 계약 제외</div></div></div></div>
+    <div class="cx-chart" data-v="gap" role="img" aria-label="분기별 매매가와 신규 전세"></div>
+    <div class="legend"><span><i class="c-sale"></i>매매</span><span><i class="c-jeonse"></i>신규 전세</span>{% for t in types %}{% if t.jeonse_renew %}<span class="tk" data-k="{{ t.key }}"{% if not loop.first %} hidden{% endif %}>갱신 전세 {{ t.jeonse_renew|eok }}</span>{% endif %}{% endfor %}</div>
+  </div>
+
+  <div class="card s5">
+    <div class="card-h"><div class="icon-title">{{ i3d('receipt', 30, 'ic') }}<div><h2>최근 거래</h2></div></div></div>
+    {% for t in types %}<div class="tk rows" data-k="{{ t.key }}"{% if not loop.first %} hidden{% endif %}>{% for x in t.recent[:(8 if loop.first else 5)] %}<div class="row"><span class="main"><div class="t">{{ x.ymd|date }} · {{ x.floor }}층{% if x.high %}<span class="chip up">신고가</span>{% endif %}{% if x.cancelled %}<span class="chip line">해제</span>{% endif %}{% if x.direct %}<span class="chip line">직거래</span>{% endif %}{% if x.outlier %}<span class="chip warn">확인 필요</span>{% endif %}</div></span>
+      <span class="val"><div class="p{{ ' strike' if x.cancelled }}">{{ x.price|eok }}</div></span></div>{% endfor %}</div>{% endfor %}
+  </div>
+
+  {% if ns.sim %}
+  <div class="card s12">
+    <div class="card-h"><div class="icon-title">{{ i3d('search', 30, 'ic') }}<div><h2>이 돈이면 여기도</h2><div class="sub">{{ r.name }} · 같은 평형대 ±12%</div></div></div></div>
+    {% for t in types %}<div class="tk sims scroll-x" data-k="{{ t.key }}"{% if not loop.first %} hidden{% endif %}>{% for x in t.sim %}<a class="sim" href="{{ cx_url(x.cx) }}">{{ i3d('house' if apt else 'offi', 40) }}<span class="dd">{{ x.diff|pct }}</span>
+      <div class="t">{{ x.cx.name }}</div><div class="s">{{ x.cx.umd }}{% if x.cx.build_year %} · {{ x.cx.build_year }}년{% endif %} · {{ x.deal.area|ptype(cx.kind)|replace('평형', '평') }}</div><div class="p">{{ x.deal.price|eok }}</div></a>{% else %}<div class="empty">이 평형은 비슷한 가격대 단지가 없어요</div>{% endfor %}</div>{% endfor %}
+  </div>
+  {% endif %}
 </div>
+{% else %}
+<div class="card empty-card">{{ i3d('receipt', 44) }}<div>3년 동안 가격 통계에 쓸 매매 거래가 없어요. 전월세 거래는 아래에 있어요.</div></div>
+{% endif %}
+
 {{ ad('top') }}
 
 <div class="grid">
-  <div class="s7 card">{{ card_h('매매 실거래', '최근 순 · 계약일 기준') }}
-    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>계약일</th><th>면적</th><th class="r">층</th><th class="r">거래가</th><th>비고</th></tr></thead><tbody>
-    {% for d in cx.sales[:60] %}<tr><td>{{ d.ymd|date }}</td><td>{{ d.area|ptype(cx.kind) }}{% if cx.kind == 'apt' %} <span class="muted">{{ d.area|sqm }}</span>{% endif %}</td><td class="r">{{ d.floor }}</td>
-      <td class="r {{ 'strike' if d.cancelled }}"><b>{{ d.price|won }}</b></td><td class="muted">{{ '해제' if d.cancelled }}{{ ' 직거래' if d.direct }}{% if d.outlier %} <span class="chip warn" title="같은 면적 다른 거래와 크게 달라 가격 통계에서 뺐습니다">확인 필요</span>{% endif %}</td></tr>
-    {% else %}<tr><td colspan="5" class="empty">매매 거래가 없어요</td></tr>{% endfor %}
-    </tbody></table></div></div>
-  <div class="s5 card">{{ card_h('전월세 실거래', '보증금 / 월세') }}
-    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>계약일</th><th>면적</th><th class="r">보증금</th><th class="r">월세</th><th></th></tr></thead><tbody>
-    {% for d in cx.rents[:40] %}<tr><td>{{ d.ymd|date }}</td><td>{{ d.area|ptype(cx.kind) }}</td><td class="r"><b>{{ d.deposit|won }}</b></td><td class="r">{{ (d.rent|num ~ '만') if d.rent else '전세' }}</td><td class="muted">{{ d.contract or '' }}</td></tr>
-    {% else %}<tr><td colspan="5" class="empty">전월세 거래가 없어요</td></tr>{% endfor %}
-    </tbody></table></div></div>
+  {% if qtable %}
+  <div class="card s7">
+    <div class="card-h"><div class="icon-title">{{ i3d('bars', 30, 'ic') }}<div><h2>평형별 요약</h2><div class="sub">분기 중위 매매가 · 건수 · 단위 억</div></div></div></div>
+    <div class="tbl-wrap"><table class="qt"><tr><th>{{ '평형' if apt else '면적' }}</th>{% for q in qs %}<th class="{{ 'qn' if loop.last }}">{{ q }}</th>{% endfor %}<th class="qh">3년 최고</th></tr>
+    {% for row in qtable %}<tr><td><b>{{ row.area|ptype(cx.kind)|replace('평형', '평') }}{% if row.at_high %}<span class="tag">최고가</span>{% endif %}</b>{% if apt %}<small>전용 {{ row.key }}㎡</small>{% endif %}</td>
+      {% for v, n in row.cells %}<td class="{{ 'qn' if loop.last }}">{% if v %}<b>{{ v|eokn }}</b><small>{{ n }}건</small>{% else %}<small>–</small>{% endif %}</td>{% endfor %}
+      <td class="qh"><b>{{ row.hi.price|eokn }}</b><small>{{ row.hi.ymd[2:7]|replace('-', '.') }}</small></td></tr>{% endfor %}
+    </table></div>
+  </div>
+  {% endif %}
+  <div class="card s{{ 5 if qtable else 12 }}">
+    <div class="card-h"><div class="icon-title">{{ i3d('warn', 30, 'ic') }}<div><h2>신고가 찍고 해제</h2><div class="sub">최고가로 신고했다가 나중에 해제된 계약</div></div></div></div>
+    <div class="rows">{% for h in cancelled_highs %}<div class="row"><span class="main"><div class="t">{{ h.deal.ymd|date }} · {{ h.deal.area|ptype(cx.kind)|replace('평형', '평') }} · {{ h.deal.floor }}층</div><div class="s">직전 최고 {{ h.prev|eok }}</div></span>
+      <span class="val"><div class="p strike">{{ h.deal.price|eok }}</div><div class="d up">{{ h.up|pct }}</div></span></div>
+      {% else %}<div class="empty">이 단지에는 없어요</div>{% endfor %}</div>
+  </div>
 </div>
+
+{% if cx.rents %}
+<div class="grid"><div class="card s12">
+  <div class="card-h"><div class="icon-title">{{ i3d('key', 30, 'ic') }}<div><h2>전월세 실거래</h2><div class="sub">최근 순 · 보증금 / 월세</div></div></div></div>
+  <div class="tbl-wrap"><table class="tbl"><thead><tr><th>계약일</th><th>면적</th><th class="r">층</th><th class="r">보증금</th><th class="r">월세</th><th></th></tr></thead><tbody>
+  {% for d in cx.rents[:10] %}<tr><td>{{ d.ymd|date }}</td><td>{{ d.area|ptype(cx.kind) }}</td><td class="r">{{ d.floor }}</td><td class="r"><b>{{ d.deposit|won }}</b></td><td class="r">{{ (d.rent|num ~ '만') if d.rent else '전세' }}</td><td class="muted">{{ d.contract or '' }}</td></tr>{% endfor %}
+  </tbody></table></div>
+</div></div>
+{% endif %}
 
 {% if neighbors or zones %}
 <div class="grid">
-  {% if neighbors %}<div class="s{{ 7 if zones else 12 }} card">{{ card_h(cx.umd ~ ' 다른 단지', '', '/r/' ~ r.code ~ '/') }}
+  {% if neighbors %}<div class="card s{{ 7 if zones else 12 }}"><div class="card-h"><div class="icon-title">{{ i3d('pin', 30, 'ic') }}<div><h2>{{ cx.umd }} 다른 단지</h2></div></div><a class="round sm" href="/r/{{ r.code }}/" aria-label="{{ r.name }} 전체 보기">{{ icon('arrow') }}</a></div>
     <div class="rows">{% for n in neighbors %}{{ cx_row(n, today_year) }}{% endfor %}</div></div>{% endif %}
-  {% if zones %}<div class="s5 card">{{ card_h(cx.umd ~ ' 정비사업', '', '/redevelop/', 'crane') }}
+  {% if zones %}<div class="card s5"><div class="card-h"><div class="icon-title">{{ i3d('crane', 30, 'ic') }}<div><h2>{{ cx.umd }} 정비사업</h2></div></div></div>
     <div class="rows">{% for z in zones %}<a class="row" href="/redevelop/{{ z.id }}/"><span class="ico">{{ z.biz[:1] }}</span><span class="main"><div class="t">{{ z.zone }}</div><div class="s">{{ z.biz }} · {{ z.stage }}</div></span></a>{% endfor %}</div></div>{% endif %}
 </div>
 {% endif %}
-<p class="note">국토교통부 실거래가 공개자료(계약일 기준)입니다. 동·호수와 공급면적은 공개되지 않습니다. 아파트 평형은 전용면적 × 1.33(전용률 75% 가정)으로 어림한 값입니다. 해제된 거래는 줄을 그어 표시하고, 직거래와 '확인 필요'(같은 면적 다른 거래와 동떨어진 가격) 거래는 이력에만 보여 주고 가격 통계에서 뺍니다.</p>
+<p class="note">국토교통부 실거래가 공개자료(계약일 기준). 동·호수와 공급면적은 공개되지 않아 아파트 평형은 전용면적 × 1.33으로 어림했습니다. 해제·직거래·'확인 필요'(같은 면적 다른 거래와 동떨어진 가격) 거래는 이력에만 보여 주고 가격 통계에서 뺍니다.</p>
 {{ ad('bottom') }}
+<script type="application/json" id="cxd">{{ cdata|safe }}</script>
 {% endblock %}

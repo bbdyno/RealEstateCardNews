@@ -23,3 +23,6 @@ build:
   highs_days: 60                       # 신고가 목록에 넣을 최근 기간
   budget_months: 6                     # 예산별 표에 넣을 최근 거래 기간
   budget_max_eok: 30                   # 이 이상은 '30억 이상'으로 묶는다
+  tiers:                               # 단지 페이지 등급(3년 매매+전월세 건수). docs/MONETIZATION.md 2절
+    thin_max: 9                        # 이하이면 단지 페이지를 만들지 않고 시군구 페이지로 보낸다(3년 10건 미만)
+    rich_min: 20                       # 이상이면 광고를 최대 개수까지(미만은 1개)

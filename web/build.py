@@ -29,12 +29,21 @@ from . import charts, fmt
 
 HERE = Path(__file__).parent
 ROOT = db.ROOT
-NAV = [("/", "홈"), ("/budget/", "예산별"), ("/highs/", "신고가"), ("/rank/", "랭킹"), ("/offi/", "오피스텔"),
-       ("/villa/", "빌라"), ("/redevelop/", "재개발")]
-TABS = [("/", "홈", "home"), ("/budget/", "예산별", "wallet"), ("/highs/", "신고가", "trend"),
-        ("/villa/", "빌라·오피", "building"), ("/redevelop/", "재개발", "crane")]
+NAV = [("/", "홈", "home"), ("/budget/", "예산별", "wallet"), ("/highs/", "신고가", "fire"), ("/rank/", "랭킹", "rank"),
+       ("/offi/", "오피스텔", "offi"), ("/villa/", "빌라", "villa"), ("/redevelop/", "재개발", "crane")]
+TABS = [("/", "홈", "home"), ("/budget/", "예산별", "wallet"), ("/highs/", "신고가", "fire"),
+        ("/villa/", "빌라·오피", "offi"), ("/redevelop/", "재개발", "crane")]
 STAGES = ["구역지정", "추진위", "조합설립", "사업시행", "관리처분", "이주·철거", "착공", "준공"]
 KIND_LABEL = {"apt": "아파트", "offi": "오피스텔", "rh": "빌라", "sh": "단독·다가구"}
+# 3D 아이콘: Microsoft Fluent Emoji(MIT 라이선스, 출처는 바닥글). jsDelivr 가 GitHub 저장소 파일을 그대로 내준다.
+_FLUENT = "https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@main/assets/{0}/3D/{1}_3d.png"
+I3D = {k: _FLUENT.format(n.replace(" ", "%20"), n.lower().replace(" ", "_")) for k, n in {
+    "home": "House", "house": "House", "city": "Cityscape", "offi": "Office building", "building": "Office building",
+    "villa": "Houses", "crane": "Building construction", "trend": "Chart increasing", "down": "Chart decreasing",
+    "wallet": "Money bag", "coin": "Coin", "rank": "Trophy", "fire": "Fire", "key": "Key", "percent": "Key",
+    "warn": "Warning", "gap": "Money with wings", "pin": "Round pushpin", "search": "Magnifying glass tilted left",
+    "compare": "Balance scale", "bars": "Bar chart", "chart": "Bar chart", "elevator": "Elevator",
+    "calendar": "Spiral calendar", "grid": "Classical building", "receipt": "Receipt", "bulb": "Light bulb"}.items()}
 
 
 def load_cfg() -> dict:
@@ -56,16 +65,21 @@ class Site:
             cx_url=self.cx_url, region_name=self.region_name, age=fmt.age, bigsplit=fmt.big, charts=charts,
             sido_name=lambda code: self.sido.get(code, code), BAND_HINT=core.BAND_HINT, BANDS=core.BANDS,
             eok_label=lambda e: "1억 미만" if e == 0 else (f"{e}억 이상" if e >= cfg["build"]["budget_max_eok"] else f"{e}억대"),
-            STAGES=STAGES, KIND_LABEL=KIND_LABEL, today_year=today.year, ads=cfg["ads"], site=cfg["site"], **fmt.FILTERS)
+            STAGES=STAGES, KIND_LABEL=KIND_LABEL, I3D=I3D, today_year=today.year, ads=cfg["ads"], site=cfg["site"], **fmt.FILTERS)
         self.env = env
         self.base = {"site": cfg["site"], "ads": cfg["ads"], "verify": cfg["verify"], "nav": NAV, "tabs": TABS,
                      "demo": demo, "asof": asof, "has_redevelop": has_redevelop,
                      # 페이지 내용이 날마다 바뀌지 않게: 캐시 번호는 CSS 내용 해시, 수집일은 /meta.json 에서 채운다
-                     "build_id": hashlib.sha1((HERE / "static" / "style.css").read_bytes()).hexdigest()[:8]}
+                     "build_id": hashlib.sha1(b"".join((HERE / "static" / f).read_bytes()
+                                                      for f in ("style.css", "app.js", "../templates/macros.html"))).hexdigest()[:8]}
+        env.globals["build_id"] = self.base["build_id"]        # 가져온 매크로(icon)에서도 쓰도록
 
     # 주소
     @staticmethod
     def cx_url(cx) -> str:
+        """단지 페이지 주소. 거래가 적어 페이지를 만들지 않은 단지는 시군구 페이지로 보낸다."""
+        if not cx.page:
+            return f"/r/{cx.sgg}/"
         return f"/{'c' if cx.kind == 'apt' else 'o'}/{cx.cid}/"
 
     def region_name(self, sgg: str) -> str:
@@ -75,6 +89,7 @@ class Site:
     def render(self, tpl: str, path: str, section: str = "", **ctx) -> None:
         html = self.env.get_template(tpl).render(**self.base, path=path, section=section, **ctx)
         html = breadcrumb_ld(html, self.cfg["site"]["base_url"].rstrip("/"))
+        html = SPACES.sub("\n", html)          # 들여쓰기·빈 줄 제거(페이지 용량 — Pages 1GB)
         f = self.out / path.strip("/") / "index.html" if path.endswith("/") else self.out / path.lstrip("/")
         f.parent.mkdir(parents=True, exist_ok=True)
         f.write_text(html, encoding="utf-8")
@@ -82,6 +97,7 @@ class Site:
             self.pages.append(path)
 
 
+SPACES = re.compile(r"[ \t]*\n\s*")
 CRUMBS = re.compile(r'<div class="crumbs">(.*?)</div>', re.S)
 ANCHOR = re.compile(r'<a href="([^"]+)">(.*?)</a>', re.S)
 
@@ -185,6 +201,7 @@ def build(out: Path, today: dt.date, only: str | None = None) -> dict:
     site = Site(out, today, cfg, demo, asof, bool(zones_all))
     since_highs = (today - dt.timedelta(days=cfg["build"]["highs_days"])).isoformat()
     since_budget = core.add_months(base, -(cfg["build"]["budget_months"] - 1)) + "-01"
+    thin_max = cfg["build"].get("tiers", {}).get("thin_max", 4)
 
     nat, sido_agg = Agg(), defaultdict(Agg)
     summaries, highs_all, offi_all, villa_all, search = [], [], [], [], []
@@ -208,6 +225,9 @@ def build(out: Path, today: dt.date, only: str | None = None) -> dict:
         sido_agg[r["code"][:2]].add(rows)
         apts = core.build_complexes(rows, "apt")
         offis = core.build_complexes(rows, "offi")
+        for cx in list(apts.values()) + list(offis.values()):
+            # 3년 매매(해제 제외)+전월세가 기준 이하이면 단지 페이지를 만들지 않는다(가치 낮은 대량 페이지 방지, Pages 용량)
+            cx.page = sum(1 for s in cx.sales if not s["cancelled"]) + len(cx.rents) > thin_max
         st = core.region_stats(rows, "apt", today, apts)
         st_o = core.region_stats(rows, "offi", today, offis)
         st_v = core.region_stats(rows, "rh", today)
@@ -233,19 +253,13 @@ def build(out: Path, today: dt.date, only: str | None = None) -> dict:
             dong_cx[cx.umd].append(cx)
         write_compare_data(out, r["code"], list(apts.values()) + list(offis.values()), today)
         for cx in list(apts.values()) + list(offis.values()):
-            if not cx.sales and not cx.rents:
+            if not cx.page:
                 continue
-            panes = []
-            for b in core.BANDS:
-                ss = [s for s in core.priced(cx.sales) if core.band(s["area"]) == b]
-                rs = [x for x in cx.rents if core.band(x["area"]) == b and x["rent"] == 0 and x["deposit"]]
-                if not ss and not rs:
-                    continue
-                panes.append({"band": b, "chart": complex_chart(ss, rs, today), "info": cx.by_band.get(b),
-                              "n_sale": len(ss), "n_jeonse": len(rs)})
-            panes.sort(key=lambda p: -(p["n_sale"] * 2 + p["n_jeonse"]))    # 주력 평형이 첫 탭
+            pool = list(apts.values()) if cx.kind == "apt" else list(offis.values())
+            types, cdata, qs, qtable = complex_view(cx, pool, today)
             site.render("complex.html", site.cx_url(cx), section="/offi/" if cx.kind == "offi" else "", cx=cx, r=r,
-                        panes=panes, neighbors=[x for x in dong_cx.get(cx.umd, []) if x.cid != cx.cid][:8],
+                        types=types, cdata=cdata, qs=qs, qtable=qtable, cancelled_highs=core.cancelled_highs(cx)[:5],
+                        neighbors=[x for x in dong_cx.get(cx.umd, []) if x.cid != cx.cid][:8],
                         zones=[z for z in zones if z["umd"] == cx.umd])
             n_pages += 1
             search.append([cx.name, f"{r['sido_short']} {r['name']} {cx.umd}", site.cx_url(cx), r["code"]])
@@ -350,6 +364,7 @@ def build(out: Path, today: dt.date, only: str | None = None) -> dict:
 
     # 정적 파일 · 검색 색인 · 사이트맵
     shutil.copytree(HERE / "static", out / "static")
+    write_icon_sprite(site.env, out / "static" / "icons.svg")
     (out / "search.json").write_text(json.dumps(search, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     (out / "meta.json").write_text(json.dumps({"collected": collected, "base_month": base}), encoding="utf-8")
     base_url = cfg["site"]["base_url"].rstrip("/")
@@ -364,6 +379,57 @@ def build(out: Path, today: dt.date, only: str | None = None) -> dict:
         (out / "ads.txt").write_text(f"google.com, {client.replace('ca-', '')}, DIRECT, f08c47fec0942fa0\n", encoding="utf-8")
     return {"pages": len(site.pages), "regions_with_data": len(summaries), "seconds_regions": round(t_regions, 1),
             "complex_pages": n_pages, "demo": demo}
+
+
+ICONS = ["home", "wallet", "trend", "building", "crane", "search", "arrow", "bars", "percent", "calendar", "house", "coin", "grid"]
+
+
+def write_icon_sprite(env, path: Path) -> None:
+    """선 아이콘을 <symbol> 로 모은 스프라이트. 페이지에는 <use href> 만 넣어 페이지마다 같은 경로를 되풀이하지 않는다."""
+    mod = env.get_template("macros.html").make_module({"build_id": ""})
+    syms = "".join(f'<symbol id="i-{n}" viewBox="0 0 24 24">{mod.icon_paths(n)}</symbol>' for n in ICONS)
+    path.write_text(f'<svg xmlns="http://www.w3.org/2000/svg">{syms}</svg>', encoding="utf-8")
+
+
+MAX_TYPES = 4            # 단지 페이지 평형 탭 수(거래 많은 순). 나머지 평형은 평형별 요약 표에만 나온다
+PT_CLS = {"lo": 0, "mid": 1, "hi": 2, "x": 3, "dir": 4, "out": 5}
+
+
+def complex_view(cx, pool, today: dt.date):
+    """단지 페이지 v2: 평형(면적 타입)별 요약과, 브라우저가 그릴 그래프 데이터(JSON).
+    그래프를 SVG 로 굽지 않고 숫자만 넣어 페이지를 가볍게 한다(GitHub Pages 1GB)."""
+    cur = today.strftime("%Y-%m")
+    months = [core.add_months(cur, -i) for i in range(35, -1, -1)]
+    idx = {m: i for i, m in enumerate(months)}
+    types, data = [], []
+    for k in core.type_keys(cx)[:MAX_TYPES]:
+        ins = core.type_insight(cx, k, today)
+        if not ins:
+            continue
+        top = ins["top_floor"]
+        pts, by_m = [], defaultdict(list)
+        for x in cx.sales:
+            if core.area_key(x["area"]) != k or not x["price"]:
+                continue
+            c = ("x" if x["cancelled"] else "dir" if x["direct"] else "out" if x.get("outlier")
+                 else core.floor_level(x["floor"], top))
+            ym = x["ymd"][:7]
+            if ym in idx:
+                pts.append([idx[ym], int(x["ymd"][8:]), x["price"], PT_CLS[c], x["floor"] or 0])
+            if c in ("lo", "mid", "hi"):
+                by_m[ym].append(x["price"])
+        fv = [f["median"] for f in ins["floors"]]
+        for f in ins["floors"]:          # 차이가 보이게: 가장 싼 층 40% ~ 가장 비싼 층 100%
+            f["w"] = 40 + 60 * (f["median"] - min(fv)) / (max(fv) - min(fv)) if max(fv) > min(fv) else 70
+        ins["recent"] = core.recent_flagged(cx, k)
+        ins["sim"] = core.similar(cx, pool, ins["area"], ins["now"], n=6 if not types else 4)
+        types.append(ins)
+        data.append({"k": k, "med": [round(core.median(by_m[m])) if by_m.get(m) else 0 for m in months],
+                     "cnt": [len(by_m.get(m, [])) for m in months], "pts": pts,
+                     "gap": [[q, round(sale), round(jeonse) if jeonse else 0] for q, _, sale, jeonse in ins["gap_q"][-8:] if sale]})
+    qs, table = core.quarter_table(cx, today)
+    cdata = json.dumps({"m0": months[0], "t": data}, ensure_ascii=False, separators=(",", ":")).replace("<", "\\u003c")
+    return types, cdata, qs, table
 
 
 def complex_chart(sales, jeonse, today: dt.date) -> str:

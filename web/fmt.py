@@ -33,6 +33,13 @@ def eok(v) -> str:
     return f"{int(round(v)):,}만"
 
 
+def eokn(v) -> str:
+    """표 안 숫자(단위 억 고정): 245000 → '24.5', 9800 → '0.98'."""
+    if v is None:
+        return "–"
+    return f"{v / 10000:.2f}".rstrip("0").rstrip(".")
+
+
 def big(v) -> tuple[str, str]:
     """큰 숫자 표시용 (앞자리, 뒤 흐린 부분). 레퍼런스처럼 뒷자리·단위만 작고 흐리게."""
     if v is None:
@@ -103,5 +110,5 @@ def age(build_year, today_year: int) -> str:
     return "–" if not build_year else f"{today_year - build_year + 1}년차"
 
 
-FILTERS = {"num": num, "won": won, "eok": eok, "pct": pct, "ratio": ratio, "delta": delta, "arrow": arrow,
+FILTERS = {"num": num, "won": won, "eok": eok, "eokn": eokn, "pct": pct, "ratio": ratio, "delta": delta, "arrow": arrow,
            "pyeong": pyeong, "ptype": ptype, "sqm": sqm, "date": date, "month": month, "month_long": month_long}
