@@ -25,7 +25,7 @@ tr.new td:not(.gu) { background:#FFF0F5; }
 {% endblock %}
 {% block body %}
 <div class="head"><h1>{{ sido }} {{ eok }}억대<span>{{ band }}</span></h1></div>
-<div class="chips"><span class="on">실거래</span><span>최근 3개월</span><span>{{ base|month_long }} 기준</span><span>해제·직거래 제외</span><span>3년 거래 10건↑</span></div>
+<div class="chips"><span class="on">실거래</span><span>최근 3개월</span><span>{{ base|month_long }} 기준</span><span>해제·직거래 제외</span><span>{% if n_shown < n %}거래 많은 {{ n_shown }}곳{% else %}3년 거래 10건↑{% endif %}</span></div>
 <table>
 <colgroup><col style="width:88px"><col><col style="width:62px"><col style="width:54px"><col style="width:126px"><col style="width:98px"><col style="width:98px"><col style="width:138px"></colgroup>
 <tr><th>구</th><th class="l">단지</th><th>연차</th><th>평</th><th>실거래</th><th>계약일</th><th>3년 최고</th><th>최고 대비</th></tr>
@@ -38,4 +38,13 @@ tr.new td:not(.gu) { background:#FFF0F5; }
 </table>
 <div class="foot"><span class="logo"><img src="{{ logo }}">집값레이더</span><span>단위 억 · 출처 국토교통부 실거래가 · jipgapradar.kr</span></div>
 <div class="pg">{{ no }}/{{ total }}</div>
+<script>
+// 긴 단지명은 칸에 맞을 때까지 글자를 줄이고(22px 까지), 그래도 넘치는 칸 수를 남긴다 — 자동 검수가 본다
+var over = 0;
+document.querySelectorAll('td').forEach(function(td){
+  if (td.classList.contains('nm')) { var fs = 32; while (td.scrollWidth > td.clientWidth && fs > 18) { fs--; td.style.fontSize = fs + 'px'; } }
+  if (td.scrollWidth > td.clientWidth + 1) { over++; td.setAttribute('data-of', td.textContent.trim().slice(0, 30)); }
+});
+document.body.setAttribute('data-overflow', over);
+</script>
 {% endblock %}

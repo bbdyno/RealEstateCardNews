@@ -1,0 +1,59 @@
+# 인스타 카드뉴스 자동 게시: 매일 12:10(한국 시각). 06:00 정기 실행이 갱신한 DB 로 카드를 만들고
+# 자동 검수(cards/check.py)를 통과하면 @jipgapradar 에 올린 뒤 텔레그램으로 알린다. 실패해도 알린다.
+# Secrets: IG_ACCESS_TOKEN · TELEGRAM_BOT_TOKEN · TELEGRAM_CHAT_ID
+name: post
+
+on:
+  schedule:
+    - cron: "10 3 * * *"          # UTC 03:10 = KST 12:10
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "만들고 검수까지만(게시 안 함)"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write                  # media 브랜치에 카드 이미지 올리기
+
+concurrency:
+  group: post
+  cancel-in-progress: false
+
+env:
+  TZ: Asia/Seoul
+  PYTHONUNBUFFERED: "1"
+  IG_USER_ID: "17841420258022268"  # @jipgapradar (비밀값 아님)
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: DB 받기
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p data
+          gh release download db --pattern 'realestate.db.zst' --dir data
+          zstd -d --rm -f data/realestate.db.zst -o data/realestate.db
+      - name: 카드 만들기 · 검수 · 게시
+        env:
+          GH_TOKEN: ${{ github.token }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.dry_run }}" = "true" ]; then
+            python -m cards.post --dry-run
+          else
+            python -m cards.post
+          fi

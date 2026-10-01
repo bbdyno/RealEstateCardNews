@@ -33,7 +33,7 @@ h2 { font-size:64px; font-weight:800; margin-top:14px; letter-spacing:-0.05em; }
   <div class="sub">최근 3개월 실제 계약 · 호가 아님 · 해제·직거래 제외</div>
   <i class="i3 art" style="background-image:url('{{ I3D.city }}')"></i>
   <div class="tiles">
-    <div class="t t1"><i class="i3" style="background-image:url('{{ I3D.house }}')"></i><div class="k">계약된 단지</div><div class="v">{{ n }}<small>곳</small></div><div class="d">3년 거래 10건 넘는 단지만</div></div>
+    <div class="t t1"><i class="i3" style="background-image:url('{{ I3D.house }}')"></i><div class="k">계약된 단지</div><div class="v">{{ n }}<small>곳</small></div><div class="d">{% if n_shown < n %}표에는 거래 많은 {{ n_shown }}곳{% else %}3년 거래 10건 넘는 단지만{% endif %}</div></div>
     <div class="t t2"><i class="i3" style="background-image:url('{{ I3D.fire }}')"></i><div class="k">3년 최고가 경신</div><div class="v">{{ highs }}<small>곳</small></div><div class="d">{{ (highs / n * 100)|round|int }}%가 신고가</div></div>
     <div class="t t3"><i class="i3" style="background-image:url('{{ I3D.pin }}')"></i><div class="k">거래가 많은 구</div><div class="v">{% for g, c in top_gu %}{{ g }} {{ c }}{% if not loop.last %} · {% endif %}{% endfor %}</div></div>
     {% if near_hi and near_hi[0].vs_hi < -0.0005 %}<div class="t t4"><i class="i3" style="background-image:url('{{ I3D.down }}')"></i><div class="k">3년 최고가보다 많이 내린 단지</div>
