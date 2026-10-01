@@ -1,13 +1,19 @@
-# 인스타 카드뉴스 자동 게시: 매일 12:10(한국 시각). 06:00 정기 실행이 갱신한 DB 로 카드를 만들고
+# 인스타 카드뉴스 자동 게시: 매일 12:10 예산표, 19:40 '현금으로 어디까지'(한국 시각). 06:00 정기 실행이 갱신한 DB 로 카드를 만들고
 # 자동 검수(cards/check.py)를 통과하면 @jipgapradar 에 올린 뒤 텔레그램으로 알린다. 실패해도 알린다.
 # Secrets: IG_ACCESS_TOKEN · TELEGRAM_BOT_TOKEN · TELEGRAM_CHAT_ID
 name: post
 
 on:
   schedule:
-    - cron: "10 3 * * *"          # UTC 03:10 = KST 12:10
+    - cron: "10 3 * * *"          # UTC 03:10 = KST 12:10 예산표
+    - cron: "40 10 * * *"         # UTC 10:40 = KST 19:40 현금으로 어디까지
   workflow_dispatch:
     inputs:
+      series:
+        description: "시리즈"
+        type: choice
+        options: [budget, cash]
+        default: budget
       dry_run:
         description: "만들고 검수까지만(게시 안 함)"
         type: boolean
@@ -17,7 +23,7 @@ permissions:
   contents: write                  # media 브랜치에 카드 이미지 올리기
 
 concurrency:
-  group: post
+  group: post-${{ github.event.schedule || inputs.series }}
   cancel-in-progress: false
 
 env:
@@ -59,10 +65,13 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
+          S="${{ inputs.series }}"
+          if [ "${{ github.event.schedule }}" = "40 10 * * *" ]; then S=cash; fi
+          if [ -z "$S" ]; then S=budget; fi
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.dry_run }}" = "true" ]; then
-            python -m cards.post --dry-run
+            python -m cards.post --series "$S" --dry-run
           else
-            python -m cards.post
+            python -m cards.post --series "$S"
           fi
       - name: 카드 이미지 보관(확인용)
         if: always()

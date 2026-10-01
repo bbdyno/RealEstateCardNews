@@ -1,0 +1,65 @@
+{% extends '_base.html' %}
+{% set m = main %}
+{% set alt = loan.max_price(p.cash, p.income, True, not p.first) %}
+{% set mx = [m.by_ltv, m.by_dsr, m.by_cap]|max %}
+{% block css %}
+body { background:#fff; }
+.wrap { position:absolute; inset:0; padding:56px; }
+h1 { font-size:76px; font-weight:900; letter-spacing:-0.05em; line-height:1.05; }
+h1 em { font-style:normal; background:var(--lime); padding:0 12px; border-radius:12px; }
+.eq { display:flex; align-items:stretch; gap:12px; margin-top:40px; }
+.eq .b { flex:1; border-radius:26px; padding:22px 20px; background:var(--soft); }
+.eq .b .k { font-size:25px; font-weight:800; color:var(--ink2); }
+.eq .b .v { font-size:52px; font-weight:900; letter-spacing:-0.05em; margin-top:8px; white-space:nowrap; }
+.eq .op { align-self:center; font-size:56px; font-weight:900; color:var(--muted); }
+.eq .r { background:var(--ink); color:#fff; } .eq .r .k { color:rgba(255,255,255,.7); } .eq .r .v { color:var(--lime); }
+h3 { font-size:38px; font-weight:900; margin-top:54px; letter-spacing:-0.04em; }
+h3 small { font-size:25px; font-weight:700; color:var(--muted); margin-left:10px; }
+.lim { margin-top:22px; display:grid; gap:22px; }
+.row .top { display:flex; justify-content:space-between; align-items:baseline; font-size:31px; font-weight:800; }
+.row .top b { font-size:42px; font-weight:900; letter-spacing:-0.04em; }
+.row .top span small { font-size:23px; color:var(--muted); font-weight:700; margin-left:8px; }
+.bar { height:26px; border-radius:13px; background:var(--soft); margin-top:10px; overflow:hidden; }
+.bar i { display:block; height:100%; border-radius:13px; background:#C9CED6; }
+.row.on .bar i { background:var(--up); }
+.row.on .top b { color:var(--up); }
+.tagon { display:inline-block; background:var(--up); color:#fff; font-size:21px; font-weight:900; padding:3px 10px; border-radius:8px; margin-left:10px; vertical-align:4px; }
+.alt { margin-top:40px; border-radius:30px; background:var(--lav); padding:30px 34px; display:flex; justify-content:space-between; align-items:center; }
+.alt .k { font-size:31px; font-weight:800; } .alt .k small { display:block; font-size:24px; font-weight:700; opacity:.7; margin-top:6px; }
+.alt b { font-size:72px; font-weight:900; letter-spacing:-0.05em; white-space:nowrap; }
+.pay { margin-top:22px; border-radius:30px; background:var(--blue); padding:30px 34px; display:flex; justify-content:space-between; align-items:center; }
+.pay .k { font-size:31px; font-weight:800; } .pay .k small { display:block; font-size:24px; font-weight:700; opacity:.7; margin-top:6px; }
+.pay b { font-size:72px; font-weight:900; letter-spacing:-0.05em; white-space:nowrap; }
+.note { position:absolute; left:56px; right:56px; bottom:110px; font-size:22px; font-weight:600; color:var(--muted); line-height:1.5; }
+.foot { position:absolute; left:56px; bottom:40px; display:flex; align-items:center; gap:16px; font-size:23px; font-weight:700; color:var(--muted); }
+.foot .logo { font-size:24px; color:var(--ink); } .foot .logo img { width:38px; height:38px; border-radius:10px; }
+{% endblock %}
+{% block body %}
+<div class="wrap">
+  <h1>{{ sido }}{% if mixed %} 규제지역{% endif %}에서<br><em>최대 {{ eok(m.price) }}</em>인 이유</h1>
+  <div class="eq">
+    <div class="b"><div class="k">현금</div><div class="v">{{ eok(p.cash) }}</div></div><div class="op">+</div>
+    <div class="b"><div class="k">대출</div><div class="v">{{ eok(m.loan) }}</div></div><div class="op">−</div>
+    <div class="b"><div class="k">세금·비용</div><div class="v" data-fit="30">{{ man(m.costs) }}</div></div><div class="op">=</div>
+    <div class="b r"><div class="k">최대 집값</div><div class="v">{{ eok(m.price) }}</div></div>
+  </div>
+  <h3>대출은 셋 중 가장 작은 값<small>연소득 {{ man(p.income) }}원</small></h3>
+  <div class="lim">
+    {% for k, label, sub, v in [('LTV', '집값의 ' ~ (m.ltv * 100)|int ~ '% (LTV)', '생애최초' if p.first else ('규제지역' if m.ltv < 0.5 else '비규제'), m.by_ltv),
+                                ('DSR', '소득 기준 (DSR 40%)', '금리 4%+스트레스 3% · 30년', m.by_dsr),
+                                ('한도', '수도권 주담대 한도', '규제지역 15억↑는 더 낮음', m.by_cap)] %}
+    <div class="row{{ ' on' if m.binding == k }}"><div class="top"><span>{{ label }}{% if m.binding == k %}<span class="tagon">한계</span>{% endif %}<small>{{ sub }}</small></span><b>{{ eok(v) }}</b></div>
+      <div class="bar"><i style="width:{{ (v / mx * 100)|round(1) }}%"></i></div></div>
+    {% endfor %}
+  </div>
+  {% if mixed %}
+  <div class="alt"><div class="k">규제지역 밖(경기 그 외)이면<small>LTV {{ (pl[False].ltv * 100)|int }}% · 대출 {{ eok(pl[False].loan) }}</small></div><b>{{ eok(pl[False].price) }}</b></div>
+  {% elif has_reg and (alt.price - m.price)|abs >= 1000 %}
+  <div class="alt"><div class="k">{{ '생애최초가 아니면' if p.first else '생애최초라면' }}{{ ' (규제지역 12곳)' if sido == '경기' }}<small>LTV {{ (alt.ltv * 100)|int }}% · 대출 {{ eok(alt.loan) }}</small></div><b>{{ eok(alt.price) }}</b></div>
+  {% endif %}
+  <div class="pay"><div class="k">매달 갚는 돈<small>대출 {{ eok(m.loan) }} · 금리 4% · 30년 원리금균등</small></div><b>{{ man(monthly(m.loan)) }}원</b></div>
+  <div class="note">{{ rules }} · 무주택·기존 대출 없음·변동금리 가정 · 세금·비용 = 취득세(생애최초 감면 미반영)+중개보수 상한+기타 0.2%<br>은행·소득 형태·금리에 따라 달라져요. 실제 한도는 은행에서 꼭 확인하세요.</div>
+  <div class="foot"><span class="logo"><img src="{{ logo }}">집값레이더</span><span>단위 억 · jipgapradar.kr</span></div>
+  <div class="pg">{{ no }}/{{ total }}</div>
+</div>
+{% endblock %}

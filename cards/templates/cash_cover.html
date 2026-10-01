@@ -1,0 +1,62 @@
+{% extends '_base.html' %}
+{% block css %}
+body { background: radial-gradient(120% 90% at 85% 10%, #2A2F37 0%, #111316 60%); color:#fff; }
+.wrap { position:absolute; inset:0; padding:64px 64px 0; }
+.logo { color:#fff; }
+.tag { display:inline-block; margin-top:70px; background:var(--lime); color:var(--ink); font-size:28px; font-weight:800; padding:10px 22px; border-radius:999px; }
+h1 { font-size:136px; font-weight:900; line-height:1.0; letter-spacing:-0.06em; margin-top:30px; }
+h1 em { font-style:normal; color:var(--lime); }
+h2 { font-size:62px; font-weight:800; margin-top:14px; letter-spacing:-0.05em; }
+.sub { font-size:32px; color:rgba(255,255,255,.7); font-weight:700; margin-top:22px; }
+.art { position:absolute; right:48px; top:220px; width:280px; height:280px; filter: drop-shadow(0 30px 50px rgba(0,0,0,.45)); }
+.tiles { position:absolute; left:64px; right:64px; top:575px; display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+.t { border-radius:34px; padding:26px 34px; color:var(--ink); position:relative; }
+.t .k { font-size:31px; font-weight:800; padding-right:76px; }
+.t .v { font-size:84px; font-weight:900; letter-spacing:-0.05em; margin-top:14px; line-height:1; white-space:nowrap; overflow:hidden; }
+.t .v small { font-size:36px; font-weight:800; }
+.t .d { font-size:26px; font-weight:700; opacity:.72; margin-top:12px; white-space:nowrap; overflow:hidden; }
+.t .i3 { position:absolute; right:22px; top:20px; width:66px; height:66px; }
+.big { grid-column: span 2; background:var(--yellow); }
+.big .v { font-size:108px; }
+.big .two { display:flex; gap:40px; margin-top:14px; }
+.big .two div { font-size:34px; font-weight:800; }
+.big .two b { display:block; font-size:96px; font-weight:900; letter-spacing:-0.05em; line-height:1; margin-top:6px; }
+.t2 { background:var(--pink); } .t3 { background:var(--blue); }
+.t2 .v, .t3 .v { font-size:64px; }
+.t4 { grid-column: span 2; background:var(--green); }
+.t4 .v { font-size:54px; }
+.swipe { position:absolute; left:64px; bottom:64px; font-size:32px; font-weight:800; color:var(--lime); }
+.pg { color:rgba(255,255,255,.5); }
+{% endblock %}
+{% block body %}
+<div class="wrap">
+  <div class="logo"><img src="{{ logo }}">집값레이더</div>
+  <span class="tag">{{ rules }} · 실거래 {{ today.month }}.{{ today.day }} 신고분까지</span>
+  <h1><em>현금 {{ eok(p.cash) }}</em></h1>
+  <h2>{{ sido }} 아파트, 어디까지?</h2>
+  <div class="sub" data-fit="24">{{ p.label }} · 연소득 {{ man(p.income) }}원 · {{ '생애최초' if p.first else '생애최초 아님' }}</div>
+  <i class="i3 art" style="background-image:url('{{ I3D.wallet }}')"></i>
+  <div class="tiles">
+    <div class="t big"><i class="i3" style="background-image:url('{{ I3D.key }}')"></i>
+      <div class="k">살 수 있는 최대 집값</div>
+      {% if mixed %}
+      <div class="two"><div>규제지역 12곳<b>{{ eok(pl[True].price) }}</b></div><div>그 외 지역<b>{{ eok(pl[False].price) }}</b></div></div>
+      {% else %}
+      <div class="v">{{ eok(main.price) }}</div>
+      <div class="d" data-fit="20">현금 {{ eok(p.cash) }} + 대출 {{ eok(main.loan) }} − 세금·비용 {{ man(main.costs) }}원</div>
+      {% endif %}
+    </div>
+    <div class="t t2"><i class="i3" style="background-image:url('{{ I3D.warn }}')"></i><div class="k">대출을 막는 것</div>
+      <div class="v" data-fit="40">{{ {'DSR': '소득(DSR)', 'LTV': 'LTV ' ~ (main.ltv * 100)|int ~ '%', '한도': '6억 한도'}[main.binding] }}</div>
+      <div class="d" data-fit="18">대출 {{ eok(main.loan) }}에서 멈춰요</div></div>
+    <div class="t t3"><i class="i3" style="background-image:url('{{ I3D.house }}')"></i><div class="k">그 값에 계약된 단지</div>
+      <div class="v">{{ n }}<small>곳</small></div>
+      <div class="d" data-fit="18">최근 3개월 · 최대 집값의 80~100%</div></div>
+    {% if mode_py %}<div class="t t4"><i class="i3" style="background-image:url('{{ I3D.building }}')"></i><div class="k">이 돈으로 많이 산 집</div>
+      <div class="v" data-fit="36">{{ mode_py }}평대 · 평균 {{ avg_age }}년 된 아파트</div>
+      <div class="d" data-fit="18">거래 많은 곳: {% for g, c in top_gu %}{{ g }} {{ c }}{% if not loop.last %} · {% endif %}{% endfor %}</div></div>{% endif %}
+  </div>
+  <div class="swipe">넘겨서 계산과 단지 보기 →</div>
+  <div class="pg">1/{{ total }}</div>
+</div>
+{% endblock %}

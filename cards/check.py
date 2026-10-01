@@ -15,7 +15,9 @@ from PIL import Image
 from analytics import core
 
 
-def check_rows(rows: list[dict], eok: int, base: str, today: dt.date) -> list[str]:
+def check_rows(rows: list[dict], eok: int | None, base: str, today: dt.date, bounds=None) -> list[str]:
+    """bounds(row) -> (하한, 상한) 만원. 없으면 eok 억대."""
+    bounds = bounds or (lambda x: (eok * 10000, (eok + 1) * 10000 - 1))
     bad = []
     if len(rows) < 10:
         bad.append(f"단지가 {len(rows)}곳뿐(10곳 미만)")
@@ -24,8 +26,9 @@ def check_rows(rows: list[dict], eok: int, base: str, today: dt.date) -> list[st
     since = core.add_months(base, -2) + "-01"
     seen = set()
     for x in rows:
-        if not (eok * 10000 <= x["price"] < (eok + 1) * 10000):
-            bad.append(f"{x['name']} 가격 {x['price']} 이 {eok}억대 밖")
+        lo, hi = bounds(x)
+        if not (lo <= x["price"] <= hi):
+            bad.append(f"{x['name']} 가격 {x['price']} 이 범위({lo:.0f}~{hi:.0f}) 밖")
         if x["ymd"] < since:
             bad.append(f"{x['name']} 계약일 {x['ymd']} 이 최근 3개월 밖")
         if x["vs_hi"] is not None and not (-0.6 <= x["vs_hi"] <= 0.0001):
@@ -64,4 +67,16 @@ def check_caption(caption: str, recent: list[str]) -> list[str]:
     head = caption.strip().splitlines()[0]
     if any((r or "").strip().splitlines()[:1] == [head] for r in recent):
         bad.append("최근 게시물과 첫 줄이 같음(중복 게시)")
+    return bad
+
+
+def check_plan(cash: float, plan, cap: float = 60000) -> list[str]:
+    """현금 카드의 계산이 맞는지: 현금 + 대출 − 비용 = 최대 집값, 대출은 LTV·한도 이하."""
+    bad = []
+    if abs(cash + plan.loan - plan.costs - plan.price) > 50:
+        bad.append(f"계산 불일치: 현금 {cash} + 대출 {plan.loan:.0f} − 비용 {plan.costs:.0f} ≠ {plan.price:.0f}")
+    if plan.loan > cap + 1 or plan.loan > plan.by_ltv + 1 or plan.loan > plan.by_dsr + 1:
+        bad.append(f"대출 {plan.loan:.0f} 이 한도를 넘음")
+    if not cash < plan.price < cash * 6:
+        bad.append(f"최대 집값 {plan.price:.0f} 이 이상함")
     return bad

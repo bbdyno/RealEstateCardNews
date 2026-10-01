@@ -17,7 +17,7 @@ td.nm { padding:0 6px; }
 .nmw > span { flex:none; }
 .nmw.wrapd > span { flex:0 1 auto; min-width:0; }
 .nmw { height:51px; display:flex; align-items:center; overflow:hidden; white-space:nowrap; font-weight:800; font-size:32px; letter-spacing:-0.05em; }
-td.nm small { font-weight:600; color:var(--muted); font-size:17px; margin-left:4px; }
+td.nm small { font-weight:700; color:var(--muted); font-size:23px; margin-left:8px; letter-spacing:-0.03em; }
 td.p { font-weight:900; font-size:33px; }
 td.hi { color:var(--muted); }
 td.dd { font-weight:800; }
@@ -28,14 +28,14 @@ tr.new td:not(.gu) { background:#FFF0F5; }
 .foot .logo { font-size:24px; color:var(--ink); } .foot .logo img { width:38px; height:38px; border-radius:10px; }
 {% endblock %}
 {% block body %}
-<div class="head"><h1>{{ sido }} {{ eok }}억대<span>{{ band }}</span></h1></div>
-<div class="chips"><span class="on">실거래</span><span>최근 3개월</span><span>{{ today.month }}.{{ today.day }} 신고분까지</span><span>해제·직거래 제외</span><span>{% if n_shown < n %}거래 많은 {{ n_shown }}곳{% else %}3년 거래 10건↑{% endif %}</span></div>
+<div class="head"><h1>{{ title }}<span>{{ badge }}</span></h1></div>
+<div class="chips"><span class="on">실거래</span>{% for c in chips %}<span>{{ c }}</span>{% endfor %}<span>{% if n_shown < n %}거래 많은 {{ n_shown }}곳{% else %}3년 거래 10건↑{% endif %}</span></div>
 <table>
 <colgroup><col style="width:112px"><col><col style="width:60px"><col style="width:52px"><col style="width:122px"><col style="width:92px"><col style="width:96px"><col style="width:128px"></colgroup>
 <tr><th>구</th><th class="l">단지</th><th>연차</th><th>평</th><th>실거래</th><th>계약일</th><th>3년 최고</th><th>최고 대비</th></tr>
 {% for gu, items in page|groupby('gu') %}{% for x in items %}
 <tr class="{{ 'new' if x.is_high }}">{% if loop.first %}<td class="gu{{ ' one' if items|length == 1 and ' ' in gu }}" rowspan="{{ items|length }}">{{ gu|replace(' ', '<br>'|safe) }}</td>{% endif %}
-<td class="l nm"><div class="nmw" data-fit="24" data-wrap="21"><span>{{ x.name }}</span>{% if x.is_high %}<span class="flag">신고가</span>{% endif %}</div></td>
+<td class="l nm"><div class="nmw" data-fit="24" data-wrap="21"><span>{{ x.name }}{% if x.name|length <= 4 and x.umd %}<small>{{ x.umd }}</small>{% endif %}</span>{% if x.is_high %}<span class="flag">신고가</span>{% endif %}</div></td>
 <td>{{ x.age or '–' }}</td><td>{{ x.py }}</td><td class="p">{{ x.price|eokn }}</td><td>{{ x.ymd[5:7]|int }}.{{ x.ymd[8:10] }}</td>
 <td class="hi">{{ x.hi|eokn }}</td><td class="dd {{ x.vs_hi|delta }}">{% if x.vs_hi is not none and x.vs_hi < -0.0005 %}{{ x.vs_hi|pct }}{% else %}최고{% endif %}</td></tr>
 {% endfor %}{% endfor %}

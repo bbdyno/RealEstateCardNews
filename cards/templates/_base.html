@@ -6,7 +6,7 @@
   --pink:#FFB8D9; --blue:#AECBFF; --green:#B9F0A0; --lav:#D9CCFF; --up:#F04452; --down:#3182F6; }
 * { box-sizing:border-box; margin:0; padding:0; }
 html, body { width:1080px; height:1440px; overflow:hidden; }
-body { position:relative; font-family:"Pretendard Variable",Pretendard,sans-serif; letter-spacing:-0.03em;
+body { position:relative; word-break:keep-all; font-family:"Pretendard Variable",Pretendard,sans-serif; letter-spacing:-0.03em;
   font-feature-settings:"tnum"; -webkit-font-smoothing:antialiased; color:var(--ink); }
 .i3 { display:block; background:center/contain no-repeat; }
 .logo { display:flex; align-items:center; gap:12px; font-weight:800; font-size:30px; }
@@ -30,6 +30,8 @@ document.querySelectorAll('[data-fit]').forEach(function (el) {
 });
 var t = document.querySelector('table'), f = document.querySelector('.foot');
 if (t && f) { var tb = t.getBoundingClientRect().bottom, ft = f.getBoundingClientRect().top; document.body.setAttribute('data-tb', Math.round(tb) + '/' + Math.round(ft)); if (tb > ft - 8) over++; }
+var tl = document.querySelector('.tiles'), sw = document.querySelector('.swipe');
+if (tl && sw && tl.getBoundingClientRect().bottom > sw.getBoundingClientRect().top - 8) { over++; document.body.setAttribute('data-tb', 'tiles/swipe'); }
 document.body.setAttribute('data-overflow', over);
 });
 </script></body></html>

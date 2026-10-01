@@ -94,12 +94,12 @@ def render(sido: str, eok: int, band: str, today: dt.date | None = None, rows_ba
     shown = rows if len(rows) <= MAX_ROWS else sorted(sorted(rows, key=lambda x: -x["n3y"])[:MAX_ROWS],
                                                        key=lambda x: (x["gu"], -x["price"]))
     pages = [shown[i:i + ROWS] for i in range(0, len(shown), ROWS)]
-    env = Environment(loader=FileSystemLoader(HERE / "templates"), autoescape=True)
-    env.filters.update(fmt.FILTERS)
     by_gu = defaultdict(int)
     for x in rows:
         by_gu[x["gu"]] += 1
-    ctx = dict(sido=sido, eok=eok, band=band.replace("평대", "평형"), base=base, rows=rows, n=len(rows), pages=pages,
+    chips = ["최근 3개월", f"{today.month}.{today.day} 신고분까지", "해제·직거래 제외"]
+    ctx = dict(sido=sido, eok=eok, band=band.replace("평대", "평형"), base=base, title=f"{sido} {eok}억대",
+               badge=band.replace("평대", "평형"), chips=chips, rows=rows, n=len(rows), pages=pages,
                n_shown=len(shown),
                total=len(pages) + 2, highs=sum(x["is_high"] for x in rows), I3D=I3D, today=today,
                logo=(db.ROOT / "web" / "static" / "logo.svg").as_uri(),
@@ -109,11 +109,20 @@ def render(sido: str, eok: int, band: str, today: dt.date | None = None, rows_ba
     if out.exists():
         shutil.rmtree(out)
     out.mkdir(parents=True)
-    shots = [("cover", {}), *[("table", {"page": p, "no": i + 2}) for i, p in enumerate(pages)], ("outro", {})]
+    shots = [("budget_cover", {}), *[("budget_table", {"page": p, "no": i + 2}) for i, p in enumerate(pages)], ("budget_outro", {})]
+    files, overflow = shoot(env(), shots, ctx, out)
+    meta = {"rows": shown, "base": base, "overflow": overflow, "ctx": {k: ctx[k] for k in ("n", "n_shown", "highs", "top_gu", "band")},
+            "near_hi": ctx["near_hi"]}
+    print(f"{len(rows)}개 단지 · {len(files)}장 → {out}")
+    return files, meta
+
+
+def shoot(env: Environment, shots: list[tuple[str, dict]], ctx: dict, out: Path) -> tuple[list[Path], dict[str, int]]:
+    """템플릿마다 크롬으로 찍어 JPEG 로 저장한다. 넘친 글자 수를 장마다 돌려준다(자동 검수용)."""
     files, overflow = [], {}
     with tempfile.TemporaryDirectory() as d:
         for k, (tpl, extra) in enumerate(shots, 1):
-            html = env.get_template(f"budget_{tpl}.html").render(**ctx, **extra, idx=k)
+            html = env.get_template(f"{tpl}.html").render(**ctx, **extra, idx=k)
             src = Path(d) / f"{k:02d}.html"
             src.write_text(html, encoding="utf-8")
             png = Path(d) / f"{k:02d}.png"
@@ -124,15 +133,18 @@ def render(sido: str, eok: int, band: str, today: dt.date | None = None, rows_ba
             m = re.search(r'data-overflow="(\d+)"', dom)
             overflow[f"{k:02d}"] = int(m.group(1)) if m else 0
             if overflow[f"{k:02d}"]:
-                print(f"  {k:02d} 넘침:", re.findall(r'data-of="([^"]*)"', dom) or "표가 아래 글씨와 겹침", re.findall(r'data-tb="([^"]*)"', dom))
+                print(f"  {k:02d} 넘침:", re.findall(r'data-of="([^"]*)"', dom) or "표가 아래 글씨와 겹침")
             jpg = out / f"{k:02d}.jpg"                       # 인스타 API 는 JPEG 만 받는다
             with Image.open(png) as im:
                 im.convert("RGB").save(jpg, "JPEG", quality=92, optimize=True, progressive=True)
             files.append(jpg)
-    meta = {"rows": shown, "base": base, "overflow": overflow, "ctx": {k: ctx[k] for k in ("n", "n_shown", "highs", "top_gu", "band")},
-            "near_hi": ctx["near_hi"]}
-    print(f"{len(rows)}개 단지 · {len(files)}장 → {out}")
-    return files, meta
+    return files, overflow
+
+
+def env() -> Environment:
+    e = Environment(loader=FileSystemLoader(HERE / "templates"), autoescape=True)
+    e.filters.update(fmt.FILTERS)
+    return e
 
 
 if __name__ == "__main__":
