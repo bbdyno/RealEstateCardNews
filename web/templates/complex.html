@@ -110,7 +110,7 @@
 <div class="grid"><div class="card s12">
   <div class="card-h"><div class="icon-title">{{ i3d('key', 30, 'ic') }}<div><h2>전월세 실거래</h2><div class="sub">최근 순 · 보증금 / 월세</div></div></div></div>
   <div class="tbl-wrap"><table class="tbl"><thead><tr><th>계약일</th><th>면적</th><th class="r">층</th><th class="r">보증금</th><th class="r">월세</th><th></th></tr></thead><tbody>
-  {% for d in cx.rents[:10] %}<tr><td>{{ d.ymd|date }}</td><td>{{ d.area|ptype(cx.kind) }}</td><td class="r">{{ d.floor }}</td><td class="r"><b>{{ d.deposit|won }}</b></td><td class="r">{{ (d.rent|num ~ '만') if d.rent else '전세' }}</td><td class="muted">{{ d.contract or '' }}</td></tr>{% endfor %}
+  {% for d in cx.rents[:6] %}<tr><td>{{ d.ymd|date }}</td><td>{{ d.area|ptype(cx.kind) }}</td><td class="r">{{ d.floor }}</td><td class="r"><b>{{ d.deposit|won }}</b></td><td class="r">{{ (d.rent|num ~ '만') if d.rent else '전세' }}</td><td class="muted">{{ d.contract or '' }}</td></tr>{% endfor %}
   </tbody></table></div>
 </div></div>
 {% endif %}

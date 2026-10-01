@@ -73,9 +73,10 @@ def test_adsense_slot_carries_adfit_fallback(demo_db, tmp_path, monkeypatch):
     out = tmp_path / "dist"
     build.build(out, dt.date(2026, 9, 29))
     page = max(_complex_pages(out), key=lambda p: p.stat().st_size).read_text()   # 거래 많은 단지(광고 최대)
-    assert page.count('class="adsbygoogle"') == 3                      # top · bottom · 멀티플렉스
-    assert 'data-ad-slot="555" data-ad-format="autorelaxed"' in page
-    assert 'data-ad-slot="333" data-ad-format="auto" data-full-width-responsive="true" data-fallback="DAN-x:300x250"' in page
+    assert page.count('class="ad-slot ') == 3                           # top · bottom · 멀티플렉스(태그는 app.js 가 만든다)
+    assert 'class="ad-slot ad-related" data-g="555"' in page
+    assert 'class="ad-slot ad-bottom" data-g="333" data-f="DAN-x:300x250"' in page
+    assert '<meta name="ad-client" content="ca-pub-1">' in page
     assert (out / "ads.txt").read_text().startswith("google.com, pub-1, DIRECT")
 
 

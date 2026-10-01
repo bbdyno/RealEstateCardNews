@@ -1,3 +1,12 @@
+/* GA4: <head> 의 gtag.js 주소에서 측정 ID 를 읽어 시작한다(페이지마다 설정 스크립트를 넣지 않으려고) */
+(function(){
+  var t = document.querySelector('script[src*="googletagmanager.com/gtag/js?id="]'); if (!t) return;
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function(){ window.dataLayer.push(arguments); };
+  window.gtag('js', new Date());
+  window.gtag('config', t.src.split('id=')[1]);
+})();
+
 /* 모든 페이지 공통: 수집일 표시, 단지·지역 검색, 알약 탭 전환 */
 (function(){
   fetch('/meta.json').then(function(r){return r.json()}).then(function(m){ if(!m.collected) return;
@@ -134,26 +143,39 @@
   drawAll();
 })();
 
-/* 광고 자리: 한 자리에 광고 하나를 순서대로(docs/MONETIZATION.md 3절).
-   애드센스를 요청하고, 안 채워지면(data-ad-status="unfilled") 애드핏으로 바꾸고, 애드핏도 없으면 자리를 접는다. */
+/* 광고 자리: 한 자리에 광고 하나를 순서대로(docs/MONETIZATION.md 3절). 페이지에는 <div class="ad-slot" data-g data-f> 만 있다.
+   애드센스(data-g) 태그를 만들어 요청하고, 안 채워지면(data-ad-status="unfilled") 애드핏(data-f)으로 바꾸고, 그것도 없으면 자리를 접는다. */
 (function(){
   var slots = document.querySelectorAll('.ad-slot'); if (!slots.length) return;
-  var kakao = false;
+  var meta = document.querySelector('meta[name="ad-client"]'), client = meta && meta.content, kakao = false;
   function fold(el){ var s = el.closest('.ad-slot'); if (s) s.hidden = true; }
   window.adFail = fold;                                   // 애드핏 NO-AD 콜백(data-ad-onfail)
   function loadKakao(){ if (kakao) return; kakao = true;
     var sc = document.createElement('script'); sc.async = true; sc.src = 'https://t1.daumcdn.net/kas/static/ba.min.js'; document.body.appendChild(sc); }
-  function toKakao(ins){ var f = (ins.dataset.fallback || '').match(/^(.+):(\d+)x(\d+)$/); if (!f) return fold(ins);
+  function kakaoIns(spec){ var f = (spec || '').match(/^(.+):(\d+)x(\d+)$/); if (!f) return null;
     var k = document.createElement('ins'); k.className = 'kakao_ad_area'; k.style.display = 'none';
     k.setAttribute('data-ad-unit', f[1]); k.setAttribute('data-ad-width', f[2]); k.setAttribute('data-ad-height', f[3]); k.setAttribute('data-ad-onfail', 'adFail');
-    ins.replaceWith(k); loadKakao(); }
+    return k; }
   slots.forEach(function(s){
-    var g = s.querySelector('ins.adsbygoogle');
-    if (!g){ if (s.querySelector('ins.kakao_ad_area')) loadKakao(); return; }
-    new MutationObserver(function(){ if (g.dataset.adStatus === 'unfilled') toKakao(g); })
+    var gs = s.dataset.g, fs = s.dataset.f;
+    if (!gs || !client) { var k = kakaoIns(fs); if (k) { s.appendChild(k); loadKakao(); } else fold(s); return; }
+    var g = document.createElement('ins'); g.className = 'adsbygoogle'; g.style.display = 'block';
+    g.setAttribute('data-ad-client', client); g.setAttribute('data-ad-slot', gs);
+    if (s.classList.contains('ad-related')) g.setAttribute('data-ad-format', 'autorelaxed');
+    else { g.setAttribute('data-ad-format', 'auto'); g.setAttribute('data-full-width-responsive', 'true'); }
+    s.appendChild(g);
+    new MutationObserver(function(){ if (g.dataset.adStatus === 'unfilled') { var k = kakaoIns(fs); if (k) { g.replaceWith(k); loadKakao(); } else fold(g); } })
       .observe(g, {attributes: true, attributeFilter: ['data-ad-status']});
-    try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) { toKakao(g); }
+    try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) { fold(g); }
   });
+})();
+
+/* 쿠팡 파트너스 배너: 맥락(data-cp)에 맞는 배너 코드를 /coupang.json 에서 넣는다. */
+(function(){
+  var boxes = document.querySelectorAll('.coupang[data-cp]'); if (!boxes.length) return;
+  fetch('/coupang.json').then(function(r){ return r.json(); }).then(function(b){
+    boxes.forEach(function(x){ var h = b[x.dataset.cp] || b.book; if (h) x.querySelector('.coupang-body').innerHTML = h; else x.hidden = true; });
+  }).catch(function(){ boxes.forEach(function(x){ x.hidden = true; }); });
 })();
 
 /* 방문 통계(GA4). config analytics.ga4 가 있을 때만 gtag 가 있다 — 페이지뷰·방문자·유입 경로는 GA4 가 자동으로 모으고,

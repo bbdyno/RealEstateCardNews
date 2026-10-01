@@ -423,6 +423,8 @@ def build(out: Path, today: dt.date, only: str | None = None) -> dict:
         if f.suffix in (".html", ".txt"):
             shutil.copy2(f, out / f.name)
     write_icon_sprite(site.env, out / "static" / "icons.svg")
+    if cfg["ads"]["coupang"].get("enabled"):                 # 쿠팡 배너 코드(맥락별) — 페이지마다 넣지 않고 한 파일로
+        (out / "coupang.json").write_text(json.dumps(cfg["ads"]["coupang"]["banners"], ensure_ascii=False), encoding="utf-8")
     (out / "search.json").write_text(json.dumps(search, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     (out / "meta.json").write_text(json.dumps({"collected": collected, "base_month": base}), encoding="utf-8")
     base_url = cfg["site"]["base_url"].rstrip("/")

@@ -18,14 +18,14 @@
 <meta name="theme-color" content="#15171A">
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
-{% if verify.google %}<meta name="google-site-verification" content="{{ verify.google }}">{% endif %}
-{% if verify.naver %}<meta name="naver-site-verification" content="{{ verify.naver }}">{% endif %}
+{% if path == '/' %}{# 검색엔진 소유 확인은 첫 페이지만 본다 #}{% if verify.google %}<meta name="google-site-verification" content="{{ verify.google }}">{% endif %}
+{% if verify.naver %}<meta name="naver-site-verification" content="{{ verify.naver }}">{% endif %}{% endif %}
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="/static/style.css?v={{ build_id }}">
-{% if ads.adsense.client %}<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ ads.adsense.client }}" crossorigin="anonymous"></script>{% endif %}
-{% if analytics.ga4 %}<script async src="https://www.googletagmanager.com/gtag/js?id={{ analytics.ga4 }}"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','{{ analytics.ga4 }}');</script>{% endif %}
+{% if ads.adsense.client %}<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ ads.adsense.client }}" crossorigin="anonymous"></script>
+<meta name="ad-client" content="{{ ads.adsense.client }}">{% endif %}
+{% if analytics.ga4 %}<script async src="https://www.googletagmanager.com/gtag/js?id={{ analytics.ga4 }}"></script>{% endif %}
 {% block head %}{% endblock %}
 </head>
 <body>

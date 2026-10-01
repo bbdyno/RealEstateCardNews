@@ -52,12 +52,8 @@
 {% macro ad(slot) -%}
 {%- set gs = ads.adsense.slots.get(slot) if ads.adsense.client else '' -%}
 {%- set kf = ads.adfit.units.get(slot) or {} -%}
-{% if gs or kf.id %}
-<div class="ad-slot ad-{{ slot }}"><div class="lab">광고</div>
-{% if gs %}<ins class="adsbygoogle" style="display:block" data-ad-client="{{ ads.adsense.client }}" data-ad-slot="{{ gs }}" {% if slot == 'related' %}data-ad-format="autorelaxed"{% else %}data-ad-format="auto" data-full-width-responsive="true"{% endif %}{% if kf.id %} data-fallback="{{ kf.id }}:{{ kf.w }}x{{ kf.h }}"{% endif %}></ins>
-{% else %}<ins class="kakao_ad_area" style="display:none" data-ad-unit="{{ kf.id }}" data-ad-width="{{ kf.w }}" data-ad-height="{{ kf.h }}" data-ad-onfail="adFail"></ins>{% endif %}
-</div>
-{% endif %}
+{# 페이지에는 자리 표시만 두고 광고 태그는 app.js 가 만든다(4만 페이지 × 광고 태그 = 사이트 용량) #}
+{% if gs or kf.id %}<div class="ad-slot ad-{{ slot }}"{% if gs %} data-g="{{ gs }}"{% endif %}{% if kf.id %} data-f="{{ kf.id }}:{{ kf.w }}x{{ kf.h }}"{% endif %}><div class="lab">광고</div></div>{% endif %}
 {%- endmacro %}
 
 {# 직접 판매 광고(분양·협찬) — sponsors.yaml. '광고 · 광고주'를 첫 줄에 표시한다(추천·보증 심사지침) #}
@@ -73,12 +69,12 @@
 
 {# 쿠팡 파트너스 블록. 맥락(ctx)에 맞는 배너를 고르고, 대가성 고지를 맨 위에 둔다(쿠팡 가이드) #}
 {% macro coupang(ctx='book') -%}
-{%- set html = ads.coupang.banners.get(ctx) or ads.coupang.banners.get('book') -%}
-{% if ads.coupang.enabled and html %}
-<div class="card coupang">
+{# 배너 코드는 /coupang.json 에서 app.js 가 넣는다(페이지 용량). 대가성 고지는 페이지에 그대로 둔다(쿠팡 가이드: 맨 위) #}
+{% if ads.coupang.enabled and (ads.coupang.banners.get(ctx) or ads.coupang.banners.get('book')) %}
+<div class="card coupang" data-cp="{{ ctx if ads.coupang.banners.get(ctx) else 'book' }}">
   <div class="partner-note">이 게시물은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</div>
   <div class="card-h"><div class="icon-title">{{ i3d({'move': 'key', 'appliance': 'bulb'}.get(ctx, 'receipt'), 30, 'ic') }}<div><h2>{{ {'move': '이사 준비물', 'appliance': '새집에 들일 살림'}.get(ctx, '부동산 공부에 도움 되는 책') }}</h2></div></div></div>
-  <div class="coupang-body">{{ html|safe }}</div>
+  <div class="coupang-body"></div>
 </div>
 {% endif %}
 {%- endmacro %}
