@@ -1,0 +1,40 @@
+{% extends '_base.html' %}
+{% block css %}
+body { background: radial-gradient(120% 90% at 85% 10%, #2A2F37 0%, #111316 60%); color:#fff; }
+.wrap { position:absolute; inset:0; padding:64px 64px 0; }
+.logo { color:#fff; }
+.tag { display:inline-block; margin-top:92px; background:var(--lime); color:var(--ink); font-size:30px; font-weight:800; padding:10px 22px; border-radius:999px; }
+h1 { font-size:132px; font-weight:900; line-height:1.0; letter-spacing:-0.06em; margin-top:34px; }
+h1 em { font-style:normal; color:var(--lime); }
+h2 { font-size:64px; font-weight:800; margin-top:14px; letter-spacing:-0.05em; }
+.sub { font-size:30px; color:rgba(255,255,255,.65); font-weight:600; margin-top:22px; }
+.art { position:absolute; right:40px; top:250px; width:330px; height:330px; filter: drop-shadow(0 30px 50px rgba(0,0,0,.45)); }
+.tiles { position:absolute; left:64px; right:64px; bottom:150px; display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+.t { border-radius:34px; padding:30px 32px; color:var(--ink); min-height:200px; position:relative; }
+.t .k { font-size:28px; font-weight:800; }
+.t .v { font-size:76px; font-weight:900; letter-spacing:-0.05em; margin-top:18px; line-height:1; }
+.t .v small { font-size:38px; font-weight:800; }
+.t .d { font-size:24px; font-weight:700; opacity:.7; margin-top:10px; }
+.t .i3 { position:absolute; right:22px; top:22px; width:70px; height:70px; }
+.t1 { background:var(--yellow); } .t2 { background:var(--pink); } .t3 { background:var(--blue); grid-column: span 2; min-height:150px; }
+.t3 .v { font-size:44px; margin-top:12px; }
+.swipe { position:absolute; left:64px; bottom:56px; font-size:28px; font-weight:800; color:var(--lime); }
+.pg { color:rgba(255,255,255,.5); }
+{% endblock %}
+{% block body %}
+<div class="wrap">
+  <div class="logo"><img src="{{ logo }}">집값레이더</div>
+  <span class="tag">실거래 · {{ base|month_long }} 기준</span>
+  <h1><em>{{ sido }} {{ eok }}억대</em></h1>
+  <h2>{{ band }} 실거래 단지</h2>
+  <div class="sub">최근 3개월 실제 계약 · 호가 아님 · 해제·직거래 제외</div>
+  <i class="i3 art" style="background-image:url('{{ I3D.city }}')"></i>
+  <div class="tiles">
+    <div class="t t1"><i class="i3" style="background-image:url('{{ I3D.house }}')"></i><div class="k">계약된 단지</div><div class="v">{{ n }}<small>곳</small></div><div class="d">3년 거래 10건 넘는 단지만</div></div>
+    <div class="t t2"><i class="i3" style="background-image:url('{{ I3D.fire }}')"></i><div class="k">3년 최고가 경신</div><div class="v">{{ highs }}<small>곳</small></div><div class="d">{{ (highs / n * 100)|round|int }}%가 신고가</div></div>
+    <div class="t t3"><i class="i3" style="background-image:url('{{ I3D.pin }}')"></i><div class="k">거래가 많은 구</div><div class="v">{% for g, c in top_gu %}{{ g }} {{ c }}{% if not loop.last %} · {% endif %}{% endfor %}</div></div>
+  </div>
+  <div class="swipe">넘겨서 단지별 표 보기 →</div>
+  <div class="pg">1/{{ total }}</div>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends '_base.html' %}
+{% block css %}
+body { background: radial-gradient(120% 90% at 15% 90%, #2A2F37 0%, #111316 60%); color:#fff; }
+.wrap { position:absolute; inset:0; padding:64px; }
+.logo { color:#fff; }
+h1 { font-size:76px; font-weight:900; line-height:1.15; letter-spacing:-0.05em; margin-top:120px; }
+h1 em { font-style:normal; color:var(--lime); }
+.list { margin-top:54px; display:grid; gap:18px; }
+.it { display:flex; align-items:center; gap:22px; background:rgba(255,255,255,.08); border-radius:28px; padding:24px 28px; font-size:32px; font-weight:800; }
+.it .i3 { width:62px; height:62px; flex:none; }
+.it small { display:block; font-size:22px; font-weight:600; color:rgba(255,255,255,.6); margin-top:4px; }
+.cta { position:absolute; left:64px; right:64px; bottom:120px; background:var(--lime); color:var(--ink); border-radius:34px; padding:34px 40px; font-size:40px; font-weight:900; }
+.cta small { display:block; font-size:24px; font-weight:700; opacity:.7; margin-top:6px; }
+.note { position:absolute; left:64px; bottom:52px; font-size:20px; color:rgba(255,255,255,.5); font-weight:600; }
+.pg { color:rgba(255,255,255,.5); }
+{% endblock %}
+{% block body %}
+<div class="wrap">
+  <div class="logo"><img src="{{ logo }}">집값레이더</div>
+  <h1>단지마다 더 깊게,<br><em>전국 실거래</em>로 봅니다</h1>
+  <div class="list">
+    <div class="it"><i class="i3" style="background-image:url('{{ I3D.chart }}')"></i><div>모든 거래를 점으로<small>평균 말고 계약 한 건 한 건 · 층별로 색이 달라요</small></div></div>
+    <div class="it"><i class="i3" style="background-image:url('{{ I3D.gap }}')"></i><div>신규 전세와 갭<small>갱신 계약은 빼고 실제로 필요한 돈</small></div></div>
+    <div class="it"><i class="i3" style="background-image:url('{{ I3D.warn }}')"></i><div>신고가 찍고 해제된 거래<small>호가 띄우기 의심 신호를 따로 모아 봐요</small></div></div>
+  </div>
+  <div class="cta">프로필 링크 → jipgapradar.kr<small>저장해 두고 예산·평형별로 비교해 보세요</small></div>
+  <div class="note">국토교통부 실거래가(계약일 기준) · 투자 권유 아님 · 신고 기한 30일이라 최근 거래는 늘어날 수 있어요</div>
+  <div class="pg">{{ total }}/{{ total }}</div>
+</div>
+{% endblock %}

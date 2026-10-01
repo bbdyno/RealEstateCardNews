@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root { --ink:#15171A; --ink2:#4E5561; --muted:#8B929C; --line:#E6E8EC; --soft:#F3F4F6; --lime:#D4FA4B; --yellow:#FFE45E;
+  --pink:#FFB8D9; --blue:#AECBFF; --green:#B9F0A0; --lav:#D9CCFF; --up:#F04452; --down:#3182F6; }
+* { box-sizing:border-box; margin:0; padding:0; }
+html, body { width:1080px; height:1350px; overflow:hidden; font-family:"Pretendard Variable",Pretendard,sans-serif; letter-spacing:-0.03em;
+  font-feature-settings:"tnum"; -webkit-font-smoothing:antialiased; color:var(--ink); }
+.i3 { display:block; background:center/contain no-repeat; }
+.logo { display:flex; align-items:center; gap:12px; font-weight:800; font-size:30px; }
+.logo img { width:52px; height:52px; border-radius:14px; }
+.pg { position:absolute; right:56px; bottom:44px; font-size:22px; font-weight:700; color:var(--muted); }
+{% block css %}{% endblock %}
+</style></head>
+<body>{% block body %}{% endblock %}</body></html>
