@@ -27,7 +27,7 @@ h2 { font-size:64px; font-weight:800; margin-top:14px; letter-spacing:-0.05em; }
 {% block body %}
 <div class="wrap">
   <div class="logo"><img src="{{ logo }}">집값레이더</div>
-  <span class="tag">실거래 · {{ base|month_long }} 기준</span>
+  <span class="tag">실거래 · {{ today.year }}.{{ today.month }}.{{ today.day }} 신고분까지</span>
   <h1><em>{{ sido }} {{ eok }}억대</em></h1>
   <h2>{{ band }} 실거래 단지</h2>
   <div class="sub">최근 3개월 실제 계약 · 호가 아님 · 해제·직거래 제외</div>

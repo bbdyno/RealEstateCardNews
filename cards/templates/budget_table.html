@@ -25,7 +25,7 @@ tr.new td:not(.gu) { background:#FFF0F5; }
 {% endblock %}
 {% block body %}
 <div class="head"><h1>{{ sido }} {{ eok }}억대<span>{{ band }}</span></h1></div>
-<div class="chips"><span class="on">실거래</span><span>최근 3개월</span><span>{{ base|month_long }} 기준</span><span>해제·직거래 제외</span><span>{% if n_shown < n %}거래 많은 {{ n_shown }}곳{% else %}3년 거래 10건↑{% endif %}</span></div>
+<div class="chips"><span class="on">실거래</span><span>최근 3개월</span><span>{{ today.month }}.{{ today.day }} 신고분까지</span><span>해제·직거래 제외</span><span>{% if n_shown < n %}거래 많은 {{ n_shown }}곳{% else %}3년 거래 10건↑{% endif %}</span></div>
 <table>
 <colgroup><col style="width:88px"><col><col style="width:62px"><col style="width:54px"><col style="width:126px"><col style="width:98px"><col style="width:98px"><col style="width:138px"></colgroup>
 <tr><th>구</th><th class="l">단지</th><th>연차</th><th>평</th><th>실거래</th><th>계약일</th><th>3년 최고</th><th>최고 대비</th></tr>

@@ -30,7 +30,7 @@ def candidates(today: dt.date) -> list[tuple[str, int, str]]:
     return allc[k:] + allc[:k]
 
 
-def caption(sido: str, eok: int, band: str, meta: dict) -> str:
+def caption(sido: str, eok: int, band: str, meta: dict, today: dt.date) -> str:
     c, rows = meta["ctx"], meta["rows"]
     band_label = band.replace("평대", "평형")
     gu = " · ".join(f"{g} {n}" for g, n in c["top_gu"])
@@ -46,7 +46,7 @@ def caption(sido: str, eok: int, band: str, meta: dict) -> str:
         lines.append("📉 최고가보다 많이 내린 단지: " + ", ".join(f"{x['gu']} {x['name']}({x['vs_hi'] * 100:.1f}%)" for x in drops))
     lines += [
         "",
-        f"✔ 호가 아닌 국토부 실거래({meta['base'][:4]}년 {int(meta['base'][5:7])}월 기준)",
+        f"✔ 호가 아닌 국토부 실거래({today.month}월 {today.day}일 신고분까지)",
         "✔ 해제·직거래 거래 제외 ✔ 3년 거래 10건 넘는 단지만",
         "",
         "👉 단지별 층별 가격·갭·모든 거래 그래프는 프로필 링크(jipgapradar.kr)",
@@ -77,12 +77,12 @@ def main() -> int:
                 tried.append(f"{title}({len(rows)}곳)")
                 continue
             cap = caption(sido, eok, band, {"ctx": {"n": len(rows), "n_shown": len(rows), "highs": sum(x["is_high"] for x in rows),
-                                                    "top_gu": [], "band": band}, "rows": rows, "base": base, "near_hi": []})
+                                                    "top_gu": [], "band": band}, "rows": rows, "base": base, "near_hi": []}, today)
             if any((r or "").strip().splitlines()[:1] == [cap.splitlines()[0]] for r in recent):
                 tried.append(f"{title}(최근에 올림)")
                 continue
             files, meta = budget.render(sido, eok, band, today, rows_base=(rows, base))
-            cap = caption(sido, eok, band, meta)
+            cap = caption(sido, eok, band, meta, today)
             bad = check.check_rows(rows, eok, base, today) + check.check_images(files, meta["overflow"]) + \
                 check.check_caption(cap, recent)
             if bad:
