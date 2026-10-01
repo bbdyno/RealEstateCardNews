@@ -160,6 +160,7 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--series", choices=sorted(MAKERS), default="budget")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--repeat", action="store_true", help="최근에 올린 제목도 다시 올린다(수정판 재게시)")
     a = ap.parse_args()
     today = dt.date.today()
     live = not a.dry_run and bool(os.environ.get("IG_ACCESS_TOKEN") and os.environ.get("IG_USER_ID"))
@@ -170,7 +171,7 @@ def main() -> int:
             if days is not None and days < 20:
                 publish.notify(f"⚠️ 집값레이더 인스타 토큰이 {days:.0f}일 남았습니다. Meta 개발자 화면에서 다시 발급해 주세요.")
         tried: list[str] = []
-        made = MAKERS[a.series](today, recent, tried)
+        made = MAKERS[a.series](today, [] if a.repeat else recent, tried)
         if not made:
             publish.notify("ℹ️ 집값레이더: 오늘 올릴 만한 후보가 없어 건너뜁니다\n" + ", ".join(tried))
             return 0

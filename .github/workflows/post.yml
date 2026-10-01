@@ -14,6 +14,10 @@ on:
         type: choice
         options: [budget, cash]
         default: budget
+      repeat:
+        description: "최근에 올린 제목도 다시(수정판 재게시)"
+        type: boolean
+        default: false
       dry_run:
         description: "만들고 검수까지만(게시 안 함)"
         type: boolean
@@ -71,7 +75,7 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.dry_run }}" = "true" ]; then
             python -m cards.post --series "$S" --dry-run
           else
-            python -m cards.post --series "$S"
+            python -m cards.post --series "$S" ${{ inputs.repeat && '--repeat' || '' }}
           fi
       - name: 카드 이미지 보관(확인용)
         if: always()
