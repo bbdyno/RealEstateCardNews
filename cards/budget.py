@@ -53,7 +53,7 @@ def sido_complexes(sido: str) -> tuple:
         if r["sido_short"] != sido:
             continue
         rows = [dict(x) for x in c.execute("SELECT * FROM deals WHERE sgg=? AND kind='apt' AND trade='sale'", (r["code"],))]
-        out += [(r["name"].split()[-1], cx) for cx in core.build_complexes(rows, "apt").values()]
+        out += [(r["name"], cx) for cx in core.build_complexes(rows, "apt").values()]  # "수원시 권선구" 처럼 시까지
     return tuple(out)
 
 
@@ -123,6 +123,8 @@ def render(sido: str, eok: int, band: str, today: dt.date | None = None, rows_ba
             dom = subprocess.run([*common, "--dump-dom", src.as_uri()], check=True, capture_output=True, text=True, timeout=120).stdout
             m = re.search(r'data-overflow="(\d+)"', dom)
             overflow[f"{k:02d}"] = int(m.group(1)) if m else 0
+            if overflow[f"{k:02d}"]:
+                print(f"  {k:02d} 넘침:", re.findall(r'data-of="([^"]*)"', dom) or "표가 아래 글씨와 겹침", re.findall(r'data-tb="([^"]*)"', dom))
             jpg = out / f"{k:02d}.jpg"                       # 인스타 API 는 JPEG 만 받는다
             with Image.open(png) as im:
                 im.convert("RGB").save(jpg, "JPEG", quality=92, optimize=True, progressive=True)

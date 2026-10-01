@@ -5,7 +5,8 @@
 :root { --ink:#15171A; --ink2:#4E5561; --muted:#8B929C; --line:#E6E8EC; --soft:#F3F4F6; --lime:#D4FA4B; --yellow:#FFE45E;
   --pink:#FFB8D9; --blue:#AECBFF; --green:#B9F0A0; --lav:#D9CCFF; --up:#F04452; --down:#3182F6; }
 * { box-sizing:border-box; margin:0; padding:0; }
-html, body { width:1080px; height:1440px; overflow:hidden; font-family:"Pretendard Variable",Pretendard,sans-serif; letter-spacing:-0.03em;
+html, body { width:1080px; height:1440px; overflow:hidden; }
+body { position:relative; font-family:"Pretendard Variable",Pretendard,sans-serif; letter-spacing:-0.03em;
   font-feature-settings:"tnum"; -webkit-font-smoothing:antialiased; color:var(--ink); }
 .i3 { display:block; background:center/contain no-repeat; }
 .logo { display:flex; align-items:center; gap:12px; font-weight:800; font-size:30px; }
@@ -13,4 +14,22 @@ html, body { width:1080px; height:1440px; overflow:hidden; font-family:"Pretenda
 .pg { position:absolute; right:56px; bottom:44px; font-size:22px; font-weight:700; color:var(--muted); }
 {% block css %}{% endblock %}
 </style></head>
-<body>{% block body %}{% endblock %}</body></html>
+<body>{% block body %}{% endblock %}
+<script>
+// 말줄임 없이 맞춘다: 넘치면 글자를 data-fit(px)까지 줄이고, data-wrap 이 있으면 그 크기로 두 줄. 그래도 넘치면 검수 실패 표시
+// 웹폰트가 다 받아진 뒤에 재야 실제로 찍히는 글자 폭과 같다(먼저 재면 대체 글꼴 기준이라 틀린다)
+(document.fonts ? document.fonts.ready : Promise.resolve()).then(function () {
+var over = 0;
+document.querySelectorAll('[data-fit]').forEach(function (el) {
+  var fs = parseFloat(getComputedStyle(el).fontSize), min = +el.getAttribute('data-fit');
+  while (el.scrollWidth > el.clientWidth + 1 && fs > min) { fs--; el.style.fontSize = fs + 'px'; }
+  if (el.scrollWidth > el.clientWidth + 1 && el.hasAttribute('data-wrap')) {
+    el.classList.add('wrapd'); el.style.whiteSpace = 'normal'; el.style.lineHeight = '1.08'; el.style.fontSize = el.getAttribute('data-wrap') + 'px';
+  }
+  if (el.scrollWidth > el.clientWidth + 1 || (el.hasAttribute('data-wrap') && el.scrollHeight > el.clientHeight + 1)) { over++; el.setAttribute('data-of', el.textContent.trim().slice(0, 30)); }
+});
+var t = document.querySelector('table'), f = document.querySelector('.foot');
+if (t && f) { var tb = t.getBoundingClientRect().bottom, ft = f.getBoundingClientRect().top; document.body.setAttribute('data-tb', Math.round(tb) + '/' + Math.round(ft)); if (tb > ft - 8) over++; }
+document.body.setAttribute('data-overflow', over);
+});
+</script></body></html>

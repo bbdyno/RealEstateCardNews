@@ -10,9 +10,13 @@ body { background:#fff; }
 table { width:calc(100% - 64px); margin:0 32px; border-collapse:collapse; font-size:30px; table-layout:fixed; }
 th { font-size:23px; font-weight:800; color:var(--muted); padding:10px 6px; text-align:right; border-bottom:2px solid var(--ink); white-space:nowrap; }
 th.l, td.l { text-align:left; }
-td { padding:0 6px; height:51px; overflow:hidden; text-overflow:ellipsis; text-align:right; border-bottom:1px solid var(--line); white-space:nowrap; font-weight:600; }
-td.gu { font-weight:900; font-size:30px; text-align:center; vertical-align:middle; background:var(--soft); border-right:2px solid #fff; width:96px; }
-td.nm { font-weight:800; font-size:32px; letter-spacing:-0.05em; }
+td { padding:0 6px; height:51px; overflow:hidden; text-align:right; border-bottom:1px solid var(--line); white-space:nowrap; font-weight:600; }
+td.gu { font-weight:900; font-size:25px; line-height:1.1; text-align:center; vertical-align:middle; background:var(--soft); border-right:2px solid #fff; letter-spacing:-0.06em; white-space:normal; padding:0 4px; }
+td.gu.one { font-size:22px; }
+td.nm { padding:0 6px; }
+.nmw > span { flex:none; }
+.nmw.wrapd > span { flex:0 1 auto; min-width:0; }
+.nmw { height:51px; display:flex; align-items:center; overflow:hidden; white-space:nowrap; font-weight:800; font-size:32px; letter-spacing:-0.05em; }
 td.nm small { font-weight:600; color:var(--muted); font-size:17px; margin-left:4px; }
 td.p { font-weight:900; font-size:33px; }
 td.hi { color:var(--muted); }
@@ -27,24 +31,15 @@ tr.new td:not(.gu) { background:#FFF0F5; }
 <div class="head"><h1>{{ sido }} {{ eok }}억대<span>{{ band }}</span></h1></div>
 <div class="chips"><span class="on">실거래</span><span>최근 3개월</span><span>{{ today.month }}.{{ today.day }} 신고분까지</span><span>해제·직거래 제외</span><span>{% if n_shown < n %}거래 많은 {{ n_shown }}곳{% else %}3년 거래 10건↑{% endif %}</span></div>
 <table>
-<colgroup><col style="width:88px"><col><col style="width:62px"><col style="width:54px"><col style="width:126px"><col style="width:98px"><col style="width:98px"><col style="width:138px"></colgroup>
+<colgroup><col style="width:112px"><col><col style="width:60px"><col style="width:52px"><col style="width:122px"><col style="width:92px"><col style="width:96px"><col style="width:128px"></colgroup>
 <tr><th>구</th><th class="l">단지</th><th>연차</th><th>평</th><th>실거래</th><th>계약일</th><th>3년 최고</th><th>최고 대비</th></tr>
 {% for gu, items in page|groupby('gu') %}{% for x in items %}
-<tr class="{{ 'new' if x.is_high }}">{% if loop.first %}<td class="gu" rowspan="{{ items|length }}">{{ gu[:-1] if gu|length > 2 else gu }}</td>{% endif %}
-<td class="l nm">{{ x.name }}{% if x.is_high %}<span class="flag">신고가</span>{% endif %}</td>
+<tr class="{{ 'new' if x.is_high }}">{% if loop.first %}<td class="gu{{ ' one' if items|length == 1 and ' ' in gu }}" rowspan="{{ items|length }}">{{ gu|replace(' ', '<br>'|safe) }}</td>{% endif %}
+<td class="l nm"><div class="nmw" data-fit="24" data-wrap="21"><span>{{ x.name }}</span>{% if x.is_high %}<span class="flag">신고가</span>{% endif %}</div></td>
 <td>{{ x.age or '–' }}</td><td>{{ x.py }}</td><td class="p">{{ x.price|eokn }}</td><td>{{ x.ymd[5:7]|int }}.{{ x.ymd[8:10] }}</td>
 <td class="hi">{{ x.hi|eokn }}</td><td class="dd {{ x.vs_hi|delta }}">{% if x.vs_hi is not none and x.vs_hi < -0.0005 %}{{ x.vs_hi|pct }}{% else %}최고{% endif %}</td></tr>
 {% endfor %}{% endfor %}
 </table>
 <div class="foot"><span class="logo"><img src="{{ logo }}">집값레이더</span><span>단위 억 · 출처 국토교통부 실거래가 · jipgapradar.kr</span></div>
 <div class="pg">{{ no }}/{{ total }}</div>
-<script>
-// 긴 단지명은 칸에 맞을 때까지 글자를 줄이고(22px 까지), 그래도 넘치는 칸 수를 남긴다 — 자동 검수가 본다
-var over = 0;
-document.querySelectorAll('td').forEach(function(td){
-  if (td.classList.contains('nm')) { var fs = 32; while (td.scrollWidth > td.clientWidth && fs > 18) { fs--; td.style.fontSize = fs + 'px'; } }
-  if (td.scrollWidth > td.clientWidth + 1) { over++; td.setAttribute('data-of', td.textContent.trim().slice(0, 30)); }
-});
-document.body.setAttribute('data-overflow', over);
-</script>
 {% endblock %}

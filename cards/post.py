@@ -41,7 +41,7 @@ def caption(sido: str, eok: int, band: str, meta: dict, today: dt.date) -> str:
         + (f"\n(표에는 거래가 많은 {c['n_shown']}곳)" if c.get("n_shown", c["n"]) < c["n"] else ""),
         f"그중 {c['highs']}곳({round(c['highs'] / c['n'] * 100)}%)은 3년 최고가를 새로 썼어요.",
         "",
-        f"📍 거래가 많은 구: {gu}",
+        f"📍 거래가 많은 시·구: {gu}",
     ]
     if drops:
         lines.append("📉 최고가보다 많이 내린 단지: " + ", ".join(f"{x['gu']} {x['name']}({x['vs_hi'] * 100:.1f}%)" for x in drops))

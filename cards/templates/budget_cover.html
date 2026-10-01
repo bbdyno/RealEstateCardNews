@@ -18,9 +18,12 @@ h2 { font-size:64px; font-weight:800; margin-top:14px; letter-spacing:-0.05em; }
 .t .i3 { position:absolute; right:22px; top:22px; width:70px; height:70px; }
 .t1 { background:var(--yellow); } .t2 { background:var(--pink); } .t3 { background:var(--blue); grid-column: span 2; min-height:150px; }
 .t4 { background:var(--green); grid-column: span 2; min-height:150px; }
-.t4 .row { display:flex; justify-content:space-between; font-size:36px; font-weight:900; margin-top:10px; letter-spacing:-0.04em; }
+.t4 .i3 { top:16px; right:24px; width:58px; height:58px; }
+.t4 .k { min-height:58px; padding-right:70px; }
+.t4 .row span { white-space:nowrap; overflow:hidden; min-width:0; flex:1; }
+.t4 .row { display:flex; gap:20px; justify-content:space-between; font-size:36px; font-weight:900; margin-top:10px; letter-spacing:-0.04em; }
 .t4 .row b { color:var(--down); }
-.t3 .v { font-size:50px; margin-top:12px; }
+.t3 .v { font-size:46px; margin-top:12px; white-space:nowrap; overflow:hidden; }
 .swipe { position:absolute; left:64px; bottom:64px; font-size:32px; font-weight:800; color:var(--lime); }
 .pg { color:rgba(255,255,255,.5); }
 {% endblock %}
@@ -35,9 +38,9 @@ h2 { font-size:64px; font-weight:800; margin-top:14px; letter-spacing:-0.05em; }
   <div class="tiles">
     <div class="t t1"><i class="i3" style="background-image:url('{{ I3D.house }}')"></i><div class="k">계약된 단지</div><div class="v">{{ n }}<small>곳</small></div><div class="d">{% if n_shown < n %}표에는 거래 많은 {{ n_shown }}곳{% else %}3년 거래 10건 넘는 단지만{% endif %}</div></div>
     <div class="t t2"><i class="i3" style="background-image:url('{{ I3D.fire }}')"></i><div class="k">3년 최고가 경신</div><div class="v">{{ highs }}<small>곳</small></div><div class="d">{{ (highs / n * 100)|round|int }}%가 신고가</div></div>
-    <div class="t t3"><i class="i3" style="background-image:url('{{ I3D.pin }}')"></i><div class="k">거래가 많은 구</div><div class="v">{% for g, c in top_gu %}{{ g }} {{ c }}{% if not loop.last %} · {% endif %}{% endfor %}</div></div>
+    <div class="t t3"><i class="i3" style="background-image:url('{{ I3D.pin }}')"></i><div class="k">거래가 많은 시·구</div><div class="v" data-fit="30">{% for g, c in top_gu %}{{ g }} {{ c }}{% if not loop.last %} · {% endif %}{% endfor %}</div></div>
     {% if near_hi and near_hi[0].vs_hi < -0.0005 %}<div class="t t4"><i class="i3" style="background-image:url('{{ I3D.down }}')"></i><div class="k">3년 최고가보다 많이 내린 단지</div>
-      {% for x in near_hi[:2] %}<div class="row"><span>{{ x.gu }} {{ x.name }}</span><b>{{ x.vs_hi|pct }}</b></div>{% endfor %}</div>{% endif %}
+      {% for x in near_hi[:2] %}<div class="row"><span data-fit="24">{{ x.gu }} {{ x.name }}</span><b>{{ x.vs_hi|pct }}</b></div>{% endfor %}</div>{% endif %}
   </div>
   <div class="swipe">넘겨서 단지별 표 보기 →</div>
   <div class="pg">1/{{ total }}</div>
