@@ -30,7 +30,7 @@ ads:                                   # docs/MONETIZATION.md 3절. 값이 비�
       appliance: ""
 
 analytics:
-  ga4: ""                              # 구글 애널리틱스 4 측정 ID(G-XXXXXXXXXX)
+  ga4: "G-BVRC6LK08F"                  # 구글 애널리틱스 4 '집값레이더 jipgapradar.kr' 속성(2026-10-01 생성)
 
 verify:                                # 검색 등록 소유 확인 메타 태그의 content 값
   google: ""
