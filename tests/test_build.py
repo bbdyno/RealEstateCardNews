@@ -53,7 +53,12 @@ def _complex_pages(out):
     return [p for p in (out / "c").glob("*/index.html")]
 
 
-def test_no_ad_markup_until_ids_are_configured(demo_db, tmp_path):
+def test_no_ad_markup_until_ids_are_configured(demo_db, tmp_path, monkeypatch):
+    cfg = build.load_cfg()
+    cfg["ads"]["adsense"] = {"client": "", "slots": {}}
+    cfg["ads"]["adfit"] = {"units": {}}
+    cfg["ads"]["coupang"] = {"enabled": False, "banners": {}}
+    monkeypatch.setattr(build, "load_cfg", lambda: cfg)
     out = tmp_path / "dist"
     build.build(out, dt.date(2026, 9, 29))
     html = "".join(p.read_text() for p in _complex_pages(out)[:20]) + (out / "index.html").read_text()
