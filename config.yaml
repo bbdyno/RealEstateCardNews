@@ -11,23 +11,23 @@ ads:                                   # docs/MONETIZATION.md 3절. 값이 비�
     # 자동 광고: client 만 넣으면 모든 페이지 <head> 에 애드센스 코드가 들어간다. 그다음 애드센스 화면 → 광고 → 사이트별
     # '자동 광고'에서 전면 광고(페이지 이동 사이 전체 화면, vignette)·앵커(하단 고정)·사이드 레일을 켜면 코드 수정 없이 붙는다.
     slots:                             # 애드센스에서 만든 '디스플레이' 광고 단위 번호(반응형)
-      top: ""                          # 요약 아래 첫 광고
-      mid: ""                          # 본문 중간
-      bottom: ""                       # 바닥글 위
-      list: ""                         # 긴 목록(신고가 등) 10줄마다, 최대 2번
-      related: ""                      # '멀티플렉스' 광고 단위 번호 — 페이지 끝 추천 광고 묶음(autorelaxed)
+      top: "8790819183"                          # 요약 아래 첫 광고
+      mid: "2225410834"                          # 본문 중간
+      bottom: "7233271498"                       # 바닥글 위
+      list: "8100554044"                         # 긴 목록(신고가 등) 10줄마다, 최대 2번
+      related: "3233482588"            # '멀티플렉스' 광고 단위 번호 — 페이지 끝 추천 광고 묶음(autorelaxed)
   adfit:                               # 카카오 애드핏(초대·승인제). 애드센스가 채우지 못한 자리에만 순서대로 넣는다
     units:                             # 자리별 {id: DAN-..., w: 320, h: 100} — 웹 배너 크기 320x100·300x250·728x90 등
       top: {}
       mid: {}
       bottom: {}
       list: {}
-  coupang:                             # 쿠팡 파트너스. 켜면 대가성 고지 문구가 블록 맨 위에 자동으로 붙는다
-    enabled: false
-    banners:                           # 쿠팡에서 받은 배너 코드(iframe). 맥락: 책 · 이사 · 가전. 빈 맥락은 book 으로 대신한다
-      book: ""
-      move: ""
-      appliance: ""
+  coupang:                             # 쿠팡 파트너스(trackingCode AF7769915). 대가성 고지 문구는 블록 맨 위에 자동으로 붙는다
+    enabled: true
+    banners:                           # 카테고리 배너(2026-10-01 생성, 링크 6개 모두 리디렉션 확인). PC 728x90 · 폰 320x100
+      book: '<div class="cw"><a href="https://link.coupang.com/a/htZS8m4oGi" target="_blank" referrerpolicy="unsafe-url" rel="sponsored noopener"><img src="https://ads-partners.coupang.com/banners/1034802?trackingCode=AF7769915&subId=&traceId=V0-301-f5c692db558def48-I1034802&w=728&h=90" width="728" height="90" alt="쿠팡 로켓도서" loading="lazy" style="max-width:100%;height:auto"></a></div><div class="cn"><a href="https://link.coupang.com/a/htZY8XRpoO" target="_blank" referrerpolicy="unsafe-url" rel="sponsored noopener"><img src="https://ads-partners.coupang.com/banners/1034803?trackingCode=AF7769915&subId=&traceId=V0-301-f5c692db558def48-I1034803&w=320&h=100" width="320" height="100" alt="쿠팡 로켓도서" loading="lazy" style="max-width:100%;height:auto"></a></div>'
+      move: '<div class="cw"><a href="https://link.coupang.com/a/htZ1wLHHzM" target="_blank" referrerpolicy="unsafe-url" rel="sponsored noopener"><img src="https://ads-partners.coupang.com/banners/1034804?trackingCode=AF7769915&subId=&traceId=V0-301-2f679fc6bd8f2e58-I1034804&w=728&h=90" width="728" height="90" alt="쿠팡 로켓 홈인테리어" loading="lazy" style="max-width:100%;height:auto"></a></div><div class="cn"><a href="https://link.coupang.com/a/htZ1LyBpuK" target="_blank" referrerpolicy="unsafe-url" rel="sponsored noopener"><img src="https://ads-partners.coupang.com/banners/1034805?trackingCode=AF7769915&subId=&traceId=V0-301-2f679fc6bd8f2e58-I1034805&w=320&h=100" width="320" height="100" alt="쿠팡 로켓 홈인테리어" loading="lazy" style="max-width:100%;height:auto"></a></div>'
+      appliance: '<div class="cw"><a href="https://link.coupang.com/a/htZ3upjz6O" target="_blank" referrerpolicy="unsafe-url" rel="sponsored noopener"><img src="https://ads-partners.coupang.com/banners/1034806?trackingCode=AF7769915&subId=&traceId=V0-301-5f9bd61900e673c0-I1034806&w=728&h=90" width="728" height="90" alt="쿠팡 로켓 가전·디지털" loading="lazy" style="max-width:100%;height:auto"></a></div><div class="cn"><a href="https://link.coupang.com/a/htZ3I7KgjQ" target="_blank" referrerpolicy="unsafe-url" rel="sponsored noopener"><img src="https://ads-partners.coupang.com/banners/1034807?trackingCode=AF7769915&subId=&traceId=V0-301-5f9bd61900e673c0-I1034807&w=320&h=100" width="320" height="100" alt="쿠팡 로켓 가전·디지털" loading="lazy" style="max-width:100%;height:auto"></a></div>'
 
 analytics:
   ga4: "G-BVRC6LK08F"                  # 구글 애널리틱스 4 '집값레이더 jipgapradar.kr' 속성(2026-10-01 생성)
