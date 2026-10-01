@@ -176,8 +176,9 @@ def main() -> int:
             publish.notify("ℹ️ 집값레이더: 오늘 올릴 만한 후보가 없어 건너뜁니다\n" + ", ".join(tried))
             return 0
         title, files, cap, bad, slug = made
-        bad += check.check_caption(cap, recent)
+        bad += check.check_caption(cap, [] if a.repeat else recent)
         if bad:
+            print("검수 실패:", *bad, sep="\n- ")
             publish.notify(f"🚫 집값레이더 카드 검수 실패 — 올리지 않았습니다\n{title}\n- " + "\n- ".join(bad[:15]), files[0])
             return 1
         if not live:
