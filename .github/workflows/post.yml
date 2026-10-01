@@ -57,3 +57,11 @@ jobs:
           else
             python -m cards.post
           fi
+      - name: 카드 이미지 보관(확인용)
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: cards
+          path: out/cards/
+          retention-days: 7
+          if-no-files-found: ignore
