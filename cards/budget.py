@@ -24,7 +24,8 @@ from web.build import I3D
 HERE = Path(__file__).parent
 OUT = db.ROOT / "out" / "cards"
 CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-ROWS = 30
+ROWS = 20                # 한 장에 20줄 — 글자를 아파트썸 수준(가로폭의 약 3%)으로
+W, H = 1080, 1440         # 3:4 세로형(아파트썸과 같은 비율, 피드에서 가장 크게 보인다)
 MIN_DEALS = 10           # 3년 매매 건수 — 세대수가 공개되지 않아 단지 규모·거래 활발함의 대리값으로 쓴다
 
 
@@ -81,7 +82,7 @@ def render(sido: str, eok: int, band: str, today: dt.date | None = None) -> list
             src.write_text(html, encoding="utf-8")
             png = out / f"{k:02d}.png"
             subprocess.run([CHROME, "--headless=new", "--disable-gpu", "--hide-scrollbars", "--force-device-scale-factor=1",
-                            "--window-size=1080,1350", "--virtual-time-budget=6000", f"--screenshot={png}", src.as_uri()],
+                            f"--window-size={W},{H}", "--virtual-time-budget=6000", f"--screenshot={png}", src.as_uri()],
                            check=True, capture_output=True, timeout=90)
             files.append(png)
     print(f"{len(rows)}개 단지 · {len(files)}장 → {out}")

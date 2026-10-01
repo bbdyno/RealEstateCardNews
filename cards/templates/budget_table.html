@@ -2,35 +2,36 @@
 {% block css %}
 body { background:#fff; }
 .head { padding:50px 56px 0; display:flex; align-items:flex-end; justify-content:space-between; }
-.head h1 { font-size:66px; font-weight:900; letter-spacing:-0.05em; line-height:1; }
-.head h1 span { display:inline-block; background:var(--ink); color:var(--lime); font-size:30px; padding:8px 18px; border-radius:14px; vertical-align:14px; margin-left:12px; letter-spacing:-0.02em; }
+.head h1 { font-size:80px; font-weight:900; letter-spacing:-0.05em; line-height:1; }
+.head h1 span { display:inline-block; background:var(--ink); color:var(--lime); font-size:38px; padding:8px 18px; border-radius:14px; vertical-align:14px; margin-left:12px; letter-spacing:-0.02em; }
 .chips { display:flex; gap:10px; padding:20px 56px 18px; }
-.chips span { font-size:21px; font-weight:800; padding:8px 16px; border-radius:999px; background:var(--soft); color:var(--ink2); }
+.chips span { font-size:25px; font-weight:800; padding:8px 16px; border-radius:999px; background:var(--soft); color:var(--ink2); }
 .chips span.on { background:var(--lime); color:var(--ink); }
-table { width:calc(100% - 80px); margin:0 40px; border-collapse:collapse; font-size:22px; }
-th { font-size:18px; font-weight:800; color:var(--muted); padding:8px 6px; text-align:right; border-bottom:2px solid var(--ink); white-space:nowrap; }
+table { width:calc(100% - 64px); margin:0 32px; border-collapse:collapse; font-size:30px; table-layout:fixed; }
+th { font-size:23px; font-weight:800; color:var(--muted); padding:10px 6px; text-align:right; border-bottom:2px solid var(--ink); white-space:nowrap; }
 th.l, td.l { text-align:left; }
-td { padding:0 6px; height:33px; text-align:right; border-bottom:1px solid var(--line); white-space:nowrap; font-weight:600; }
-td.gu { font-weight:900; font-size:22px; text-align:center; vertical-align:middle; background:var(--soft); border-right:2px solid #fff; width:96px; }
-td.nm { font-weight:800; max-width:330px; overflow:hidden; text-overflow:ellipsis; }
+td { padding:0 6px; height:51px; overflow:hidden; text-overflow:ellipsis; text-align:right; border-bottom:1px solid var(--line); white-space:nowrap; font-weight:600; }
+td.gu { font-weight:900; font-size:30px; text-align:center; vertical-align:middle; background:var(--soft); border-right:2px solid #fff; width:96px; }
+td.nm { font-weight:800; font-size:32px; letter-spacing:-0.05em; }
 td.nm small { font-weight:600; color:var(--muted); font-size:17px; margin-left:4px; }
-td.p { font-weight:900; font-size:24px; }
+td.p { font-weight:900; font-size:33px; }
 td.hi { color:var(--muted); }
-td.dd { font-weight:800; width:92px; }
+td.dd { font-weight:800; }
 tr.new td:not(.gu) { background:#FFF0F5; }
-.flag { display:inline-block; background:var(--up); color:#fff; font-size:15px; font-weight:900; padding:2px 7px; border-radius:6px; margin-left:6px; vertical-align:2px; }
+.flag { display:inline-block; background:var(--up); color:#fff; font-size:19px; font-weight:900; padding:2px 7px; border-radius:6px; margin-left:6px; vertical-align:2px; }
 .down { color:var(--down); } .up { color:var(--up); } .flat { color:var(--muted); }
-.foot { position:absolute; left:56px; bottom:40px; display:flex; align-items:center; gap:16px; font-size:21px; font-weight:700; color:var(--muted); }
+.foot { position:absolute; left:56px; bottom:40px; display:flex; align-items:center; gap:16px; font-size:23px; font-weight:700; color:var(--muted); }
 .foot .logo { font-size:24px; color:var(--ink); } .foot .logo img { width:38px; height:38px; border-radius:10px; }
 {% endblock %}
 {% block body %}
 <div class="head"><h1>{{ sido }} {{ eok }}억대<span>{{ band }}</span></h1></div>
 <div class="chips"><span class="on">실거래</span><span>최근 3개월</span><span>{{ base|month_long }} 기준</span><span>해제·직거래 제외</span><span>3년 거래 10건↑</span></div>
 <table>
+<colgroup><col style="width:88px"><col><col style="width:62px"><col style="width:54px"><col style="width:126px"><col style="width:98px"><col style="width:98px"><col style="width:138px"></colgroup>
 <tr><th>구</th><th class="l">단지</th><th>연차</th><th>평</th><th>실거래</th><th>계약일</th><th>3년 최고</th><th>최고 대비</th></tr>
 {% for gu, items in page|groupby('gu') %}{% for x in items %}
 <tr class="{{ 'new' if x.is_high }}">{% if loop.first %}<td class="gu" rowspan="{{ items|length }}">{{ gu[:-1] if gu|length > 2 else gu }}</td>{% endif %}
-<td class="l nm">{{ x.name }}{% if x.is_high %}<span class="flag">신고가</span>{% endif %}<small>{{ x.umd }}</small></td>
+<td class="l nm">{{ x.name }}{% if x.is_high %}<span class="flag">신고가</span>{% endif %}</td>
 <td>{{ x.age or '–' }}</td><td>{{ x.py }}</td><td class="p">{{ x.price|eokn }}</td><td>{{ x.ymd[5:7]|int }}.{{ x.ymd[8:10] }}</td>
 <td class="hi">{{ x.hi|eokn }}</td><td class="dd {{ x.vs_hi|delta }}">{% if x.vs_hi is not none and x.vs_hi < -0.0005 %}{{ x.vs_hi|pct }}{% else %}최고{% endif %}</td></tr>
 {% endfor %}{% endfor %}
