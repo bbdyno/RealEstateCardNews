@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import datetime as dt
 import os
+import re
 import shutil
 import subprocess
 import tempfile
@@ -51,6 +52,8 @@ def upload(paths: list[Path], slug: str) -> list[str]:
         for old in root.iterdir():
             if old.is_dir() and old.name[:8] < cutoff:
                 shutil.rmtree(old)
+        # 인스타 서버는 주소에 한글이 있으면 이미지를 못 가져온다(400 · 2207052) — 영문·숫자만 남긴다
+        slug = re.sub(r"[^A-Za-z0-9-]+", "", slug).strip("-") or "card"
         folder = root / f"{dt.date.today():%Y%m%d}-{slug}-{int(time.time())}"
         folder.mkdir()
         for p in paths:

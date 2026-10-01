@@ -17,6 +17,7 @@ import traceback
 from . import budget, check, publish
 
 # (시도, 억대 범위, 평형대) — 수도권 위주. 지방 광역시 시리즈는 다음 단계에서 붙인다
+SLUG = {"서울": "seoul", "경기": "gyeonggi", "인천": "incheon"}
 SERIES = [("서울", range(6, 21), ("30평대", "20평대")),
           ("경기", range(4, 13), ("30평대", "20평대")),
           ("인천", range(3, 9), ("30평대", "20평대"))]
@@ -92,7 +93,7 @@ def main() -> int:
                 publish.notify(f"🧪 [시험] 집값레이더 카드 검수 통과(게시 안 함)\n{title} · {len(files)}장\n\n{cap[:600]}", files[0])
                 print(cap)
                 return 0
-            urls = publish.upload(files, f"budget-{sido}-{eok}-{band}")
+            urls = publish.upload(files, f"budget-{SLUG.get(sido, 'region')}-{eok}-{band[:2]}")
             media_id = publish.publish(urls, cap)
             link = publish.permalink(media_id) or ""
             publish.notify(f"✅ 집값레이더 인스타 게시 완료\n{title} · {len(files)}장 · 검수 통과\n{link}", files[0])
