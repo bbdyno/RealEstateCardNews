@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import itertools
+import re
 import os
 import sys
 import traceback
@@ -95,8 +96,9 @@ def caption(sido: str, eok: int, band: str, meta: dict, today: dt.date) -> str:
     return "\n".join(lines)
 
 
-def make_budget(today: dt.date, recent: list[str], tried: list[str], only: tuple | None = None):
-    for sido, eok, band in ([only] if only else candidates(today)[:MAX_TRIES]):
+def make_budget(today: dt.date, recent: list[str], tried: list[str], only: tuple | None = None, band_only: str | None = None):
+    cands = [only] if only else [c for c in candidates(today) if not band_only or c[2] == band_only][:MAX_TRIES]
+    for sido, eok, band in cands:
         title = f"{sido} {eok}억대 {band.replace('평대', '평형')}"
         if posted(title, recent):
             tried.append(f"{title}(최근에 올림)")
@@ -246,10 +248,24 @@ def make_rank(today: dt.date, recent: list[str], tried: list[str], fmt: str | No
     return None
 
 
-# 하루 다섯 번: 08:10 rank · 12:10 budget · 15:40 rank2 · 19:40 cash · 21:40 budget2
-MAKERS = {"rank": make_rank, "budget": make_budget, "cash": make_cash,
+def make_budget_pair(today: dt.date, recent: list[str], tried: list[str]):
+    """밤 예산표: 점심에 올린 같은 시도·억대의 20평형(아파트썸처럼 20평대·30평대를 짝으로). 없으면 20평대 후보에서."""
+    for e in reversed(publish.posted_log()):
+        if e.get("date") == today.isoformat() and e.get("series") == "budget":
+            m = re.match(r"(\S+) (\d+)억대 30평형", e.get("title", ""))
+            if m:
+                made = make_budget(today, recent, tried, only=(m[1], int(m[2]), "20평대"))
+                if made:
+                    return made
+            break
+    return make_budget(today, recent, tried, band_only="20평대")
+
+
+# 하루 다섯 번: 08:10 rank · 12:10 budget(30평형) · 15:40 rank2 · 19:40 cash · 21:40 budget2(같은 억대 20평형)
+MAKERS = {"rank": make_rank, "cash": make_cash,
+          "budget": lambda t, r, tr: make_budget(t, r, tr, band_only="30평대"),
           "rank2": lambda t, r, tr: make_rank(t, r, tr, fmt=second_fmt(t), offset=4),
-          "budget2": make_budget}
+          "budget2": make_budget_pair}
 
 
 def main() -> int:
