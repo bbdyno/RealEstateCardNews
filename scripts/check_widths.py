@@ -13,7 +13,7 @@ from cards.budget import env, shoot
 from collector import db
 from web.build import I3D
 
-LONG = dict(gu="화성시 동탄구", name="래미안원베일리", umd="반포동", age=99, py=99, price=999900, prev=999900, hi=999900,
+LONG = dict(gu="화성시 동탄구", name="초롱꽃마을12단지e편한세상운정어반프라임", umd="반포동", age=99, py=99, price=999900, prev=999900, hi=999900,
             up=-0.444, vs_hi=-0.444, ymd="2026-12-31", n3=999, n3y=999, ppp=29999, bar=-1.0, gu_one="수원시 영통구", is_high=True)
 
 

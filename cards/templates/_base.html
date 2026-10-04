@@ -24,7 +24,7 @@ document.querySelectorAll('[data-fit]').forEach(function (el) {
   var fs = parseFloat(getComputedStyle(el).fontSize), min = +el.getAttribute('data-fit');
   while (el.scrollWidth > el.clientWidth + 1 && fs > min) { fs--; el.style.fontSize = fs + 'px'; }
   if (el.scrollWidth > el.clientWidth + 1 && el.hasAttribute('data-wrap')) {
-    el.classList.add('wrapd'); el.style.whiteSpace = 'normal'; el.style.lineHeight = '1.08'; el.style.fontSize = el.getAttribute('data-wrap') + 'px';
+    el.classList.add('wrapd'); el.style.whiteSpace = 'normal'; el.style.wordBreak = 'break-all'; el.style.lineHeight = '1.08'; el.style.fontSize = el.getAttribute('data-wrap') + 'px';
   }
   if (el.scrollWidth > el.clientWidth + 1 || (el.hasAttribute('data-wrap') && el.scrollHeight > el.clientHeight + 1)) { over++; el.setAttribute('data-of', el.textContent.trim().slice(0, 30)); }
 });

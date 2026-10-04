@@ -286,7 +286,7 @@ def main() -> int:
         if live and today.weekday() == 0 and a.series == "budget":   # 월요일마다 토큰 유효기간을 늘리고 남은 날을 확인
             days = publish.refresh_token()
             if days is not None and days < 20:
-                publish.notify(f"⚠️ 집값레이더 인스타 토큰이 {days:.0f}일 남았습니다. Meta 개발자 화면에서 다시 발급해 주세요.")
+                publish.notify(f"⚠️ 집값레이더 인스타 토큰이 {days:.0f}일 남았습니다. 메타 개발자 화면에서 다시 발급해 주세요.")
         manual = bool(a.fmt or a.sido or a.eok or a.persona)
         if live and not a.repeat and not manual:        # 맥 예약과 GitHub 예약이 둘 다 돌아도 하루 한 번만
             if any(e.get("date") == today.isoformat() and e.get("series") == a.series for e in publish.posted_log()):

@@ -33,7 +33,7 @@ FORMATS = {
                     what="직전 최고보다", unit="pct_up"),
     "hot":     dict(head="거래량 순위", sub="최근 3개월 매매 건수 · 해제·직거래 제외", icon="rank", period="최근 3개월", bg="#EFFBD0", ac="#4C8A00",
                     what="최근 3개월", unit="count"),
-    "gu":      dict(head="시·구 집값 순위", sub="같은 단지끼리 비교 · 최근 3개월 vs 그 전 3개월", icon="trend", period="같은 단지끼리 비교", bg="#ECE6FF", ac="#6B4EE6",
+    "gu":      dict(head="시·구 집값 순위", sub="같은 단지끼리 비교 · 최근 3개월과 그 전 3개월", icon="trend", period="같은 단지끼리 비교", bg="#ECE6FF", ac="#6B4EE6",
                     what="직전 3개월보다", unit="pct_signed"),
 }
 # 표 열: (머리말, 키, 폭px(None=남는 폭), 형식)
