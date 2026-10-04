@@ -152,8 +152,8 @@ def cash_caption(key: str, sido: str, meta: dict, today: dt.date) -> str:
     return "\n".join(lines)
 
 
-def make_cash(today: dt.date, recent: list[str], tried: list[str]):
-    for key, sido in cash_candidates(today)[:MAX_TRIES]:
+def make_cash(today: dt.date, recent: list[str], tried: list[str], only: tuple | None = None):
+    for key, sido in ([only] if only else cash_candidates(today)[:MAX_TRIES]):
         p = cash.PERSONAS[key]
         title = f"현금 {cash.eok(p['cash'])} {p['label']} · {sido}"
         if posted(title, recent):
@@ -277,6 +277,7 @@ def main() -> int:
     ap.add_argument("--sido", help="랭킹·예산표 시도를 직접 고른다")
     ap.add_argument("--eok", type=int, help="예산표 억대를 직접 고른다(--sido 와 함께)")
     ap.add_argument("--band", default="30평대", help="예산표 평형대(30평대·20평대)")
+    ap.add_argument("--persona", choices=sorted(cash.PERSONAS), help="현금 카드 가구 유형(--sido 와 함께)")
     a = ap.parse_args()
     today = dt.date.today()
     live = not a.dry_run and bool(os.environ.get("IG_ACCESS_TOKEN") and os.environ.get("IG_USER_ID"))
@@ -286,7 +287,7 @@ def main() -> int:
             days = publish.refresh_token()
             if days is not None and days < 20:
                 publish.notify(f"⚠️ 집값레이더 인스타 토큰이 {days:.0f}일 남았습니다. Meta 개발자 화면에서 다시 발급해 주세요.")
-        manual = bool(a.fmt or a.sido or a.eok)
+        manual = bool(a.fmt or a.sido or a.eok or a.persona)
         if live and not a.repeat and not manual:        # 맥 예약과 GitHub 예약이 둘 다 돌아도 하루 한 번만
             if any(e.get("date") == today.isoformat() and e.get("series") == a.series for e in publish.posted_log()):
                 print(f"오늘 {a.series} 은 이미 올렸습니다 — 건너뜀")
@@ -294,6 +295,8 @@ def main() -> int:
         tried: list[str] = []
         if a.series.startswith("rank") and manual:
             made = make_rank(today, [] if a.repeat else recent, tried, a.fmt, a.sido)
+        elif a.series == "cash" and a.persona and a.sido:
+            made = make_cash(today, [] if a.repeat else recent, tried, only=(a.persona, a.sido))
         elif a.series.startswith("budget") and a.eok and a.sido:
             made = make_budget(today, [] if a.repeat else recent, tried, only=(a.sido, a.eok, a.band))
         else:
