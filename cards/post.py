@@ -21,6 +21,10 @@ from . import budget, cash, check, loan, publish, rank
 SERIES = [("서울", range(6, 21), ("30평대", "20평대")),
           ("경기", range(4, 13), ("30평대", "20평대")),
           ("인천", range(3, 9), ("30평대", "20평대"))]
+# 관심이 몰리는 가격대 — 후보에 한 번 더 넣어 더 자주 나오게
+HOT = [("서울", range(7, 13), ("30평대", "20평대")),
+       ("경기", range(5, 9), ("30평대", "20평대")),
+       ("인천", range(4, 7), ("30평대", "20평대"))]
 SLUG = {"서울": "seoul", "경기": "gyeonggi", "인천": "incheon", "부산": "busan", "대구": "daegu", "대전": "daejeon",
         "전남광주": "gwangju", "울산": "ulsan", "세종": "sejong"}
 MAX_TRIES = 12
@@ -34,10 +38,14 @@ def rotate(items: list, today: dt.date) -> list:
     return items[k:] + items[:k]
 
 
+def _interleave(series) -> list[tuple[str, int, str]]:
+    per = [[(s, e, b) for b in bs for e in es] for s, es, bs in series]
+    return [x for grp in itertools.zip_longest(*per) for x in grp if x]
+
+
 def candidates(today: dt.date) -> list[tuple[str, int, str]]:
-    """서울·경기·인천을 번갈아 — 한 시도에 몰리지 않게."""
-    per = [[(s, e, b) for b in bs for e in es] for s, es, bs in SERIES]
-    return rotate([x for grp in itertools.zip_longest(*per) for x in grp if x], today)
+    """서울·경기·인천을 번갈아 — 한 시도에 몰리지 않게. 관심 가격대는 두 번 들어간다."""
+    return rotate(_interleave(SERIES) + _interleave(HOT), today)
 
 
 def posted(title: str, recent: list[str]) -> bool:
@@ -87,8 +95,8 @@ def caption(sido: str, eok: int, band: str, meta: dict, today: dt.date) -> str:
     return "\n".join(lines)
 
 
-def make_budget(today: dt.date, recent: list[str], tried: list[str]):
-    for sido, eok, band in candidates(today)[:MAX_TRIES]:
+def make_budget(today: dt.date, recent: list[str], tried: list[str], only: tuple | None = None):
+    for sido, eok, band in ([only] if only else candidates(today)[:MAX_TRIES]):
         title = f"{sido} {eok}억대 {band.replace('평대', '평형')}"
         if posted(title, recent):
             tried.append(f"{title}(최근에 올림)")
@@ -204,11 +212,20 @@ def rank_caption(fmt: str, sido: str, rows: list[dict], today: dt.date) -> str:
     return "\n".join(lines)
 
 
-def make_rank(today: dt.date, recent: list[str], tried: list[str], fmt: str | None = None, sido_only: str | None = None):
+def second_fmt(today: dt.date) -> str:
+    """오후 랭킹: 아침과 다른 형식."""
+    order = ["highs", "hot", "drops", "gu", "cancels"]
+    first = WEEKDAY_FMT[today.weekday()]
+    k = (today.toordinal() + 2) % len(order)
+    return order[k] if order[k] != first else order[(k + 1) % len(order)]
+
+
+def make_rank(today: dt.date, recent: list[str], tried: list[str], fmt: str | None = None, sido_only: str | None = None,
+              offset: int = 0):
     fmt = fmt or WEEKDAY_FMT[today.weekday()]
     f = rank.FORMATS[fmt]
     seen = []
-    for sido in ([sido_only] if sido_only else rotate(RANK_SIDOS, today)):
+    for sido in ([sido_only] if sido_only else rotate(RANK_SIDOS, today + dt.timedelta(days=offset))):
         if sido in seen:
             continue
         seen.append(sido)
@@ -229,7 +246,10 @@ def make_rank(today: dt.date, recent: list[str], tried: list[str], fmt: str | No
     return None
 
 
-MAKERS = {"budget": make_budget, "cash": make_cash, "rank": make_rank}
+# 하루 다섯 번: 08:10 rank · 12:10 budget · 15:40 rank2 · 19:40 cash · 21:40 budget2
+MAKERS = {"rank": make_rank, "budget": make_budget, "cash": make_cash,
+          "rank2": lambda t, r, tr: make_rank(t, r, tr, fmt=second_fmt(t), offset=4),
+          "budget2": make_budget}
 
 
 def main() -> int:
@@ -238,7 +258,9 @@ def main() -> int:
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--repeat", action="store_true", help="최근에 올린 제목도 다시 올린다(수정판 재게시)")
     ap.add_argument("--fmt", choices=sorted(rank.FORMATS), help="랭킹 형식을 직접 고른다(수동 추가 게시)")
-    ap.add_argument("--sido", help="랭킹 시도를 직접 고른다")
+    ap.add_argument("--sido", help="랭킹·예산표 시도를 직접 고른다")
+    ap.add_argument("--eok", type=int, help="예산표 억대를 직접 고른다(--sido 와 함께)")
+    ap.add_argument("--band", default="30평대", help="예산표 평형대(30평대·20평대)")
     a = ap.parse_args()
     today = dt.date.today()
     live = not a.dry_run and bool(os.environ.get("IG_ACCESS_TOKEN") and os.environ.get("IG_USER_ID"))
@@ -248,14 +270,16 @@ def main() -> int:
             days = publish.refresh_token()
             if days is not None and days < 20:
                 publish.notify(f"⚠️ 집값레이더 인스타 토큰이 {days:.0f}일 남았습니다. Meta 개발자 화면에서 다시 발급해 주세요.")
-        manual = bool(a.fmt or a.sido)
+        manual = bool(a.fmt or a.sido or a.eok)
         if live and not a.repeat and not manual:        # 맥 예약과 GitHub 예약이 둘 다 돌아도 하루 한 번만
             if any(e.get("date") == today.isoformat() and e.get("series") == a.series for e in publish.posted_log()):
                 print(f"오늘 {a.series} 은 이미 올렸습니다 — 건너뜀")
                 return 0
         tried: list[str] = []
-        if a.series == "rank" and manual:
+        if a.series.startswith("rank") and manual:
             made = make_rank(today, [] if a.repeat else recent, tried, a.fmt, a.sido)
+        elif a.series.startswith("budget") and a.eok and a.sido:
+            made = make_budget(today, [] if a.repeat else recent, tried, only=(a.sido, a.eok, a.band))
         else:
             made = MAKERS[a.series](today, [] if a.repeat else recent, tried)
         if not made:
