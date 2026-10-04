@@ -28,6 +28,9 @@ document.querySelectorAll('[data-fit]').forEach(function (el) {
   }
   if (el.scrollWidth > el.clientWidth + 1 || (el.hasAttribute('data-wrap') && el.scrollHeight > el.clientHeight + 1)) { over++; el.setAttribute('data-of', el.textContent.trim().slice(0, 30)); }
 });
+document.querySelectorAll('td').forEach(function (td) {        // 보통 칸(숫자 등)도 잘리면 검수 실패
+  if (!td.querySelector('[data-fit]') && td.scrollWidth > td.clientWidth + 1) { over++; td.setAttribute('data-of', td.textContent.trim().slice(0, 30)); }
+});
 var t = document.querySelector('table'), f = document.querySelector('.foot');
 if (t && f) { var tb = t.getBoundingClientRect().bottom, ft = f.getBoundingClientRect().top; document.body.setAttribute('data-tb', Math.round(tb) + '/' + Math.round(ft)); if (tb > ft - 8) over++; }
 var tl = document.querySelector('.tiles'), sw = document.querySelector('.swipe');

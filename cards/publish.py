@@ -65,6 +65,45 @@ def upload(paths: list[Path], slug: str) -> list[str]:
     return [f"https://raw.githubusercontent.com/{REPO}/{sha}/media/{folder.name}/{p.name}" for p in paths]
 
 
+# ── 게시 기록(media 브랜치 log.json) — 같은 날 같은 시리즈를 두 번 올리지 않게 ──────────────
+
+LOG = "log.json"
+
+
+def posted_log() -> list[dict]:
+    token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
+    if not token:
+        return []
+    r = httpx.get(f"https://api.github.com/repos/{REPO}/contents/{LOG}", params={"ref": "media"}, timeout=30,
+                  headers={"Authorization": f"Bearer {token}", "Accept": "application/vnd.github.raw+json"})
+    if r.status_code != 200:
+        return []
+    try:
+        return r.json()
+    except ValueError:
+        return []
+
+
+def add_log(entry: dict) -> None:
+    import json
+    token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
+    if not token:
+        return
+    remote = f"https://x-access-token:{token}@github.com/{REPO}.git"
+    with tempfile.TemporaryDirectory() as d:
+        wd = Path(d) / "media"
+        _git("clone", "--depth", "1", "--branch", "media", remote, str(wd))
+        _git("config", "user.name", "github-actions[bot]", cwd=wd)
+        _git("config", "user.email", "41898282+github-actions[bot]@users.noreply.github.com", cwd=wd)
+        f = wd / LOG
+        log = json.loads(f.read_text()) if f.exists() else []
+        log = (log + [entry])[-300:]
+        f.write_text(json.dumps(log, ensure_ascii=False, indent=1))
+        _git("add", LOG, cwd=wd)
+        _git("commit", "-q", "-m", f"게시 기록 {entry.get('date')} {entry.get('series')}", cwd=wd)
+        _git("push", "-q", "origin", "media", cwd=wd)
+
+
 # ── 인스타그램 ──────────────────────────────────────────────────────────────
 
 def _call(c: httpx.Client, method: str, path: str, **params) -> dict:

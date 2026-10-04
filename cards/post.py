@@ -10,17 +10,19 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import itertools
 import os
 import sys
 import traceback
 
-from . import budget, cash, check, loan, publish
+from . import budget, cash, check, loan, publish, rank
 
 # (시도, 억대 범위, 평형대) — 수도권 위주. 지방 광역시 시리즈는 다음 단계에서 붙인다
 SERIES = [("서울", range(6, 21), ("30평대", "20평대")),
           ("경기", range(4, 13), ("30평대", "20평대")),
           ("인천", range(3, 9), ("30평대", "20평대"))]
-SLUG = {"서울": "seoul", "경기": "gyeonggi", "인천": "incheon"}
+SLUG = {"서울": "seoul", "경기": "gyeonggi", "인천": "incheon", "부산": "busan", "대구": "daegu", "대전": "daejeon",
+        "전남광주": "gwangju", "울산": "ulsan", "세종": "sejong"}
 MAX_TRIES = 12
 RECENT = 14          # 같은 제목을 다시 올리지 않는 범위(최근 게시물 수)
 TAGS = "#아파트실거래가 #실거래가 #내집마련 #부동산 #아파트시세 #집값 #집값레이더"
@@ -33,7 +35,9 @@ def rotate(items: list, today: dt.date) -> list:
 
 
 def candidates(today: dt.date) -> list[tuple[str, int, str]]:
-    return rotate([(s, e, b) for s, es, bs in SERIES for b in bs for e in es], today)
+    """서울·경기·인천을 번갈아 — 한 시도에 몰리지 않게."""
+    per = [[(s, e, b) for b in bs for e in es] for s, es, bs in SERIES]
+    return rotate([x for grp in itertools.zip_longest(*per) for x in grp if x], today)
 
 
 def posted(title: str, recent: list[str]) -> bool:
@@ -153,7 +157,72 @@ def make_cash(today: dt.date, recent: list[str], tried: list[str]):
     return None
 
 
-MAKERS = {"budget": make_budget, "cash": make_cash}
+# ── 랭킹(아침) ───────────────────────────────────────────────────────────────
+
+WEEKDAY_FMT = ["highs", "drops", "hot", "cancels", "gu", "highs", "drops"]      # 월~일
+RANK_SIDOS = ["서울", "경기", "부산", "서울", "인천", "경기", "대구", "서울", "대전", "경기", "전남광주", "울산", "세종"]
+RANK_CAP = {
+    "highs":   ("🔥", "이전 최고보다 {up}", "✔ 같은 단지·같은 평형 3년 최고가를 넘은 계약만 · 40% 넘게 뛴 건 입력 오류일 수 있어 제외", "#신고가 #아파트신고가"),
+    "drops":   ("📉", "3년 최고가보다 {up}", "✔ 같은 평형 거래 3건 이상 · 최고가 한 건만 튄 단지는 제외", "#아파트하락 #급매"),
+    "cancels": ("⚠️", "직전 최고보다 {up} 높게 계약했다가 취소", "✔ 최근 6개월 계약 중 해제 신고된 것 — 실제로 팔린 값이 아니에요", "#신고가해제 #집값띄우기"),
+    "hot":     ("🏆", "최근 3개월 {n3}건", "✔ 해제·직거래 제외 · 전용 40㎡ 이상", "#거래량 #인기아파트"),
+    "gu":      ("📊", "직전 3개월보다 {up}", "✔ 같은 단지끼리 비교해 '비싼 단지가 많이 팔린 달' 착시를 뺐어요", "#집값순위 #아파트시세"),
+}
+
+
+def rank_caption(fmt: str, sido: str, rows: list[dict], today: dt.date) -> str:
+    f = rank.FORMATS[fmt]
+    emoji, lead, note, tags = RANK_CAP[fmt]
+    pct = lambda v: f"{v * 100:+.1f}%".replace("-", "−")
+    lines = [f"{sido} {f['head']} {emoji}", f"{f['sub']}", ""]
+    for x in rows[:3]:
+        what = lead.format(up=pct(x["up"]) if x.get("up") is not None else "", n3=x.get("n3"))
+        if fmt == "gu":
+            lines.append(f"{x['rank']}위 {x['gu']} — {what}")
+        else:
+            lines.append(f"{x['rank']}위 {x['gu']} {x['name']} {x['py']}평 {x['price'] / 10000:g}억 — {what}")
+    if fmt == "gu" and len(rows) > 3:
+        x = rows[-1]
+        lines.append(f"가장 약한 곳: {x['gu']} {pct(x['up'])}")
+    lines += [
+        "",
+        note,
+        f"✔ 국토부 실거래({today.month}월 {today.day}일 신고분까지)",
+        "",
+        "👉 우리 단지 층별 가격·모든 거래는 프로필 링크(jipgapradar.kr)",
+        "저장해 두고 우리 동네가 있는지 확인해 보세요. 다른 지역이 궁금하면 댓글로!",
+        "",
+        f"#{sido}아파트 {tags} {TAGS}",
+    ]
+    return "\n".join(lines)
+
+
+def make_rank(today: dt.date, recent: list[str], tried: list[str], fmt: str | None = None, sido_only: str | None = None):
+    fmt = fmt or WEEKDAY_FMT[today.weekday()]
+    f = rank.FORMATS[fmt]
+    seen = []
+    for sido in ([sido_only] if sido_only else rotate(RANK_SIDOS, today)):
+        if sido in seen:
+            continue
+        seen.append(sido)
+        if len(seen) > 6:
+            break
+        title = f"{sido} {f['head']}"
+        if posted(title, recent):
+            tried.append(f"{title}(최근에 올림)")
+            continue
+        rows = rank.pick(fmt, sido, today)
+        if len(rows) < 10:
+            tried.append(f"{title}({len(rows)}줄)")
+            continue
+        files, meta = rank.render(fmt, sido, today, rows)
+        cap = rank_caption(fmt, sido, rows, today)
+        bad = check.check_rank(rows, fmt) + check.check_images(files, meta["overflow"])
+        return title, files, cap, bad, f"rank-{fmt}-{SLUG.get(sido, 'region')}"
+    return None
+
+
+MAKERS = {"budget": make_budget, "cash": make_cash, "rank": make_rank}
 
 
 def main() -> int:
@@ -161,6 +230,8 @@ def main() -> int:
     ap.add_argument("--series", choices=sorted(MAKERS), default="budget")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--repeat", action="store_true", help="최근에 올린 제목도 다시 올린다(수정판 재게시)")
+    ap.add_argument("--fmt", choices=sorted(rank.FORMATS), help="랭킹 형식을 직접 고른다(수동 추가 게시)")
+    ap.add_argument("--sido", help="랭킹 시도를 직접 고른다")
     a = ap.parse_args()
     today = dt.date.today()
     live = not a.dry_run and bool(os.environ.get("IG_ACCESS_TOKEN") and os.environ.get("IG_USER_ID"))
@@ -170,8 +241,16 @@ def main() -> int:
             days = publish.refresh_token()
             if days is not None and days < 20:
                 publish.notify(f"⚠️ 집값레이더 인스타 토큰이 {days:.0f}일 남았습니다. Meta 개발자 화면에서 다시 발급해 주세요.")
+        manual = bool(a.fmt or a.sido)
+        if live and not a.repeat and not manual:        # 맥 예약과 GitHub 예약이 둘 다 돌아도 하루 한 번만
+            if any(e.get("date") == today.isoformat() and e.get("series") == a.series for e in publish.posted_log()):
+                print(f"오늘 {a.series} 은 이미 올렸습니다 — 건너뜀")
+                return 0
         tried: list[str] = []
-        made = MAKERS[a.series](today, [] if a.repeat else recent, tried)
+        if a.series == "rank" and manual:
+            made = make_rank(today, [] if a.repeat else recent, tried, a.fmt, a.sido)
+        else:
+            made = MAKERS[a.series](today, [] if a.repeat else recent, tried)
         if not made:
             publish.notify("ℹ️ 집값레이더: 오늘 올릴 만한 후보가 없어 건너뜁니다\n" + ", ".join(tried))
             return 0
@@ -188,6 +267,11 @@ def main() -> int:
         urls = publish.upload(files, slug)
         media_id = publish.publish(urls, cap)
         link = publish.permalink(media_id) or ""
+        try:
+            publish.add_log({"date": today.isoformat(), "series": a.series + ("-manual" if manual else ""), "title": title, "id": media_id, "link": link,
+                             "at": dt.datetime.now().isoformat(timespec="minutes")})
+        except Exception as e:  # noqa: BLE001 — 기록 실패로 게시 알림을 막지 않는다
+            print("게시 기록 실패:", e)
         publish.notify(f"✅ 집값레이더 인스타 게시 완료\n{title} · {len(files)}장 · 검수 통과\n{link}", files[0])
         return 0
     except Exception as e:  # noqa: BLE001 — 실패는 반드시 알린다

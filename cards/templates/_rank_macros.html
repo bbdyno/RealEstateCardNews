@@ -1,0 +1,11 @@
+{# 랭킹 값 표기 — 표지·표가 같이 쓴다 #}
+{% macro big(x, unit) -%}
+{%- if unit == 'count' %}{{ x.n3 }}건{% else %}{{ x.up|pct }}{% endif -%}
+{%- endmacro %}
+{% macro detail(x, fmt) -%}
+{%- if fmt == 'highs' %}이전 최고 {{ x.prev|eokn }}억 → {{ x.price|eokn }}억 · {{ x.py }}평 · {{ x.ymd[5:7]|int }}.{{ x.ymd[8:10] }} 계약
+{%- elif fmt == 'drops' %}3년 최고 {{ x.prev|eokn }}억 → {{ x.price|eokn }}억 · {{ x.py }}평 · {{ x.ymd[5:7]|int }}.{{ x.ymd[8:10] }} 계약
+{%- elif fmt == 'cancels' %}직전 최고 {{ x.prev|eokn }}억 → 해제된 {{ x.price|eokn }}억 · {{ x.py }}평
+{%- elif fmt == 'hot' %}{{ x.py }}평 최근 {{ x.price|eokn }}억 · 3년 최고 대비 {{ x.up|pct }}
+{%- else %}평당 {{ '{:,}'.format(x.ppp|round|int) }}만 원 · 최근 3개월 {{ x.n3 }}건{% endif -%}
+{%- endmacro %}

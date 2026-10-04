@@ -1,0 +1,52 @@
+{% extends '_base.html' %}
+{% block css %}
+body { background:#fff; }
+.head { padding:50px 56px 0; }
+.head h1 { font-size:68px; font-weight:900; letter-spacing:-0.05em; line-height:1.05; white-space:nowrap; overflow:hidden; }
+.head h1 em { font-style:normal; color:{{ f.ac }}; }
+.chips { display:flex; gap:10px; padding:20px 56px 18px; }
+.chips span { font-size:25px; font-weight:800; padding:8px 16px; border-radius:999px; background:var(--soft); color:var(--ink2); white-space:nowrap; }
+.chips span.on { background:{{ f.bg }}; color:var(--ink); }
+table { width:calc(100% - 64px); margin:0 32px; border-collapse:collapse; font-size:30px; table-layout:fixed; }
+th { font-size:23px; font-weight:800; color:var(--muted); padding:10px 6px; text-align:right; border-bottom:2px solid var(--ink); white-space:nowrap; }
+th.l, td.l { text-align:left; }
+td { padding:0 6px; height:51px; overflow:hidden; text-align:right; border-bottom:1px solid var(--line); white-space:nowrap; font-weight:600; }
+td.rk { text-align:center; } td.rk i { font-style:normal; display:inline-flex; width:38px; height:38px; border-radius:50%; align-items:center; justify-content:center; font-size:22px; font-weight:900; background:var(--soft); }
+td.rk i.t3 { background:{{ f.ac }}; color:#fff; }
+td.gu { font-weight:900; font-size:22px; line-height:1.08; text-align:center; letter-spacing:-0.06em; white-space:normal; color:var(--ink2); }
+td.nm { padding:0 6px; }
+.nmw { height:51px; display:flex; align-items:center; overflow:hidden; white-space:nowrap; font-weight:800; font-size:32px; letter-spacing:-0.05em; }
+.nmw > span { flex:none; } .nmw.wrapd > span { flex:0 1 auto; min-width:0; }
+.nmw small { font-weight:700; color:var(--muted); font-size:23px; margin-left:8px; letter-spacing:-0.03em; }
+td.b { font-weight:900; font-size:33px; } td.m { color:var(--muted); } td.v { font-weight:900; }
+.up { color:var(--up); } .down { color:var(--down); } .flat { color:var(--muted); }
+td.bar div { height:22px; background:var(--soft); border-radius:11px; position:relative; }
+td.bar div i { position:absolute; top:0; bottom:0; border-radius:11px; }
+.foot { position:absolute; left:56px; bottom:40px; display:flex; align-items:center; gap:16px; font-size:23px; font-weight:700; color:var(--muted); }
+.foot .logo { font-size:24px; color:var(--ink); } .foot .logo img { width:38px; height:38px; border-radius:10px; }
+{% endblock %}
+{% block body %}
+<div class="head"><h1 data-fit="44"><em>{{ sido }}</em> {{ f.head }}</h1></div>
+<div class="chips"><span class="on">실거래</span>{% for c in chips %}<span>{{ c }}</span>{% endfor %}</div>
+<table>
+<colgroup>{% for h, k, w, t in cols %}<col{% if w %} style="width:{{ w }}px"{% endif %}>{% endfor %}</colgroup>
+<tr>{% for h, k, w, t in cols %}<th class="{{ 'l' if t in ('name',) }}">{{ h }}</th>{% endfor %}</tr>
+{% for x in page %}<tr>
+{% for h, k, w, t in cols %}{% set v = x[k] %}
+{%- if t == 'rank' %}<td class="rk"><i class="{{ 't3' if v <= 3 }}">{{ v }}</i></td>
+{%- elif t == 'gu' %}<td class="gu">{{ v|replace(' ', '<br>'|safe) }}</td>
+{%- elif t == 'name' %}<td class="l nm"><div class="nmw" data-fit="24" data-wrap="21"><span>{{ v }}{% if x.umd and v|length <= 4 %}<small>{{ x.umd }}</small>{% endif %}</span></div></td>
+{%- elif t == 'int' %}<td>{{ v if v is not none else '–' }}</td>
+{%- elif t == 'eok_b' %}<td class="b">{{ v|eokn }}</td>
+{%- elif t == 'eok_m' %}<td class="m">{{ v|eokn }}</td>
+{%- elif t in ('pct_up', 'pct_down', 'pct_signed') %}<td class="v {{ v|delta }}">{{ v|pct }}</td>
+{%- elif t == 'md' %}<td>{{ v[5:7]|int }}.{{ v[8:10] }}</td>
+{%- elif t == 'cnt' %}<td class="v">{{ v }}건</td>
+{%- elif t == 'man' %}<td class="m">{{ '{:,}'.format(v|round|int) }}만</td>
+{%- elif t == 'bar' %}<td class="bar"><div><i class="{{ 'up' if v > 0 else 'down' }}" style="{{ 'left:50%' if v > 0 else 'right:50%' }};width:{{ (v|abs * 50)|round(1) }}%;background:{{ 'var(--up)' if v > 0 else 'var(--down)' }}"></i></div></td>
+{%- endif %}{% endfor %}
+</tr>{% endfor %}
+</table>
+<div class="foot"><span class="logo"><img src="{{ logo }}">집값레이더</span><span>단위 억 · 출처 국토교통부 실거래가 · jipgapradar.kr</span></div>
+<div class="pg">{{ no }}/{{ total }}</div>
+{% endblock %}

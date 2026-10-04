@@ -80,3 +80,26 @@ def check_plan(cash: float, plan, cap: float = 60000) -> list[str]:
     if not cash < plan.price < cash * 6:
         bad.append(f"최대 집값 {plan.price:.0f} 이 이상함")
     return bad
+
+
+RANK_RANGE = {"highs": (0.0001, 0.5), "cancels": (0.0001, 0.5), "drops": (-0.45, -0.0001), "hot": (-0.9, 0.5), "gu": (-0.3, 0.3)}
+
+
+def check_rank(rows: list[dict], fmt: str) -> list[str]:
+    bad = []
+    if len(rows) < 10:
+        bad.append(f"{len(rows)}줄뿐(10줄 미만)")
+    lo, hi = RANK_RANGE[fmt]
+    seen = set()
+    for x in rows:
+        if x.get("up") is not None and not (lo <= x["up"] <= hi):
+            bad.append(f"{x['name']} 값 {x['up']:.1%} 이 범위 밖")
+        if fmt != "gu" and not x.get("price"):
+            bad.append(f"{x['name']} 가격 없음")
+        k = (x["gu"], x["name"])
+        if k in seen:
+            bad.append(f"{x['name']} 중복")
+        seen.add(k)
+    if [x["rank"] for x in rows] != list(range(1, len(rows) + 1)):
+        bad.append("순위 번호가 어긋남")
+    return bad

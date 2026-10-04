@@ -1,0 +1,47 @@
+{% extends '_base.html' %}
+{% from '_rank_macros.html' import big, detail %}
+{% set top = rows[0] %}
+{% block css %}
+body { background:{{ f.bg }}; }
+.wrap { position:absolute; inset:0; padding:64px 64px 0; }
+.tag { display:inline-block; margin-top:70px; background:var(--ink); color:#fff; font-size:28px; font-weight:800; padding:10px 22px; border-radius:999px; }
+h1 { font-size:96px; font-weight:900; color:{{ f.ac }}; letter-spacing:-0.05em; margin-top:34px; line-height:1; }
+h2 { font-size:92px; font-weight:900; letter-spacing:-0.06em; line-height:1.05; margin-top:10px; width:740px; }
+.sub { font-size:29px; color:var(--ink2); font-weight:700; margin-top:24px; }
+.art { position:absolute; right:52px; top:190px; width:260px; height:260px; filter: drop-shadow(0 26px 40px rgba(0,0,0,.18)); }
+.one { position:absolute; left:64px; right:64px; top:660px; background:#fff; border-radius:38px; padding:34px 38px; box-shadow:0 18px 40px rgba(0,0,0,.08); }
+.one .k { display:flex; align-items:center; gap:14px; font-size:28px; font-weight:800; color:var(--ink2); }
+.one .k b { background:{{ f.ac }}; color:#fff; font-size:26px; padding:4px 14px; border-radius:10px; }
+.one .nm { font-size:58px; font-weight:900; letter-spacing:-0.05em; margin-top:16px; white-space:nowrap; overflow:hidden; }
+.one .v { font-size:110px; font-weight:900; color:{{ f.ac }}; letter-spacing:-0.05em; line-height:1; margin-top:16px; }
+.one .v small { font-size:34px; color:var(--ink2); font-weight:800; margin-left:10px; letter-spacing:-0.03em; }
+.one .d { font-size:27px; font-weight:700; color:var(--ink2); margin-top:16px; white-space:nowrap; overflow:hidden; }
+.rest { position:absolute; left:64px; right:64px; top:1092px; display:grid; gap:12px; }
+.rest .r { display:flex; align-items:center; gap:18px; background:rgba(255,255,255,.65); border-radius:22px; padding:14px 24px; font-size:31px; font-weight:800; }
+.rest .r i { font-style:normal; width:44px; height:44px; border-radius:50%; background:var(--ink); color:#fff; font-size:24px; display:flex; align-items:center; justify-content:center; flex:none; }
+.rest .r span { flex:1; min-width:0; white-space:nowrap; overflow:hidden; }
+.rest .r span small { font-size:24px; color:var(--ink2); font-weight:700; margin-right:10px; }
+.rest .r b { color:{{ f.ac }}; font-weight:900; white-space:nowrap; }
+.swipe { position:absolute; left:64px; bottom:56px; font-size:30px; font-weight:800; color:var(--ink); }
+{% endblock %}
+{% block body %}
+<div class="wrap">
+  <div class="logo"><img src="{{ logo }}">집값레이더</div>
+  <span class="tag">실거래 · {{ today.year }}.{{ today.month }}.{{ today.day }} 신고분까지</span>
+  <h1>{{ sido }}</h1>
+  <h2 data-fit="60">{{ f.head }}</h2>
+  <div class="sub" data-fit="22">{{ f.sub }}</div>
+  <i class="i3 art" style="background-image:url('{{ I3D[f.icon] }}')"></i>
+  <div class="one">
+    <div class="k"><b>1위</b>{{ top.gu }}</div>
+    <div class="nm" data-fit="36">{{ top.name }}</div>
+    <div class="v">{{ big(top, f.unit) }}<small>{{ f.what }}</small></div>
+    <div class="d" data-fit="20">{{ detail(top, fmt) }}</div>
+  </div>
+  <div class="rest">
+    {% for x in rows[1:4] %}<div class="r"><i>{{ x.rank }}</i><span data-fit="22">{% if fmt != 'gu' %}<small>{{ x.gu }}</small>{% endif %}{{ x.name }}</span><b>{{ big(x, f.unit) }}</b></div>{% endfor %}
+  </div>
+  <div class="swipe">넘겨서 {{ n }}위까지 보기 →</div>
+  <div class="pg">1/{{ total }}</div>
+</div>
+{% endblock %}
