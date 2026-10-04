@@ -44,6 +44,13 @@ def posted(title: str, recent: list[str]) -> bool:
     return any((r or "").strip().startswith(title) for r in recent[:RECENT])
 
 
+def korean(files: list, cap: str, rows: list[dict]) -> list[str]:
+    """카드 글자(렌더 때 남긴 text.txt)와 캡션에 영어가 섞이지 않았는지."""
+    names = [x.get(k) for x in rows for k in ("name", "gu", "umd")]
+    card = (files[0].parent / "text.txt").read_text(encoding="utf-8") if files else ""
+    return check.check_korean([("카드", card), ("캡션", cap)], names)
+
+
 def won(v: float) -> str:
     """만원 → '8천만 원', '1억 2천만 원'."""
     e, r = divmod(int(v), 10000)
@@ -92,7 +99,7 @@ def make_budget(today: dt.date, recent: list[str], tried: list[str]):
             continue
         files, meta = budget.render(sido, eok, band, today, rows_base=(rows, base))
         cap = caption(sido, eok, band, meta, today)
-        bad = check.check_rows(rows, eok, base, today) + check.check_images(files, meta["overflow"])
+        bad = check.check_rows(rows, eok, base, today) + check.check_images(files, meta["overflow"]) + korean(files, cap, rows)
         return title, files, cap, bad, f"budget-{SLUG.get(sido, 'region')}-{eok}-{band[:2]}"
     return None
 
@@ -106,7 +113,7 @@ def cash_candidates(today: dt.date) -> list[tuple[str, str]]:
 def cash_caption(key: str, sido: str, meta: dict, today: dt.date) -> str:
     p, m, pl = cash.PERSONAS[key], meta["main"], meta["plans"]
     eok = cash.eok
-    stop = {"DSR": "소득(DSR)", "LTV": f"LTV {int(m.ltv * 100)}%", "한도": "주담대 6억 한도"}[m.binding]
+    stop = {"DSR": "소득 한도", "LTV": f"집값의 {int(m.ltv * 100)}% 한도", "한도": "주담대 6억 한도"}[m.binding]
     alt = loan.max_price(p["cash"], p["income"], True, not p["first"])
     lines = [
         f"현금 {eok(p['cash'])} {p['label']} · {sido} 아파트는 최대 {eok(m.price)}까지 🏠",
@@ -123,14 +130,14 @@ def cash_caption(key: str, sido: str, meta: dict, today: dt.date) -> str:
     lines += [
         "📌 거래 많은 곳: " + " · ".join(f"{g} {n}" for g, n in meta["top_gu"]),
         "",
-        f"✔ {loan.RULES_AS_OF}(LTV·주담대 한도·스트레스 DSR 3%)",
+        f"✔ {loan.RULES_AS_OF}(집값 대비 대출 비율·주담대 한도·소득 심사 때 금리 3%p 가산)",
         "✔ 금리 4%·30년·기존 대출 없음 가정 — 실제 한도는 은행에서 꼭 확인하세요",
         f"✔ 국토부 실거래({today.month}월 {today.day}일 신고분까지) · 해제·직거래 제외",
         "",
         "👉 우리 단지 층별 가격·모든 거래는 프로필 링크(jipgapradar.kr)",
         "저장해 두고 내 조건과 비교해 보세요. 궁금한 조건은 댓글로 남겨 주세요!",
         "",
-        f"#{sido}아파트 #{p['label'].replace(' ', '')} #생애최초 #주택담보대출 #DSR #LTV #부동산대책 {TAGS}",
+        f"#{sido}아파트 #{p['label'].replace(' ', '')} #생애최초 #주택담보대출 #대출한도 #부동산대책 {TAGS}",
     ]
     return "\n".join(lines)
 
@@ -152,7 +159,7 @@ def make_cash(today: dt.date, recent: list[str], tried: list[str]):
         bad = check.check_rows(rows, None, base, today, bounds=lambda x: (x["top"] * cash.LOW - 1, x["top"] + 1)) \
             + check.check_images(files, meta["overflow"]) \
             + [f"[규제지역 계산] {b}" for b in check.check_plan(p["cash"], pl[True])] \
-            + [f"[비규제 계산] {b}" for b in check.check_plan(p["cash"], pl[False])]
+            + [f"[비규제 계산] {b}" for b in check.check_plan(p["cash"], pl[False])] + korean(files, cap, rows)
         return title, files, cap, bad, f"cash-{key}-{SLUG.get(sido, 'region')}"
     return None
 
@@ -217,7 +224,7 @@ def make_rank(today: dt.date, recent: list[str], tried: list[str], fmt: str | No
             continue
         files, meta = rank.render(fmt, sido, today, rows)
         cap = rank_caption(fmt, sido, rows, today)
-        bad = check.check_rank(rows, fmt) + check.check_images(files, meta["overflow"])
+        bad = check.check_rank(rows, fmt) + check.check_images(files, meta["overflow"]) + korean(files, cap, rows)
         return title, files, cap, bad, f"rank-{fmt}-{SLUG.get(sido, 'region')}"
     return None
 

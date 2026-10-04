@@ -45,17 +45,17 @@ h3 small { font-size:25px; font-weight:700; color:var(--muted); margin-left:10px
   </div>
   <h3>대출은 셋 중 가장 작은 값<small>연소득 {{ man(p.income) }}원</small></h3>
   <div class="lim">
-    {% for k, label, sub, v in [('LTV', '집값의 ' ~ (m.ltv * 100)|int ~ '% (LTV)', '생애최초' if p.first else ('규제지역' if m.ltv < 0.5 else '비규제'), m.by_ltv),
-                                ('DSR', '소득 기준 (DSR 40%)', '금리 4%+스트레스 3% · 30년', m.by_dsr),
+    {% for k, label, sub, v in [('LTV', '집값의 ' ~ (m.ltv * 100)|int ~ '%까지', '생애최초' if p.first else ('규제지역' if m.ltv < 0.5 else '비규제'), m.by_ltv),
+                                ('DSR', '소득 기준', '연소득 40%까지 상환 · 금리 4%+3%p · 30년', m.by_dsr),
                                 ('한도', '수도권 주담대 한도', '규제지역 15억↑는 더 낮음', m.by_cap)] %}
     <div class="row{{ ' on' if m.binding == k }}"><div class="top"><span>{{ label }}{% if m.binding == k %}<span class="tagon">한계</span>{% endif %}<small>{{ sub }}</small></span><b>{{ eok(v) }}</b></div>
       <div class="bar"><i style="width:{{ (v / mx * 100)|round(1) }}%"></i></div></div>
     {% endfor %}
   </div>
   {% if mixed %}
-  <div class="alt"><div class="k">규제지역 밖(경기 그 외)이면<small>LTV {{ (pl[False].ltv * 100)|int }}% · 대출 {{ eok(pl[False].loan) }}</small></div><b>{{ eok(pl[False].price) }}</b></div>
+  <div class="alt"><div class="k">규제지역 밖(경기 그 외)이면<small>집값의 {{ (pl[False].ltv * 100)|int }}% · 대출 {{ eok(pl[False].loan) }}</small></div><b>{{ eok(pl[False].price) }}</b></div>
   {% elif has_reg and (alt.price - m.price)|abs >= 1000 %}
-  <div class="alt"><div class="k">{{ '생애최초가 아니면' if p.first else '생애최초라면' }}{{ ' (규제지역 12곳)' if sido == '경기' }}<small>LTV {{ (alt.ltv * 100)|int }}% · 대출 {{ eok(alt.loan) }}</small></div><b>{{ eok(alt.price) }}</b></div>
+  <div class="alt"><div class="k">{{ '생애최초가 아니면' if p.first else '생애최초라면' }}{{ ' (규제지역 12곳)' if sido == '경기' }}<small>집값의 {{ (alt.ltv * 100)|int }}% · 대출 {{ eok(alt.loan) }}</small></div><b>{{ eok(alt.price) }}</b></div>
   {% endif %}
   <div class="pay"><div class="k">매달 갚는 돈<small>대출 {{ eok(m.loan) }} · 금리 4% · 30년 원리금균등</small></div><b>{{ man(monthly(m.loan)) }}원</b></div>
   <div class="note">{{ rules }} · 무주택·기존 대출 없음·변동금리 가정 · 세금·비용 = 취득세(생애최초 감면 미반영)+중개보수 상한+기타 0.2%<br>은행·소득 형태·금리에 따라 달라져요. 실제 한도는 은행에서 꼭 확인하세요.</div>

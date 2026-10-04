@@ -53,3 +53,10 @@ def test_duplicate_report_does_not_hide_outlier():
              mk("2026-08-19", 74000, 3), mk("2026-08-19", 74000, 3)]
     core.flag_outliers(sales)
     assert sales[3].get("outlier") and sales[4].get("outlier")
+
+
+def test_korean_check_catches_english_but_not_names():
+    from cards import check
+    assert check.check_korean([("카드", "서울 신고가 TOP · jipgapradar.kr")], []) == ["카드에 영어 표기: TOP"]
+    assert check.check_korean([("카드", "한강동일스위트ThePark View 34평")], ["한강동일스위트ThePark View"]) == []
+    assert check.check_korean([("캡션", "대출은 LTV 70%")], []) != []

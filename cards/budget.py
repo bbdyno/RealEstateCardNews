@@ -119,7 +119,7 @@ def render(sido: str, eok: int, band: str, today: dt.date | None = None, rows_ba
 
 def shoot(env: Environment, shots: list[tuple[str, dict]], ctx: dict, out: Path) -> tuple[list[Path], dict[str, int]]:
     """템플릿마다 크롬으로 찍어 JPEG 로 저장한다. 넘친 글자 수를 장마다 돌려준다(자동 검수용)."""
-    files, overflow = [], {}
+    files, overflow, texts = [], {}, []
     with tempfile.TemporaryDirectory() as d:
         for k, (tpl, extra) in enumerate(shots, 1):
             html = env.get_template(f"{tpl}.html").render(**ctx, **extra, idx=k)
@@ -130,6 +130,8 @@ def shoot(env: Environment, shots: list[tuple[str, dict]], ctx: dict, out: Path)
                       f"--window-size={W},{H}", "--virtual-time-budget=8000"]
             subprocess.run([*common, f"--screenshot={png}", src.as_uri()], check=True, capture_output=True, timeout=120)
             dom = subprocess.run([*common, "--dump-dom", src.as_uri()], check=True, capture_output=True, text=True, timeout=120).stdout
+            body = re.sub(r"<(style|script)[^>]*>.*?</\1>", " ", dom, flags=re.S)
+            texts.append(re.sub(r"<[^>]+>", " ", body))
             m = re.search(r'data-overflow="(\d+)"', dom)
             overflow[f"{k:02d}"] = int(m.group(1)) if m else 0
             if overflow[f"{k:02d}"]:
@@ -138,6 +140,7 @@ def shoot(env: Environment, shots: list[tuple[str, dict]], ctx: dict, out: Path)
             with Image.open(png) as im:
                 im.convert("RGB").save(jpg, "JPEG", quality=92, optimize=True, progressive=True)
             files.append(jpg)
+    (out / "text.txt").write_text("\n".join(texts), encoding="utf-8")
     return files, overflow
 
 

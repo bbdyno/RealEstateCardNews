@@ -10,6 +10,8 @@ from __future__ import annotations
 import datetime as dt
 from pathlib import Path
 
+import re
+
 from PIL import Image
 
 from analytics import core
@@ -102,4 +104,19 @@ def check_rank(rows: list[dict], fmt: str) -> list[str]:
         seen.add(k)
     if [x["rank"] for x in rows] != list(range(1, len(rows) + 1)):
         bad.append("순위 번호가 어긋남")
+    return bad
+
+
+ALLOW_EN = {"jipgapradar", "kr"}          # 사이트 주소만 허용
+
+
+def check_korean(texts: list[str], names: list[str]) -> list[str]:
+    """카드에 찍힌 글자·캡션에 영어가 섞였는지. 단지 이름·시·구·동 이름(국토부 표기 그대로)은 빼고 본다."""
+    bad = []
+    for label, t in texts:
+        for n in sorted({n for n in names if n}, key=len, reverse=True):
+            t = t.replace(n, " ")
+        words = sorted(set(re.findall(r"[A-Za-z]{2,}", t)) - ALLOW_EN)
+        if words:
+            bad.append(f"{label}에 영어 표기: {', '.join(words[:10])}")
     return bad

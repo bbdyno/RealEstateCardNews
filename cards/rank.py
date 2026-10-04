@@ -1,4 +1,4 @@
-"""랭킹 카드 — 신고가 TOP · 많이 내린 단지 · 신고가 찍고 해제 · 거래 많은 단지 · 시·구 집값 변화 순위.
+"""랭킹 카드 — 신고가 순위 · 많이 내린 단지 · 신고가 찍고 해제 · 거래 많은 단지 · 시·구 집값 변화 순위.
 
   .venv/bin/python -m cards.rank highs 서울     → out/cards/rank-highs-서울/01.jpg …
 
@@ -25,13 +25,13 @@ TOP = ROWS * MAX_TABLES
 
 # 형식별 표지 색·아이콘·문구. head 는 표지 큰 제목(시도 뒤), what 은 1위 카드의 값 이름
 FORMATS = {
-    "highs":   dict(head="신고가 TOP", sub="최근 한 달 계약 · 같은 평형 3년 최고가 경신", icon="fire", period="최근 한 달 계약", bg="#FFE1EC", ac="#F04452",
+    "highs":   dict(head="신고가 순위", sub="최근 한 달 계약 · 같은 평형 3년 최고가 경신", icon="fire", period="최근 한 달 계약", bg="#FFE1EC", ac="#F04452",
                     what="이전 최고보다", unit="pct_up"),
-    "drops":   dict(head="하락 TOP", sub="최근 3개월 실거래 · 3년 최고가보다 많이 내린 단지", icon="down", period="최근 3개월 실거래", bg="#E3EEFF", ac="#3182F6",
+    "drops":   dict(head="하락 순위", sub="최근 3개월 실거래 · 3년 최고가보다 많이 내린 단지", icon="down", period="최근 3개월 실거래", bg="#E3EEFF", ac="#3182F6",
                     what="3년 최고가보다", unit="pct_down"),
     "cancels": dict(head="해제된 신고가", sub="최근 6개월 · 신고가로 계약했다가 취소(집값 띄우기 의심 신호)", icon="warn", period="최근 6개월 계약", bg="#FFF4CC", ac="#E08A00",
                     what="직전 최고보다", unit="pct_up"),
-    "hot":     dict(head="거래량 TOP", sub="최근 3개월 매매 건수 · 해제·직거래 제외", icon="rank", period="최근 3개월", bg="#EFFBD0", ac="#4C8A00",
+    "hot":     dict(head="거래량 순위", sub="최근 3개월 매매 건수 · 해제·직거래 제외", icon="rank", period="최근 3개월", bg="#EFFBD0", ac="#4C8A00",
                     what="최근 3개월", unit="count"),
     "gu":      dict(head="시·구 집값 순위", sub="같은 단지끼리 비교 · 최근 3개월 vs 그 전 3개월", icon="trend", period="같은 단지끼리 비교", bg="#ECE6FF", ac="#6B4EE6",
                     what="직전 3개월보다", unit="pct_signed"),

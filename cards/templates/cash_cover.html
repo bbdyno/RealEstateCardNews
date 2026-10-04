@@ -47,7 +47,7 @@ h2 { font-size:62px; font-weight:800; margin-top:14px; letter-spacing:-0.05em; }
       {% endif %}
     </div>
     <div class="t t2"><i class="i3" style="background-image:url('{{ I3D.warn }}')"></i><div class="k">대출을 막는 것</div>
-      <div class="v" data-fit="40">{{ {'DSR': '소득(DSR)', 'LTV': 'LTV ' ~ (main.ltv * 100)|int ~ '%', '한도': '6억 한도'}[main.binding] }}</div>
+      <div class="v" data-fit="40">{{ {'DSR': '소득 한도', 'LTV': '집값의 ' ~ (main.ltv * 100)|int ~ '%', '한도': '6억 한도'}[main.binding] }}</div>
       <div class="d" data-fit="18">대출 {{ eok(main.loan) }}에서 멈춰요</div></div>
     <div class="t t3"><i class="i3" style="background-image:url('{{ I3D.house }}')"></i><div class="k">그 값에 계약된 단지</div>
       <div class="v">{{ n }}<small>곳</small></div>
