@@ -98,6 +98,9 @@ def rows_drops(sido: str, today: dt.date) -> list[dict]:
             tops = sorted((s["price"] for s in same), reverse=True)
             if tops[1] < tops[0] * 0.9:                         # 최고가 한 건만 튀었으면(다음 최고와 10% 넘게 차이) 비교 기준으로 안 쓴다
                 continue
+            prior = [s["price"] for s in same[1:] if s["ymd"] >= _since(dt.date.fromisoformat(last["ymd"]), 183)]
+            if len(prior) >= 2 and last["price"] < core.median(prior) * 0.8:    # 직전 6개월 시세보다 20% 넘게 싼 한 건은 특수 거래로 본다
+                continue
             hi = max(same, key=lambda s: s["price"])
             d = core.change(last["price"], hi["price"])
             if d is not None and -0.45 <= d <= -0.05:

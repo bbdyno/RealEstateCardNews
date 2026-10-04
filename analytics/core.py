@@ -170,7 +170,9 @@ def flag_outliers(sales: list[dict]) -> None:
         if len(g) < 3:
             continue
         for x in g:
-            others = [o for o in g if o is not x]
+            # 같은 거래가 두 번 신고된 행(같은 날·층·가격·면적)은 '근처 거래'로 치지 않는다 — 서로를 정상으로 만들어 버린다
+            same = lambda o: (o["ymd"], o.get("floor"), o["price"], o["area"]) == (x["ymd"], x.get("floor"), x["price"], x["area"])
+            others = [o for o in g if o is not x and not same(o)]
             near = [o for o in others if abs(_day(o) - _day(x)) <= OUTLIER_DAYS]
             if any(abs(o["price"] / x["price"] - 1) <= OUTLIER_BAND for o in near):
                 continue

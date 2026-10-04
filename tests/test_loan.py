@@ -44,3 +44,12 @@ def test_won_text():
     assert won(8000) == "8천만 원"
     assert won(12000) == "1억 2천만 원"
     assert won(30000) == "3억 원"
+
+
+def test_duplicate_report_does_not_hide_outlier():
+    from analytics import core
+    mk = lambda ymd, p, fl=5: {"ymd": ymd, "price": p, "area": 84.34, "floor": fl, "cancelled": 0, "direct": 0}
+    sales = [mk("2026-05-01", 120000), mk("2026-06-01", 123000), mk("2026-07-01", 124000, 6),
+             mk("2026-08-19", 74000, 3), mk("2026-08-19", 74000, 3)]
+    core.flag_outliers(sales)
+    assert sales[3].get("outlier") and sales[4].get("outlier")
