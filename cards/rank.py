@@ -39,11 +39,11 @@ FORMATS = {
 # 표 열: (머리말, 키, 폭px(None=남는 폭), 형식)
 _BASE = [("#", "rank", 54, "rank"), ("시·구", "gu", 112, "gu"), ("단지", "name", None, "name"), ("평", "py", 52, "int")]
 COLS = {
-    "highs":   _BASE + [("신고가", "price", 110, "eok_b"), ("이전 최고", "prev", 100, "eok_m"), ("오른 폭", "up", 128, "pct_up"), ("계약일", "ymd", 92, "md")],
-    "drops":   _BASE + [("실거래", "price", 110, "eok_b"), ("3년 최고", "prev", 100, "eok_m"), ("내린 폭", "up", 128, "pct_down"), ("계약일", "ymd", 92, "md")],
-    "cancels": _BASE + [("해제된 값", "price", 110, "eok_b"), ("직전 최고", "prev", 100, "eok_m"), ("차이", "up", 128, "pct_up"), ("계약일", "ymd", 92, "md")],
+    "highs":   _BASE + [("신고가", "price", 122, "eok_b"), ("이전 최고", "prev", 108, "eok_m"), ("오른 폭", "up", 140, "pct_up"), ("계약일", "ymd", 92, "md")],
+    "drops":   _BASE + [("실거래", "price", 122, "eok_b"), ("3년 최고", "prev", 108, "eok_m"), ("내린 폭", "up", 140, "pct_down"), ("계약일", "ymd", 92, "md")],
+    "cancels": _BASE + [("해제된 값", "price", 122, "eok_b"), ("직전 최고", "prev", 108, "eok_m"), ("차이", "up", 140, "pct_up"), ("계약일", "ymd", 92, "md")],
     "hot":     [("#", "rank", 54, "rank"), ("시·구", "gu", 112, "gu"), ("단지", "name", None, "name"), ("연차", "age", 60, "int"),
-                ("거래", "n3", 80, "cnt"), ("주력 평", "py", 80, "int"), ("최근가", "price", 110, "eok_b"), ("최고 대비", "up", 134, "pct_signed")],
+                ("거래", "n3", 80, "cnt"), ("주력 평", "py", 80, "int"), ("최근가", "price", 122, "eok_b"), ("최고 대비", "up", 140, "pct_signed")],
     "gu":      [("#", "rank", 54, "rank"), ("시·구", "gu_one", None, "name"), ("3개월 변화", "up", 146, "pct_signed"), ("", "bar", 190, "bar"),
                 ("평당가", "ppp", 124, "man"), ("거래", "n3", 116, "cnt")],
 }
