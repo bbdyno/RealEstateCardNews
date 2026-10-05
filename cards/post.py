@@ -277,6 +277,7 @@ def main() -> int:
     ap.add_argument("--sido", help="랭킹·예산표 시도를 직접 고른다")
     ap.add_argument("--eok", type=int, help="예산표 억대를 직접 고른다(--sido 와 함께)")
     ap.add_argument("--band", default="30평대", help="예산표 평형대(30평대·20평대)")
+    ap.add_argument("--slot", help="예약 시각(HH:MM) — 이보다 2시간 넘게 늦게 돌면 건너뛴다(GitHub 예약 지연)")
     ap.add_argument("--persona", choices=sorted(cash.PERSONAS), help="현금 카드 가구 유형(--sido 와 함께)")
     a = ap.parse_args()
     today = dt.date.today()
@@ -288,9 +289,23 @@ def main() -> int:
             if days is not None and days < 20:
                 publish.notify(f"⚠️ 집값레이더 인스타 토큰이 {days:.0f}일 남았습니다. 메타 개발자 화면에서 다시 발급해 주세요.")
         manual = bool(a.fmt or a.sido or a.eok or a.persona)
-        if live and not a.repeat and not manual:        # 맥 예약과 GitHub 예약이 둘 다 돌아도 하루 한 번만
-            if any(e.get("date") == today.isoformat() and e.get("series") == a.series for e in publish.posted_log()):
-                print(f"오늘 {a.series} 은 이미 올렸습니다 — 건너뜀")
+        if a.slot:                                      # 몇 시간 밀린 예약 실행이 다음 슬롯을 먹지 않게
+            now = dt.datetime.now()
+            h, mi = map(int, a.slot.split(":"))
+            slot = now.replace(hour=h, minute=mi, second=0, microsecond=0)
+            if slot > now + dt.timedelta(hours=12):
+                slot -= dt.timedelta(days=1)            # 자정을 넘겨 돈 경우
+            if now - slot > dt.timedelta(hours=2):
+                print(f"예약({a.slot})보다 {now - slot} 늦게 돌아 건너뜀")
+                return 0
+        if live and not a.repeat and not manual:        # 맥 예약과 GitHub 예약이 둘 다 돌아도 한 번만
+            def ago(e):
+                try:
+                    return dt.datetime.now() - dt.datetime.fromisoformat(e.get("at", ""))
+                except ValueError:
+                    return dt.timedelta(days=99)
+            if any(e.get("series") == a.series and ago(e) < dt.timedelta(hours=6) for e in publish.posted_log()):
+                print(f"{a.series} 은 최근 6시간 안에 이미 올렸습니다 — 건너뜀")
                 return 0
         tried: list[str] = []
         if a.series.startswith("rank") and manual:

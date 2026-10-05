@@ -101,6 +101,10 @@ jobs:
           if [ "${{ github.event.schedule }}" = "40 6 * * *" ]; then S=rank2; fi
           if [ "${{ github.event.schedule }}" = "40 12 * * *" ]; then S=budget2; fi
           X=""
+          case "${{ github.event.schedule }}" in
+            "10 23 * * *") X="--slot 08:10";; "10 3 * * *") X="--slot 12:10";; "40 6 * * *") X="--slot 15:40";;
+            "40 10 * * *") X="--slot 19:40";; "40 12 * * *") X="--slot 21:40";;
+          esac
           if [ -n "${{ inputs.fmt }}" ]; then X="$X --fmt ${{ inputs.fmt }}"; fi
           if [ -n "${{ inputs.sido }}" ]; then X="$X --sido ${{ inputs.sido }}"; fi
           if [ -n "${{ inputs.persona }}" ]; then X="$X --persona ${{ inputs.persona }}"; fi
