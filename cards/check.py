@@ -10,6 +10,7 @@ from __future__ import annotations
 import datetime as dt
 from pathlib import Path
 
+import html
 import re
 
 from PIL import Image
@@ -114,6 +115,7 @@ def check_korean(texts: list[str], names: list[str]) -> list[str]:
     """카드에 찍힌 글자·캡션에 영어가 섞였는지. 단지 이름·시·구·동 이름(국토부 표기 그대로)은 빼고 본다."""
     bad = []
     for label, t in texts:
+        t = html.unescape(t)
         for n in sorted({n for n in names if n}, key=len, reverse=True):
             t = t.replace(n, " ")
         words = sorted(set(re.findall(r"[A-Za-z]{2,}", t)) - ALLOW_EN)
