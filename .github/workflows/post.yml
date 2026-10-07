@@ -19,7 +19,7 @@ on:
       series:
         description: "시리즈"
         type: choice
-        options: [rank, budget, rank2, cash, budget2, reel]
+        options: [rank, budget, rank2, cash, budget2, reel, dong, dong2, dongreel]
         default: budget
       fmt:
         description: "랭킹 형식(수동): highs·drops·cancels·hot·gu"
@@ -37,6 +37,10 @@ on:
         description: "예산표 평형대(수동)"
         type: string
         default: "30평대"
+      gu:
+        description: "동별 지도 자치구 코드(예: 11680 강남)"
+        type: string
+        default: ""
       persona:
         description: "현금 카드 가구 유형(수동): starter·newlywed·dual·family"
         type: string
@@ -111,6 +115,7 @@ jobs:
           if [ -n "${{ inputs.fmt }}" ]; then X="$X --fmt ${{ inputs.fmt }}"; fi
           if [ -n "${{ inputs.sido }}" ]; then X="$X --sido ${{ inputs.sido }}"; fi
           if [ -n "${{ inputs.persona }}" ]; then X="$X --persona ${{ inputs.persona }}"; fi
+          if [ -n "${{ inputs.gu }}" ]; then X="$X --gu ${{ inputs.gu }}"; fi
           if [ -n "${{ inputs.eok }}" ]; then X="$X --eok ${{ inputs.eok }} --band ${{ inputs.band }}"; fi
           if [ -z "$S" ]; then S=budget; fi
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.dry_run }}" = "true" ]; then
