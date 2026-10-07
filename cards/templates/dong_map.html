@@ -2,22 +2,22 @@
 {% block css %}
 body { background:#F7F8FA; }
 .head { position:absolute; top:60px; left:56px; right:56px; display:flex; align-items:center; gap:18px; }
-.head .badge { width:92px; height:92px; border-radius:26px; background:var(--ink); color:#fff; display:flex; flex-direction:column;
+.head .badge { width:92px; height:92px; border-radius:26px; background:{{ ink }}; color:#fff; display:flex; flex-direction:column;
   align-items:center; justify-content:center; font-weight:900; line-height:1; flex:none; }
 .head .badge small { font-size:20px; font-weight:800; opacity:.7; margin-bottom:4px; }
 .head .badge b { font-size:30px; }
 .head h1 { font-size:68px; font-weight:900; letter-spacing:-0.05em; }
-.head h1 em { font-style:normal; color:var(--down); }
+.head h1 em { font-style:normal; color:{{ ink }}; }
 .head .tag { margin-left:auto; background:var(--lime); color:var(--ink); font-size:30px; font-weight:800; padding:10px 22px; border-radius:999px; }
 svg { position:absolute; inset:0; }
 .dong { fill:#E7EAEF; stroke:#fff; stroke-width:2.5; }
-.dong.on { fill:#C7D8FF; }
+.dong.on { fill:{{ fill }}; }
 .dname { font-size:21px; font-weight:800; fill:#5A6372; text-anchor:middle; }
 .lead { stroke:#9AA3AF; stroke-width:1.6; fill:none; }
-.dot { fill:var(--down); }
+.dot { fill:{{ ink }}; }
 .lab b { font-size:27px; font-weight:900; fill:var(--ink); letter-spacing:-0.04em; }
 .lab .nm { font-size:30px; font-weight:900; fill:var(--ink); letter-spacing:-0.05em; }
-.lab .dn { font-size:22px; font-weight:800; fill:var(--down); }
+.lab .dn { font-size:22px; font-weight:800; fill:{{ ink }}; }
 .lab .pr { font-size:30px; font-weight:900; fill:var(--ink); }
 .lab .sm { font-size:21px; font-weight:700; fill:var(--muted); }
 .foot { position:absolute; left:56px; bottom:40px; display:flex; align-items:center; gap:14px; font-size:22px; font-weight:700; color:var(--muted); }

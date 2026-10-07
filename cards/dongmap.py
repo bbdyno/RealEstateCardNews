@@ -22,6 +22,16 @@ from .budget import OUT, env, shoot, short_name
 
 GEO = db.ROOT / "data" / "geo" / "seoul_dong.json"
 MAPW, MAPH = 1080, 1440
+MAX_LABELS = 10          # 한 장에 라벨로 표시할 동 수(금액 상위) — 나머지 동은 지도에 이름만
+
+# 자치구 테마 색(채움, 진한색) — 구 코드로 고른다. 공식 로고 대신 색으로 구분
+PALETTE = [("#C7D8FF", "#3182F6"), ("#FFD5C2", "#F2662C"), ("#C9EED6", "#2BA55B"), ("#E6D2FF", "#7C4DE0"),
+           ("#FFE0A8", "#D99008"), ("#FFCEDD", "#E84B7E"), ("#BFEAEA", "#1C9C9C"), ("#D9E4A8", "#789B16"),
+           ("#C2D4F0", "#365FB0"), ("#F2C8E8", "#B446A0")]
+
+
+def gu_colors(gu_code: str) -> tuple[str, str]:
+    return PALETTE[int(gu_code) % len(PALETTE)]
 
 
 def _rings(geom) -> list[list[list[float]]]:
@@ -98,17 +108,18 @@ def build(gu_code: str, band: str, today: dt.date) -> dict:
         cy = sum(cys) / len(cys) if cys else offy
         dongs.append({"name": name, "paths": paths, "cx": cx, "cy": cy, "area": area, "rep": reps.get(name)})
 
-    # 대표 단지가 있는 동만 라벨. 지도 중앙 기준 좌/우로 나눠 세로 정렬, 지시선으로 연결
-    mid = box["x0"] + box["w"] / 2
-    labeled = [d for d in dongs if d["rep"]]
-    left = sorted([d for d in labeled if d["cx"] < mid], key=lambda d: d["cy"])
-    right = sorted([d for d in labeled if d["cx"] >= mid], key=lambda d: d["cy"])
+    # 라벨은 금액 상위 MAX_LABELS 개 동만(동이 많은 구는 과밀). 가로 위치로 좌/우 반반 나눠 간격 확보
+    labeled = sorted([d for d in dongs if d["rep"]], key=lambda d: -d["rep"]["price"])[:MAX_LABELS]
+    by_x = sorted(labeled, key=lambda d: d["cx"])
+    half = (len(by_x) + 1) // 2
+    left = sorted(by_x[:half], key=lambda d: d["cy"])
+    right = sorted(by_x[half:], key=lambda d: d["cy"])
 
     def place(col, lx, anchor):
         n = len(col)
         if not n:
             return
-        top, bot, gap = 300, 1180, 0
+        top, bot = 320, 1170
         step = (bot - top) / max(n, 1)
         for i, d in enumerate(col):
             d["lx"] = lx
@@ -130,7 +141,8 @@ def render(gu_code: str, band: str, today: dt.date | None = None) -> tuple[list[
     today = today or dt.date.today()
     data = build(gu_code, band, today)
     name = gu_name(gu_code)
-    ctx = dict(gu=name, band=band.replace("평대", "평형"), today=today,
+    fill, ink = gu_colors(gu_code)
+    ctx = dict(gu=name, band=band.replace("평대", "평형"), today=today, fill=fill, ink=ink,
                logo=(db.ROOT / "web" / "static" / "logo.svg").as_uri(),
                dongs=data["dongs"], labels=data["labels"], box=data["box"],
                n=len([d for d in data["dongs"] if d["rep"]]))
