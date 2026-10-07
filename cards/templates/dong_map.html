@@ -1,0 +1,48 @@
+{% extends '_base.html' %}
+{% block css %}
+body { background:#F7F8FA; }
+.head { position:absolute; top:60px; left:56px; right:56px; display:flex; align-items:center; gap:18px; }
+.head .badge { width:92px; height:92px; border-radius:26px; background:var(--ink); color:#fff; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; font-weight:900; line-height:1; flex:none; }
+.head .badge small { font-size:20px; font-weight:800; opacity:.7; margin-bottom:4px; }
+.head .badge b { font-size:30px; }
+.head h1 { font-size:68px; font-weight:900; letter-spacing:-0.05em; }
+.head h1 em { font-style:normal; color:var(--down); }
+.head .tag { margin-left:auto; background:var(--lime); color:var(--ink); font-size:30px; font-weight:800; padding:10px 22px; border-radius:999px; }
+svg { position:absolute; inset:0; }
+.dong { fill:#E7EAEF; stroke:#fff; stroke-width:2.5; }
+.dong.on { fill:#C7D8FF; }
+.dname { font-size:21px; font-weight:800; fill:#5A6372; text-anchor:middle; }
+.lead { stroke:#9AA3AF; stroke-width:1.6; fill:none; }
+.dot { fill:var(--down); }
+.lab b { font-size:27px; font-weight:900; fill:var(--ink); letter-spacing:-0.04em; }
+.lab .nm { font-size:30px; font-weight:900; fill:var(--ink); letter-spacing:-0.05em; }
+.lab .dn { font-size:22px; font-weight:800; fill:var(--down); }
+.lab .pr { font-size:30px; font-weight:900; fill:var(--ink); }
+.lab .sm { font-size:21px; font-weight:700; fill:var(--muted); }
+.foot { position:absolute; left:56px; bottom:40px; display:flex; align-items:center; gap:14px; font-size:22px; font-weight:700; color:var(--muted); }
+.foot .logo { font-size:23px; color:var(--ink); } .foot .logo img { width:36px; height:36px; border-radius:10px; }
+.note { position:absolute; left:56px; right:56px; bottom:92px; font-size:21px; font-weight:600; color:var(--muted); }
+{% endblock %}
+{% block body %}
+<div class="head">
+  <div class="badge"><small>구별</small><b>대표</b></div>
+  <h1><em>{{ gu }}</em> 동별 대표 아파트</h1>
+  <span class="tag">{{ band }}</span>
+</div>
+<svg viewBox="0 0 1080 1440" xmlns="http://www.w3.org/2000/svg">
+  {% for d in dongs %}{% for p in d.paths %}<path class="dong {{ 'on' if d.rep }}" d="{{ p }}"/>{% endfor %}{% endfor %}
+  {% for d in dongs %}<text class="dname" x="{{ d.cx|round(1) }}" y="{{ (d.cy + 7)|round(1) }}">{{ d.name[:-1] if d.name|length > 2 else d.name }}</text>{% endfor %}
+  {% for d in labels %}
+  <path class="lead" d="M{{ d.lx + (150 if d.anchor=='start' else -150) }},{{ d.ly|round(1) }} L{{ d.cx|round(1) }},{{ d.cy|round(1) }}"/>
+  <circle class="dot" cx="{{ d.cx|round(1) }}" cy="{{ d.cy|round(1) }}" r="6"/>
+  <g class="lab" text-anchor="{{ d.anchor }}">
+    <text class="dn" x="{{ d.lx }}" y="{{ (d.ly - 34)|round(1) }}">{{ d.name }}</text>
+    <text class="nm" x="{{ d.lx }}" y="{{ (d.ly - 2)|round(1) }}"{% if d.rep.name|length > 8 %} textLength="236" lengthAdjust="spacingAndGlyphs"{% endif %}>{{ d.rep.name }}</text>
+    <text class="pr" x="{{ d.lx }}" y="{{ (d.ly + 34)|round(1) }}">{{ d.rep.price|eokn }}억 <tspan class="sm">· {{ d.rep.py }}평</tspan></text>
+  </g>
+  {% endfor %}
+</svg>
+<div class="note">동마다 {{ band }} 최근 3개월 거래가 있는 단지 중 3년 거래가 가장 많은 '대장' 단지 · 거래가 없는 동은 생략</div>
+<div class="foot"><span class="logo"><img src="{{ logo }}">집값레이더</span><span>단위 억 · 출처 국토교통부 실거래가 · jipgapradar.kr</span></div>
+{% endblock %}

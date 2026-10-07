@@ -9,3 +9,8 @@ scripts/deploy.sh
 proto/complex*.html
 .DS_Store
 out/
+
+# 지도 경계는 포함(공개 데이터, 카드 생성에 필요)
+!data/
+data/*
+!data/geo/
