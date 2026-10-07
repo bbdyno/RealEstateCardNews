@@ -16,7 +16,7 @@ import os
 import sys
 import traceback
 
-from . import budget, cash, check, loan, publish, rank
+from . import budget, cash, check, loan, publish, rank, reel
 
 # (시도, 억대 범위, 평형대) — 수도권 위주. 지방 광역시 시리즈는 다음 단계에서 붙인다
 SERIES = [("서울", range(6, 21), ("30평대", "20평대")),
@@ -262,7 +262,31 @@ def make_budget_pair(today: dt.date, recent: list[str], tried: list[str]):
 
 
 # 하루 다섯 번: 08:10 rank · 12:10 budget(30평형) · 15:40 rank2 · 19:40 cash · 21:40 budget2(같은 억대 20평형)
-MAKERS = {"rank": make_rank, "cash": make_cash,
+def make_reel(today: dt.date, recent: list[str], tried: list[str], fmt: str | None = None, sido_only: str | None = None):
+    """아침 순위를 세로 릴스 영상으로. 사진 순위와 겹치지 않게 다른 형식·시도를 쓴다."""
+    fmt = fmt or second_fmt(today)
+    f = rank.FORMATS[fmt]
+    for sido in ([sido_only] if sido_only else rotate(RANK_SIDOS, today + dt.timedelta(days=1))):
+        title = f"{sido} {f['head']} 릴스"
+        if posted(title, recent):
+            tried.append(f"{title}(최근에 올림)")
+            continue
+        rows = rank.pick(fmt, sido, today)
+        if len(rows) < 10:
+            tried.append(f"{title}({len(rows)}줄)")
+            continue
+        files, meta = rank.render(fmt, sido, today, rows)
+        bad = check.check_rank(rows, fmt) + check.check_images(files, meta["overflow"])
+        if bad:
+            return title, files, "", bad, None, None     # 카드 검수부터 통과해야 영상으로 만든다
+        mp4 = reel.make(files, f"reel-{fmt}-{SLUG.get(sido, 'region')}", reel.COVERS["rank"])
+        cap = rank_caption(fmt, sido, rows, today) + "\n\n▶ 소리 없이 볼 수 있어요 · 저장해 두고 천천히"
+        bad = check.check_video(mp4) + korean([files[0]], cap, rows)
+        return title, [mp4], cap, bad, f"reel-{fmt}-{SLUG.get(sido, 'region')}", "reel"
+    return None
+
+
+MAKERS = {"rank": make_rank, "cash": make_cash, "reel": make_reel,
           "budget": lambda t, r, tr: make_budget(t, r, tr, band_only="30평대"),
           "rank2": lambda t, r, tr: make_rank(t, r, tr, fmt=second_fmt(t), offset=4),
           "budget2": make_budget_pair}
@@ -308,7 +332,9 @@ def main() -> int:
                 print(f"{a.series} 은 최근 6시간 안에 이미 올렸습니다 — 건너뜀")
                 return 0
         tried: list[str] = []
-        if a.series.startswith("rank") and manual:
+        if a.series == "reel" and manual:
+            made = make_reel(today, [] if a.repeat else recent, tried, a.fmt, a.sido)
+        elif a.series.startswith("rank") and manual:
             made = make_rank(today, [] if a.repeat else recent, tried, a.fmt, a.sido)
         elif a.series == "cash" and a.persona and a.sido:
             made = make_cash(today, [] if a.repeat else recent, tried, only=(a.persona, a.sido))
@@ -319,7 +345,8 @@ def main() -> int:
         if not made:
             publish.notify("ℹ️ 집값레이더: 오늘 올릴 만한 후보가 없어 건너뜁니다\n" + ", ".join(tried))
             return 0
-        title, files, cap, bad, slug = made
+        title, files, cap, bad, slug, *kind = made
+        kind = kind[0] if kind else "carousel"
         bad += check.check_caption(cap, [] if a.repeat else recent)
         if bad:
             print("검수 실패:", *bad, sep="\n- ")
@@ -330,7 +357,7 @@ def main() -> int:
             print(cap)
             return 0
         urls = publish.upload(files, slug)
-        media_id = publish.publish(urls, cap)
+        media_id = publish.publish_reel(urls[0], cap) if kind == "reel" else publish.publish(urls, cap)
         link = publish.permalink(media_id) or ""
         try:
             publish.add_log({"date": today.isoformat(), "series": a.series + ("-manual" if manual else ""), "title": title, "id": media_id, "link": link,

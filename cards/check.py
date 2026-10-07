@@ -11,7 +11,9 @@ import datetime as dt
 from pathlib import Path
 
 import html
+import json
 import re
+import subprocess
 
 from PIL import Image
 
@@ -121,4 +123,27 @@ def check_korean(texts: list[str], names: list[str]) -> list[str]:
         words = sorted(set(re.findall(r"[A-Za-z]{2,}", t)) - ALLOW_EN)
         if words:
             bad.append(f"{label}에 영어 표기: {', '.join(words[:10])}")
+    return bad
+
+
+def check_video(path: Path) -> list[str]:
+    """릴스 영상: 세로 1080×1920, 길이 3~90초, 오디오 트랙 있음, 100MB 이하."""
+    bad = []
+    try:
+        out = subprocess.run(["ffprobe", "-v", "error", "-print_format", "json",
+                              "-show_format", "-show_streams", str(path)], capture_output=True, text=True, check=True).stdout
+        info = json.loads(out)
+    except (subprocess.CalledProcessError, ValueError, FileNotFoundError) as e:
+        return [f"영상을 읽지 못함: {e}"]
+    v = next((s for s in info["streams"] if s["codec_type"] == "video"), None)
+    a = next((s for s in info["streams"] if s["codec_type"] == "audio"), None)
+    if not v or (v["width"], v["height"]) != (1080, 1920):
+        bad.append(f"해상도 {v and (v['width'], v['height'])} (1080×1920 이어야 함)")
+    if not a:
+        bad.append("오디오 트랙 없음(인스타가 거부할 수 있음)")
+    dur = float(info["format"].get("duration", 0))
+    if not 3 <= dur <= 90:
+        bad.append(f"길이 {dur:.1f}초(3~90초)")
+    if path.stat().st_size > 100 * 1024 * 1024:
+        bad.append("100MB 초과")
     return bad

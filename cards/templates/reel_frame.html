@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+html, body { width:1080px; height:1920px; overflow:hidden;
+  font-family:"Pretendard Variable",Pretendard,-apple-system,sans-serif; letter-spacing:-0.03em; }
+body { position:relative; background: radial-gradient(130% 80% at 50% 0%, #2A2F37 0%, #111316 55%); color:#fff; }
+.top { position:absolute; top:62px; left:56px; right:56px; display:flex; align-items:center; gap:14px; }
+.top img { width:56px; height:56px; border-radius:15px; }
+.top b { font-size:38px; font-weight:800; }
+.top span { margin-left:auto; font-size:30px; font-weight:800; color:#D4FA4B; }
+.card { position:absolute; top:236px; left:38px; width:1004px; height:1339px;
+  border-radius:40px; overflow:hidden; box-shadow:0 30px 70px rgba(0,0,0,.5); }
+.card img { width:100%; height:100%; display:block; object-fit:cover; }
+.cta { position:absolute; left:56px; right:56px; bottom:118px; text-align:center; }
+.cta .big { font-size:52px; font-weight:900; letter-spacing:-0.04em; }
+.cta .big em { font-style:normal; color:#D4FA4B; }
+.cta .sub { font-size:34px; font-weight:700; color:rgba(255,255,255,.72); margin-top:16px; }
+.dots { position:absolute; left:0; right:0; bottom:66px; display:flex; justify-content:center; gap:12px; }
+.dots i { width:13px; height:13px; border-radius:50%; background:rgba(255,255,255,.28); }
+.dots i.on { background:#D4FA4B; width:34px; border-radius:7px; }
+</style></head>
+<body>
+  <div class="top"><img src="{{ logo }}"><b>집값레이더</b><span>@jipgapradar</span></div>
+  <div class="card"><img src="{{ img }}"></div>
+  <div class="cta">
+    <div class="big">{{ cta_big|safe }}</div>
+    <div class="sub">{{ cta_sub }}</div>
+  </div>
+  <div class="dots">{% for i in range(total) %}<i class="{{ 'on' if i == idx }}"></i>{% endfor %}</div>
+</body></html>
