@@ -302,6 +302,29 @@ def make_dong(today: dt.date, recent: list[str], tried: list[str], band: str = "
     return None
 
 
+def gu_code_by_name() -> dict:
+    return {dongmap.gu_name(c): c for c in seoul_gus()}
+
+
+def make_dong_pair(today: dt.date, recent: list[str], tried: list[str]):
+    """오후 지도: 오전에 올린 30평형과 같은 구의 20평형."""
+    codes = gu_code_by_name()
+    for e in reversed(publish.posted_log()):
+        if e.get("date") == today.isoformat() and e.get("series") == "dong":
+            m = re.match(r"(\S+?)\s*동별", e.get("title", ""))
+            if m and m[1] in codes:
+                made = make_dong(today, recent, tried, "20평대", codes[m[1]])
+                if made:
+                    return made
+            break
+    return make_dong(today, recent, tried, "20평대")
+
+
+def reel_of_day(today: dt.date, recent: list[str], tried: list[str]):
+    """저녁 릴스: 화·토는 지도 릴스, 나머지는 순위 릴스."""
+    return make_dong_reel(today, recent, tried) if today.weekday() in (1, 5) else make_reel(today, recent, tried)
+
+
 def make_dong_reel(today: dt.date, recent: list[str], tried: list[str], gu_only: str | None = None):
     """동별 지도 30평형·20평형 2장을 세로 릴스로."""
     for gu in ([gu_only] if gu_only else rotate(seoul_gus(), today + dt.timedelta(days=2))):
@@ -352,10 +375,11 @@ def make_reel(today: dt.date, recent: list[str], tried: list[str], fmt: str | No
 
 MAKERS = {"rank": make_rank, "cash": make_cash, "reel": make_reel,
           "dong": lambda t, r, tr: make_dong(t, r, tr, "30평대"),
-          "dong2": lambda t, r, tr: make_dong(t, r, tr, "20평대"),
+          "dong2": make_dong_pair,
           "dongreel": make_dong_reel,
           "budget": lambda t, r, tr: make_budget(t, r, tr, band_only="30평대"),
           "rank2": lambda t, r, tr: make_rank(t, r, tr, fmt=second_fmt(t), offset=4),
+          "reelday": reel_of_day,
           "budget2": make_budget_pair}
 
 
