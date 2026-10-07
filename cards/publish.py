@@ -162,6 +162,26 @@ def publish(urls: list[str], caption: str) -> str:
             raise
 
 
+def publish_single(image_url: str, caption: str) -> str:
+    """단일 이미지 게시(캐러셀 아님)."""
+    uid = os.environ["IG_USER_ID"]
+    with httpx.Client(timeout=60) as c:
+        q = (_call(c, "GET", f"{uid}/content_publishing_limit", fields="quota_usage,config").get("data") or [{}])[0]
+        if q.get("quota_usage", 0) >= (q.get("config") or {}).get("quota_total", 50):
+            raise PublishError("24시간 게시 한도에 도달했습니다")
+        cid = _call(c, "POST", f"{uid}/media", image_url=image_url, caption=caption)["id"]
+        _wait(c, [cid])
+        try:
+            return _call(c, "POST", f"{uid}/media_publish", creation_id=cid)["id"]
+        except PublishError:
+            time.sleep(15)
+            head = caption.strip()[:60]
+            for m in _call(c, "GET", "me/media", fields="id,caption", limit=5).get("data", []):
+                if (m.get("caption") or "").strip()[:60] == head:
+                    return m["id"]
+            raise
+
+
 def publish_reel(video_url: str, caption: str) -> str:
     """릴스(세로 영상) 게시. 영상은 처리에 시간이 걸려 더 오래 기다린다."""
     uid = os.environ["IG_USER_ID"]

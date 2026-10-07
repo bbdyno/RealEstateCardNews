@@ -16,7 +16,10 @@ import os
 import sys
 import traceback
 
-from . import budget, cash, check, loan, publish, rank, reel
+from collector import db as db_module
+from . import budget, cash, check, dongmap, loan, publish, rank, reel
+
+db_regions = db_module.regions
 
 # (시도, 억대 범위, 평형대) — 수도권 위주. 지방 광역시 시리즈는 다음 단계에서 붙인다
 SERIES = [("서울", range(6, 21), ("30평대", "20평대")),
@@ -53,10 +56,11 @@ def posted(title: str, recent: list[str]) -> bool:
     return any((r or "").strip().startswith(title) for r in recent[:RECENT])
 
 
-def korean(files: list, cap: str, rows: list[dict]) -> list[str]:
+def korean(files: list, cap: str, rows: list[dict] | None = None, names: list[str] | None = None) -> list[str]:
     """카드 글자(렌더 때 남긴 text.txt)와 캡션에 영어가 섞이지 않았는지."""
-    names = [x.get(k) for x in rows for k in ("name", "gu", "umd")]
-    card = (files[0].parent / "text.txt").read_text(encoding="utf-8") if files else ""
+    names = names or [x.get(k) for x in (rows or []) for k in ("name", "gu", "umd")]
+    txt = files[0].parent / "text.txt"
+    card = txt.read_text(encoding="utf-8") if txt.exists() else ""
     return check.check_korean([("카드", card), ("캡션", cap)], names)
 
 
@@ -261,6 +265,66 @@ def make_budget_pair(today: dt.date, recent: list[str], tried: list[str]):
     return make_budget(today, recent, tried, band_only="20평대")
 
 
+# ── 동별 대표 아파트 지도 ────────────────────────────────────────────────────
+
+def seoul_gus() -> list[str]:
+    return [r["code"] for r in db_regions() if r["sido_short"] == "서울"]
+
+
+def dong_caption(gu: str, band: str, meta: dict, today: dt.date) -> str:
+    bl = band.replace("평대", "평형")
+    tops = meta["top"]
+    lines = [f"{gu} 동별 대표 아파트 {bl} 🗺️",
+             "동마다 그 동의 '대장' 아파트(최근 3개월 거래가 있는 단지 중 3년 거래 최다)를 지도에 표시했어요.", ""]
+    lines += [f"· {d} {a} {p / 10000:g}억 ({py}평)" for d, a, p, py in tops]
+    lines += ["", "👉 우리 동 대장 아파트, 우리 단지 층별 실거래가는 프로필 링크(jipgapradar.kr)",
+              "저장해 두고 옆동네와 비교해 보세요. 다른 구가 궁금하면 댓글로!", "",
+              f"✔ 국토부 실거래({today.month}월 {today.day}일 신고분까지) · 해제·직거래 제외",
+              f"#{gu} #{gu}아파트 #{bl.replace('형','')} #동별시세 #대장아파트 {TAGS}"]
+    return "\n".join(lines)
+
+
+def make_dong(today: dt.date, recent: list[str], tried: list[str], band: str = "30평대", gu_only: str | None = None):
+    for gu in ([gu_only] if gu_only else rotate(seoul_gus(), today)):
+        name = dongmap.gu_name(gu)
+        bl = band.replace("평대", "평형")
+        title = f"{name} 동별 대표 아파트 {bl}"
+        if posted(title, recent):
+            tried.append(f"{title}(최근에 올림)")
+            continue
+        files, meta = dongmap.render(gu, band, today)
+        if meta["n"] < 6:
+            tried.append(f"{title}({meta['n']}개 동)")
+            continue
+        cap = dong_caption(name, band, meta, today)
+        bad = check.check_images(files, meta["overflow"], single=True) + korean(files, cap, names=meta["apts"])
+        return title, files, cap, bad, f"dong-{SLUG.get('서울')}-{gu}-{band[:2]}", "single"
+    return None
+
+
+def make_dong_reel(today: dt.date, recent: list[str], tried: list[str], gu_only: str | None = None):
+    """동별 지도 30평형·20평형 2장을 세로 릴스로."""
+    for gu in ([gu_only] if gu_only else rotate(seoul_gus(), today + dt.timedelta(days=2))):
+        name = dongmap.gu_name(gu)
+        title = f"{name} 동별 대표 아파트 릴스"
+        if posted(title, recent):
+            tried.append(f"{title}(최근에 올림)")
+            continue
+        f30, m30 = dongmap.render(gu, "30평대", today)
+        f20, m20 = dongmap.render(gu, "20평대", today)
+        if m30["n"] < 6:
+            tried.append(f"{title}({m30['n']}개 동)")
+            continue
+        bad = check.check_images(f30, m30["overflow"], single=True) + check.check_images(f20, m20["overflow"], single=True)
+        if bad:
+            return title, f30, "", bad, None, None
+        mp4 = reel.make([f30[0], f20[0]], f"reel-dong-{gu}", reel.COVERS["dong"])
+        cap = dong_caption(name, "30평대", m30, today)
+        bad = check.check_video(mp4) + korean([f30[0]], cap, names=m30["apts"] + m20["apts"])
+        return title, [mp4], cap, bad, f"reel-dong-{gu}", "reel"
+    return None
+
+
 # 하루 다섯 번: 08:10 rank · 12:10 budget(30평형) · 15:40 rank2 · 19:40 cash · 21:40 budget2(같은 억대 20평형)
 def make_reel(today: dt.date, recent: list[str], tried: list[str], fmt: str | None = None, sido_only: str | None = None):
     """아침 순위를 세로 릴스 영상으로. 사진 순위와 겹치지 않게 다른 형식·시도를 쓴다."""
@@ -287,6 +351,9 @@ def make_reel(today: dt.date, recent: list[str], tried: list[str], fmt: str | No
 
 
 MAKERS = {"rank": make_rank, "cash": make_cash, "reel": make_reel,
+          "dong": lambda t, r, tr: make_dong(t, r, tr, "30평대"),
+          "dong2": lambda t, r, tr: make_dong(t, r, tr, "20평대"),
+          "dongreel": make_dong_reel,
           "budget": lambda t, r, tr: make_budget(t, r, tr, band_only="30평대"),
           "rank2": lambda t, r, tr: make_rank(t, r, tr, fmt=second_fmt(t), offset=4),
           "budget2": make_budget_pair}
@@ -299,6 +366,7 @@ def main() -> int:
     ap.add_argument("--repeat", action="store_true", help="최근에 올린 제목도 다시 올린다(수정판 재게시)")
     ap.add_argument("--fmt", choices=sorted(rank.FORMATS), help="랭킹 형식을 직접 고른다(수동 추가 게시)")
     ap.add_argument("--sido", help="랭킹·예산표 시도를 직접 고른다")
+    ap.add_argument("--gu", help="동별 지도 자치구 코드(예: 11680)")
     ap.add_argument("--eok", type=int, help="예산표 억대를 직접 고른다(--sido 와 함께)")
     ap.add_argument("--band", default="30평대", help="예산표 평형대(30평대·20평대)")
     ap.add_argument("--slot", help="예약 시각(HH:MM) — 이보다 2시간 넘게 늦게 돌면 건너뛴다(GitHub 예약 지연)")
@@ -312,7 +380,7 @@ def main() -> int:
             days = publish.refresh_token()
             if days is not None and days < 20:
                 publish.notify(f"⚠️ 집값레이더 인스타 토큰이 {days:.0f}일 남았습니다. 메타 개발자 화면에서 다시 발급해 주세요.")
-        manual = bool(a.fmt or a.sido or a.eok or a.persona)
+        manual = bool(a.fmt or a.sido or a.eok or a.persona or a.gu)
         if a.slot:                                      # 몇 시간 밀린 예약 실행이 다음 슬롯을 먹지 않게
             now = dt.datetime.now()
             h, mi = map(int, a.slot.split(":"))
@@ -332,7 +400,11 @@ def main() -> int:
                 print(f"{a.series} 은 최근 6시간 안에 이미 올렸습니다 — 건너뜀")
                 return 0
         tried: list[str] = []
-        if a.series == "reel" and manual:
+        if a.series == "dongreel" and a.gu:
+            made = make_dong_reel(today, [] if a.repeat else recent, tried, a.gu)
+        elif a.series.startswith("dong") and a.gu:
+            made = make_dong(today, [] if a.repeat else recent, tried, "20평대" if a.series == "dong2" else "30평대", a.gu)
+        elif a.series == "reel" and manual:
             made = make_reel(today, [] if a.repeat else recent, tried, a.fmt, a.sido)
         elif a.series.startswith("rank") and manual:
             made = make_rank(today, [] if a.repeat else recent, tried, a.fmt, a.sido)
@@ -357,7 +429,12 @@ def main() -> int:
             print(cap)
             return 0
         urls = publish.upload(files, slug)
-        media_id = publish.publish_reel(urls[0], cap) if kind == "reel" else publish.publish(urls, cap)
+        if kind == "reel":
+            media_id = publish.publish_reel(urls[0], cap)
+        elif kind == "single":
+            media_id = publish.publish_single(urls[0], cap)
+        else:
+            media_id = publish.publish(urls, cap)
         link = publish.permalink(media_id) or ""
         try:
             publish.add_log({"date": today.isoformat(), "series": a.series + ("-manual" if manual else ""), "title": title, "id": media_id, "link": link,

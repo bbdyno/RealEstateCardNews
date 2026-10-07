@@ -151,8 +151,11 @@ def render(gu_code: str, band: str, today: dt.date | None = None) -> tuple[list[
         shutil.rmtree(out)
     out.mkdir(parents=True)
     files, overflow = shoot(env(), [("dong_map", {})], ctx, out)
+    top = sorted((d for d in data["dongs"] if d["rep"]), key=lambda d: -d["rep"]["price"])[:5]
     print(f"{name} {band} 대표 {ctx['n']}개 동 → {out}")
-    return files, {"overflow": overflow, "n": ctx["n"]}
+    return files, {"overflow": overflow, "n": ctx["n"], "gu": name,
+                   "top": [(d["name"], d["rep"]["name"], d["rep"]["price"], d["rep"]["py"]) for d in top],
+                   "apts": [d["rep"]["name"] for d in data["dongs"] if d["rep"]]}
 
 
 if __name__ == "__main__":

@@ -47,10 +47,11 @@ def check_rows(rows: list[dict], eok: int | None, base: str, today: dt.date, bou
     return bad
 
 
-def check_images(paths: list[Path], overflow: dict[str, int]) -> list[str]:
+def check_images(paths: list[Path], overflow: dict[str, int], single: bool = False) -> list[str]:
     bad = []
-    if not 2 <= len(paths) <= 10:
-        bad.append(f"장수 {len(paths)}(2~10장이어야 함)")
+    lo = 1 if single else 2
+    if not lo <= len(paths) <= 10:
+        bad.append(f"장수 {len(paths)}({lo}~10장이어야 함)")
     for p in paths:
         with Image.open(p) as im:
             if im.size != (1080, 1440):
