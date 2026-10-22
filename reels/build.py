@@ -16,6 +16,7 @@ import argparse
 import datetime as dt
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -131,13 +132,14 @@ def build(kind: str, fmt_: str, sido: str, today: dt.date | None = None, stills:
     spec = work / "music.json"
     spec.write_text(json.dumps(music_spec(cues, len(rows))), encoding="utf-8")
     run([PY, SCRIPTS / "synth_music.py", "music", spec, work / "music_raw.wav"])
-    run(["ffmpeg", "-y", "-loglevel", "error", "-i", work / "music_raw.wav", "-af", "loudnorm=I=-14:TP=-2:LRA=9",
+    run(["ffmpeg", "-y", "-loglevel", "error", "-i", work / "music_raw.wav", "-af", "alimiter=limit=0.7:level=false,loudnorm=I=-14:TP=-3:LRA=9",
          "-ar", "48000", work / "music.wav"])                                     # 릴스 기준 음량(-14 LUFS)
     run(["node", SCRIPTS / "render.mjs", "--dir", reel, "--out", work / "video.mp4", "--sub", str(sub)], timeout=3600)
     OUT.mkdir(parents=True, exist_ok=True)
     run([PY, SCRIPTS / "finish.py", "--video", work / "video.mp4", "--audio", work / "music.wav", "--name", slug,
          "--outdir", OUT, "--no-web"])
     mp4 = OUT / f"{slug}.mp4"
+    tame_peak(mp4)
     mc = run([PY, SCRIPTS / "motion_check.py", mp4, "--skip-end", "1.5"])
     qa = run([PY, SCRIPTS / "qa_check.py", mp4, "--qa", work / "qa"])
     print((mc.stdout + "\n" + qa.stdout).strip()[-1800:])
@@ -145,6 +147,25 @@ def build(kind: str, fmt_: str, sido: str, today: dt.date | None = None, stills:
     if strict and problems:
         raise RuntimeError("영상 자동 검수 미통과 — 올리지 않는다:\n- " + "\n- ".join(problems))
     return mp4
+
+
+def true_peak(path: Path) -> float | None:
+    r = subprocess.run(["ffmpeg", "-hide_banner", "-nostats", "-i", str(path), "-af", "ebur128=peak=true", "-f", "null", "-"],
+                       capture_output=True, text=True).stderr
+    m = re.search(r"Peak:\s+(-?[\d.]+)", r[r.rfind("Summary:"):])
+    return float(m.group(1)) if m else None
+
+
+def tame_peak(mp4: Path, limit: float = -1.2) -> None:
+    """AAC 인코딩은 피크를 0.5~1dB 올린다(ffmpeg 판마다 다름 — 맥 -1.6 이 리눅스에선 -0.8). 넘으면 오디오만 낮춰 다시 싼다(영상 복사)."""
+    for _ in range(3):
+        tp = true_peak(mp4)
+        if tp is None or tp <= limit:
+            return
+        tmp = mp4.with_name(mp4.stem + ".tmp.mp4")
+        run(["ffmpeg", "-v", "error", "-y", "-i", mp4, "-c:v", "copy", "-af", f"volume={limit - 0.6 - tp:.2f}dB",
+             "-c:a", "aac", "-b:a", "320k", "-ar", "48000", "-movflags", "+faststart", tmp])
+        tmp.replace(mp4)
 
 
 def verdict(motion_out: str, report: Path) -> list[str]:
