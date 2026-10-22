@@ -284,10 +284,29 @@ def seoul_gus() -> list[str]:
     return [r["code"] for r in db_regions() if r["sido_short"] == "서울"]
 
 
-def dong_caption(gu: str, band: str, meta: dict, today: dt.date) -> str:
+GU_TITLE = re.compile(r"(\S+?구)\s*동별 대표 아파트")
+
+
+def gu_order(log: list[dict] | None = None, codes: list[str] | None = None, name=None) -> list[str]:
+    """서울 구를 '가장 오래 안 나온 구'부터 — 한 번도 안 나온 구가 먼저(구 코드 순), 그다음 마지막으로 나온 때가 오래된 순.
+    지도(30·20평형)·지도 릴스 어느 것으로 나왔든 나온 것으로 쳐서, 25개 구를 한 바퀴 다 돌아야 같은 구가 다시 나온다.
+    (예전 rotate 는 시작점을 하루 7칸씩 옮겨 7일마다 거의 같은 구로 돌아왔고, 릴스는 따로 골라 지도와 겹쳤다)"""
+    codes = codes if codes is not None else seoul_gus()
+    name = name or dongmap.gu_name
+    by_name = {name(c): c for c in codes}
+    last: dict[str, tuple[str, int]] = {}
+    for i, e in enumerate(log if log is not None else publish.posted_log()):
+        m = GU_TITLE.match(e.get("title") or "")
+        if m and m[1] in by_name:
+            last[by_name[m[1]]] = (e.get("at") or e.get("date") or "", i)
+    return sorted(codes, key=lambda c: (c in last, last.get(c, ("", 0)), codes.index(c)))
+
+
+def dong_caption(gu: str, band: str, meta: dict, today: dt.date, reel_: bool = False) -> str:
     bl = band.replace("평대", "평형")
     tops = meta["top"]
-    lines = [f"{gu} 동별 대표 아파트 {bl} 🗺️",
+    # 릴스는 첫 줄을 다르게 — 같으면 나중에 그 구의 지도 카드가 '첫 줄 중복' 검수에 걸려 빠진다
+    lines = [f"{gu} 동별 대표 아파트 30·20평형 한 번에 보기 🎬" if reel_ else f"{gu} 동별 대표 아파트 {bl} 🗺️",
              "동마다 그 동의 '대장' 아파트(최근 3개월 거래가 있는 단지 중 3년 거래 최다)를 지도에 표시했어요.", ""]
     lines += [f"· {d} {a} {p / 10000:g}억 ({py}평)" for d, a, p, py in tops]
     lines += ["", "👉 우리 동 대장 아파트, 우리 단지 층별 실거래가는 프로필 링크(jipgapradar.kr)",
@@ -298,7 +317,7 @@ def dong_caption(gu: str, band: str, meta: dict, today: dt.date) -> str:
 
 
 def make_dong(today: dt.date, recent: list[str], tried: list[str], band: str = "30평대", gu_only: str | None = None):
-    for gu in ([gu_only] if gu_only else rotate(seoul_gus(), today)):
+    for gu in ([gu_only] if gu_only else gu_order()):
         name = dongmap.gu_name(gu)
         bl = band.replace("평대", "평형")
         title = f"{name} 동별 대표 아파트 {bl}"
@@ -343,7 +362,7 @@ def reel_of_day(today: dt.date, recent: list[str], tried: list[str]):
 
 def make_dong_reel(today: dt.date, recent: list[str], tried: list[str], gu_only: str | None = None):
     """동별 지도 30평형·20평형 2장을 세로 릴스로."""
-    for gu in ([gu_only] if gu_only else rotate(seoul_gus(), today + dt.timedelta(days=2))):
+    for gu in ([gu_only] if gu_only else gu_order()):
         name = dongmap.gu_name(gu)
         title = f"{name} 동별 대표 아파트 릴스"
         if posted(title, recent):
@@ -359,7 +378,7 @@ def make_dong_reel(today: dt.date, recent: list[str], tried: list[str], gu_only:
             return title, f30, "", bad, None, None
         SITE.update(path=f"/r/{gu}/", lead=f"{name} 단지별 실거래,")
         mp4 = reel.make(site_last([f30[0], f20[0]], f"reel-dong-{gu}"), f"reel-dong-{gu}", reel.COVERS["dong"])
-        cap = dong_caption(name, "30평대", m30, today)
+        cap = dong_caption(name, "30평대", m30, today, reel_=True)
         bad = check.check_video(mp4) + korean([f30[0]], cap, names=m30["apts"] + m20["apts"])
         return title, [mp4], cap, bad, f"reel-dong-{gu}", "reel"
     return None
