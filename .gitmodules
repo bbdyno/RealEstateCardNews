@@ -1,0 +1,3 @@
+[submodule "third_party/showreel"]
+	path = third_party/showreel
+	url = https://github.com/revfactory/showreel.git

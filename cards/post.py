@@ -17,7 +17,7 @@ import sys
 import traceback
 
 from collector import db as db_module
-from . import budget, cash, check, dongmap, loan, publish, rank, reel
+from . import sitecard, budget, cash, check, dongmap, loan, publish, rank, reel
 
 db_regions = db_module.regions
 
@@ -34,6 +34,18 @@ SLUG = {"서울": "seoul", "경기": "gyeonggi", "인천": "incheon", "부산": 
 MAX_TRIES = 12
 RECENT = 14          # 같은 제목을 다시 올리지 않는 범위(최근 게시물 수)
 TAGS = "#아파트실거래가 #실거래가 #내집마련 #부동산 #아파트시세 #집값 #집값레이더"
+
+
+# 이 글과 가장 관련 있는 사이트 페이지 — 메이커가 적어 두면 게시 직전에 마지막 장(사이트 미리보기)으로 붙인다
+SITE: dict = {}
+
+
+def site_last(files: list, slug: str) -> list:
+    """카드 묶음 끝에 실제 사이트 화면 장을 붙인다. 못 찍으면(사이트·네트워크 문제) 그대로 둔다. 인스타 묶음은 10장까지."""
+    if len(files) >= 10:
+        return files
+    sc = sitecard.card(SITE.get("path", "/"), SITE.get("lead", "전국 아파트 실거래,"), f"{slug}-site")
+    return files + [sc] if sc else files
 
 
 def rotate(items: list, today: dt.date) -> list:
@@ -248,6 +260,7 @@ def make_rank(today: dt.date, recent: list[str], tried: list[str], fmt: str | No
         files, meta = rank.render(fmt, sido, today, rows)
         cap = rank_caption(fmt, sido, rows, today)
         bad = check.check_rank(rows, fmt) + check.check_images(files, meta["overflow"]) + korean(files, cap, rows)
+        SITE.update(path=rows[0]["href"], lead=f"{rows[0]['name']} 실거래,")
         return title, files, cap, bad, f"rank-{fmt}-{SLUG.get(sido, 'region')}"
     return None
 
@@ -298,6 +311,7 @@ def make_dong(today: dt.date, recent: list[str], tried: list[str], band: str = "
             continue
         cap = dong_caption(name, band, meta, today)
         bad = check.check_images(files, meta["overflow"], single=True) + korean(files, cap, names=meta["apts"])
+        SITE.update(path=f"/r/{gu}/", lead=f"{name} 단지별 실거래,")
         return title, files, cap, bad, f"dong-{SLUG.get('서울')}-{gu}-{band[:2]}", "single"
     return None
 
@@ -321,8 +335,10 @@ def make_dong_pair(today: dt.date, recent: list[str], tried: list[str]):
 
 
 def reel_of_day(today: dt.date, recent: list[str], tried: list[str]):
-    """저녁 릴스: 화·토는 지도 릴스, 나머지는 순위 릴스."""
-    return make_dong_reel(today, recent, tried) if today.weekday() in (1, 5) else make_reel(today, recent, tried)
+    """저녁 릴스: 화·토는 지도 릴스, 나머지는 모션 순위 릴스 — 점심(12:40 motion)과 반대 형식으로 해서 하루에 신고가·하락 둘 다 나간다."""
+    if today.weekday() in (1, 5):
+        return make_dong_reel(today, recent, tried)
+    return make_motion(today, recent, tried, fmt="drops" if today.weekday() % 2 == 0 else "highs")
 
 
 def make_dong_reel(today: dt.date, recent: list[str], tried: list[str], gu_only: str | None = None):
@@ -341,7 +357,8 @@ def make_dong_reel(today: dt.date, recent: list[str], tried: list[str], gu_only:
         bad = check.check_images(f30, m30["overflow"], single=True) + check.check_images(f20, m20["overflow"], single=True)
         if bad:
             return title, f30, "", bad, None, None
-        mp4 = reel.make([f30[0], f20[0]], f"reel-dong-{gu}", reel.COVERS["dong"])
+        SITE.update(path=f"/r/{gu}/", lead=f"{name} 단지별 실거래,")
+        mp4 = reel.make(site_last([f30[0], f20[0]], f"reel-dong-{gu}"), f"reel-dong-{gu}", reel.COVERS["dong"])
         cap = dong_caption(name, "30평대", m30, today)
         bad = check.check_video(mp4) + korean([f30[0]], cap, names=m30["apts"] + m20["apts"])
         return title, [mp4], cap, bad, f"reel-dong-{gu}", "reel"
@@ -366,14 +383,40 @@ def make_reel(today: dt.date, recent: list[str], tried: list[str], fmt: str | No
         bad = check.check_rank(rows, fmt) + check.check_images(files, meta["overflow"])
         if bad:
             return title, files, "", bad, None, None     # 카드 검수부터 통과해야 영상으로 만든다
-        mp4 = reel.make(files, f"reel-{fmt}-{SLUG.get(sido, 'region')}", reel.COVERS["rank"])
+        SITE.update(path=rows[0]["href"], lead=f"{rows[0]['name']} 실거래,")
+        mp4 = reel.make(site_last(files, f"reel-{fmt}-{SLUG.get(sido, 'region')}"), f"reel-{fmt}-{SLUG.get(sido, 'region')}", reel.COVERS["rank"])
         cap = rank_caption(fmt, sido, rows, today) + "\n\n▶ 소리 없이 볼 수 있어요 · 저장해 두고 천천히"
         bad = check.check_video(mp4) + korean([files[0]], cap, rows)
         return title, [mp4], cap, bad, f"reel-{fmt}-{SLUG.get(sido, 'region')}", "reel"
     return None
 
 
-MAKERS = {"rank": make_rank, "cash": make_cash, "reel": make_reel,
+def make_motion(today: dt.date, recent: list[str], tried: list[str], fmt: str | None = None, sido_only: str | None = None):
+    """순위 TOP 5 를 모션 그래픽 릴스로(reels/, showreel 엔진). 카드 순위 검수를 먼저 통과해야 만들고,
+    영상은 엔진 자동 검수(움직임·음량·섬광·규격)를 통과해야 올린다."""
+    from reels import build as motion
+    fmt = fmt or ("highs" if today.weekday() % 2 == 0 else "drops")
+    f = rank.FORMATS[fmt]
+    for sido in ([sido_only] if sido_only else rotate(RANK_SIDOS, today + dt.timedelta(days=2))):
+        title = f"{sido} {f['head']} TOP 5 영상"
+        if posted(title, recent):
+            tried.append(f"{title}(최근에 올림)")
+            continue
+        rows = rank.pick(fmt, sido, today)
+        if len(rows) < 5:
+            tried.append(f"{title}({len(rows)}줄)")
+            continue
+        bad = check.check_rank(rows[:20], fmt)                  # 영상엔 5위까지 나가도 데이터 검사는 카드처럼 20줄 전체에
+        if bad:
+            return title, [], "", bad, None, None
+        mp4 = motion.build("rank", fmt, sido, today, strict=True, rows=motion.rows_for(fmt, sido, today, 5))
+        cap = rank_caption(fmt, sido, rows[:5], today) + "\n\n▶ 전체 순위와 단지별 지도는 프로필 링크(jipgapradar.kr)에서"
+        bad = check.check_video(mp4)
+        return title, [mp4], cap, bad, f"motion-{fmt}-{SLUG.get(sido, 'region')}", "reel"
+    return None
+
+
+MAKERS = {"rank": make_rank, "cash": make_cash, "reel": make_reel, "motion": make_motion,
           "dong": lambda t, r, tr: make_dong(t, r, tr, "30평대"),
           "dong2": make_dong_pair,
           "dongreel": make_dong_reel,
@@ -430,6 +473,8 @@ def main() -> int:
             made = make_dong(today, [] if a.repeat else recent, tried, "20평대" if a.series == "dong2" else "30평대", a.gu)
         elif a.series == "reel" and manual:
             made = make_reel(today, [] if a.repeat else recent, tried, a.fmt, a.sido)
+        elif a.series == "motion" and manual:
+            made = make_motion(today, [] if a.repeat else recent, tried, a.fmt, a.sido)
         elif a.series.startswith("rank") and manual:
             made = make_rank(today, [] if a.repeat else recent, tried, a.fmt, a.sido)
         elif a.series == "cash" and a.persona and a.sido:
@@ -443,11 +488,15 @@ def main() -> int:
             return 0
         title, files, cap, bad, slug, *kind = made
         kind = kind[0] if kind else "carousel"
-        bad += check.check_caption(cap, [] if a.repeat else recent)
+        bad += check.check_caption(cap, [] if a.repeat else recent) if cap else []   # 앞 검수에서 막혀 캡션이 비면 건너뛴다
         if bad:
             print("검수 실패:", *bad, sep="\n- ")
-            publish.notify(f"🚫 집값레이더 카드 검수 실패 — 올리지 않았습니다\n{title}\n- " + "\n- ".join(bad[:15]), files[0])
+            publish.notify(f"🚫 집값레이더 카드 검수 실패 — 올리지 않았습니다\n{title}\n- " + "\n- ".join(bad[:15]), files[0] if files else None)
             return 1
+        if kind in ("carousel", "single"):
+            more = site_last(list(files), slug)
+            if len(more) > len(files):
+                files, kind = more, "carousel"
         if not live:
             publish.notify(f"🧪 [시험] 집값레이더 카드 검수 통과(게시 안 함)\n{title} · {len(files)}장\n\n{cap[:600]}", files[0])
             print(cap)

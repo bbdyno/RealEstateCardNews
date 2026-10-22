@@ -15,7 +15,7 @@ from pathlib import Path
 
 from analytics import core
 from collector import db
-from web.build import I3D
+from web.build import I3D, Site
 
 from .budget import MIN_DEALS, OUT, ROWS, env, shoot, short_name, sido_complexes
 
@@ -59,7 +59,7 @@ def _row(gu, cx, deal, prev, up, today, **kw) -> dict:
         gu = cx.umd
     return dict(gu=gu, name=short_name(cx.name), umd=cx.umd, py=round(deal["area"] * 1.33 / core.PY),
                 age=(today.year - cx.build_year + 1) if cx.build_year else None,
-                price=deal["price"], prev=prev, up=up, ymd=deal["ymd"], **kw)
+                price=deal["price"], prev=prev, up=up, ymd=deal["ymd"], href=Site.cx_url(cx), **kw)
 
 
 def _n3y(cx) -> int:

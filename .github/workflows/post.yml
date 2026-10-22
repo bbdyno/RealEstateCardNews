@@ -1,5 +1,5 @@
-# 인스타 자동 게시(한국 시각): 08:10 랭킹 · 10:10 지도30 · 12:10 예산30 · 14:40 지도20 · 15:40 랭킹2
-# · 18:10 릴스(화·토 지도릴스) · 19:40 현금 · 21:40 예산20.
+# 인스타 자동 게시(한국 시각): 08:10 랭킹 · 10:10 지도30 · 12:10 예산30 · 12:40 모션 릴스 · 14:40 지도20 · 15:40 랭킹2
+# · 18:10 릴스(화·토 지도 릴스, 나머지 모션 릴스) · 19:40 현금 · 21:40 예산20.
 # 맥(launchd)이 정시에 이 워크플로를 부르고, 아래 예약은 맥이 꺼져 있을 때의 대비다(GitHub 예약은 몇 시간씩 밀린다).
 # 같은 날 같은 시리즈는 media 브랜치 log.json 으로 한 번만 올린다. 06:00 정기 실행이 갱신한 DB 로 카드를 만들고
 # 자동 검수(cards/check.py)를 통과하면 @jipgapradar 에 올린 뒤 텔레그램으로 알린다. 실패해도 알린다.
@@ -11,6 +11,7 @@ on:
     - cron: "10 23 * * *"         # UTC 23:10 = KST 08:10 랭킹
     - cron: "10 1 * * *"          # UTC 01:10 = KST 10:10 지도 30평형
     - cron: "10 3 * * *"          # UTC 03:10 = KST 12:10 예산표
+    - cron: "40 3 * * *"          # UTC 03:40 = KST 12:40 모션 릴스
     - cron: "40 5 * * *"          # UTC 05:40 = KST 14:40 지도 20평형
     - cron: "40 6 * * *"          # UTC 06:40 = KST 15:40 랭킹2
     - cron: "10 9 * * *"          # UTC 09:10 = KST 18:10 릴스
@@ -21,7 +22,7 @@ on:
       series:
         description: "시리즈"
         type: choice
-        options: [rank, budget, rank2, cash, budget2, reel, reelday, dong, dong2, dongreel]
+        options: [rank, budget, rank2, cash, budget2, reel, reelday, dong, dong2, dongreel, motion]
         default: budget
       fmt:
         description: "랭킹 형식(수동): highs·drops·cancels·hot·gu"
@@ -76,12 +77,17 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 1
+          submodules: true           # third_party/showreel — 모션 릴스 엔진(버전은 showreel-update 워크플로가 올린다)
       - uses: actions/setup-python@v7
         with:
           python-version: "3.14"
           cache: pip
       - run: pip install -r requirements.txt
       - run: ffmpeg -version >/dev/null 2>&1 || sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: 모션 릴스 엔진 준비(showreel 렌더러)
+        run: |
+          node -e 'process.exit(+process.versions.node.split(".")[0] >= 20 ? 0 : 1)' || { echo "Node 20 이상이 필요합니다: $(node --version)"; exit 1; }
+          cd third_party/showreel/scripts && npm ci --no-audit --no-fund --silent
       - name: DB 받기
         env:
           GH_TOKEN: ${{ github.token }}
@@ -111,11 +117,12 @@ jobs:
           if [ "${{ github.event.schedule }}" = "10 9 * * *" ]; then S=reelday; fi
           if [ "${{ github.event.schedule }}" = "10 1 * * *" ]; then S=dong; fi
           if [ "${{ github.event.schedule }}" = "40 5 * * *" ]; then S=dong2; fi
+          if [ "${{ github.event.schedule }}" = "40 3 * * *" ]; then S=motion; fi
           X=""
           case "${{ github.event.schedule }}" in
             "10 23 * * *") X="--slot 08:10";; "10 3 * * *") X="--slot 12:10";; "40 6 * * *") X="--slot 15:40";;
             "40 10 * * *") X="--slot 19:40";; "40 12 * * *") X="--slot 21:40";; "10 9 * * *") X="--slot 18:10";;
-            "10 1 * * *") X="--slot 10:10";; "40 5 * * *") X="--slot 14:40";;
+            "10 1 * * *") X="--slot 10:10";; "40 5 * * *") X="--slot 14:40";; "40 3 * * *") X="--slot 12:40";;
           esac
           if [ -n "${{ inputs.fmt }}" ]; then X="$X --fmt ${{ inputs.fmt }}"; fi
           if [ -n "${{ inputs.sido }}" ]; then X="$X --sido ${{ inputs.sido }}"; fi

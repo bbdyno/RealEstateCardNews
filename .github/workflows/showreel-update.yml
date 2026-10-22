@@ -1,0 +1,103 @@
+# showreel 엔진(third_party/showreel, revfactory/showreel 서브모듈) 업데이트.
+# 매주 월요일 04:30(한국) 새 버전을 받아 랭킹 모션 릴스를 시험 렌더하고 엔진 자동 검수(--strict)를 돌린다.
+# 통과하면 서브모듈을 올려 main 에 반영한다 → 그다음 게시부터 새 엔진으로 만든다.
+# 실패하면 반영하지 않고(지금 엔진 그대로 계속 게시) 텔레그램으로 알린다. 시험 영상은 실행 기록의 아티팩트로 남는다.
+# 우리 코드는 reels/templates/*(장면·색)뿐이고 엔진 파일은 고치지 않으므로, 엔진이 바뀌어도 대개 그대로 돈다.
+name: showreel-update
+
+on:
+  schedule:
+    - cron: "30 19 * * 0"          # UTC 일 19:30 = KST 월 04:30 (06:00 데이터 수집·08:10 첫 게시 전)
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "올릴 showreel 커밋·태그(비우면 최신 main)"
+        type: string
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: post                      # 게시와 겹치지 않게 같은 줄에 선다
+  cancel-in-progress: false
+
+env:
+  TZ: Asia/Seoul
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          submodules: true
+      - name: 새 버전 확인
+        id: v
+        run: |
+          old=$(git -C third_party/showreel rev-parse --short HEAD)
+          git -C third_party/showreel fetch --quiet origin
+          ref="${{ inputs.ref }}"; [ -n "$ref" ] || ref=origin/HEAD
+          git -C third_party/showreel checkout --quiet "$ref"
+          new=$(git -C third_party/showreel rev-parse --short HEAD)
+          echo "old=$old" >> "$GITHUB_OUTPUT"; echo "new=$new" >> "$GITHUB_OUTPUT"
+          if [ "$old" = "$new" ]; then echo "changed=false" >> "$GITHUB_OUTPUT"; echo "변경 없음 ($old)"; exit 0; fi
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          { echo "log<<EOF"; git -C third_party/showreel log --oneline "$old..$new" | head -15; echo "EOF"; } >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-python@v7
+        if: steps.v.outputs.changed == 'true'
+        with:
+          python-version: "3.14"
+          cache: pip
+      - name: 준비(파이썬·ffmpeg·렌더러·DB)
+        if: steps.v.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          pip install -r requirements.txt
+          ffmpeg -version >/dev/null 2>&1 || { sudo apt-get update && sudo apt-get install -y ffmpeg; }
+          node -e 'process.exit(+process.versions.node.split(".")[0] >= 20 ? 0 : 1)' || { echo "Node 20 이상 필요: $(node --version)"; exit 1; }
+          (cd third_party/showreel/scripts && npm ci --no-audit --no-fund --silent)
+          mkdir -p data && gh release download db --pattern 'realestate.db.zst' --dir data
+          zstd -d --rm -f data/realestate.db.zst -o data/realestate.db
+      - name: 시험 렌더 · 엄격 검수
+        if: steps.v.outputs.changed == 'true'
+        run: python -m reels.build rank highs 서울 --sub 1 --strict
+      - name: 반영(서브모듈 올리기)
+        if: steps.v.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add third_party/showreel
+          git commit -m "chore: showreel 엔진 ${{ steps.v.outputs.old }} → ${{ steps.v.outputs.new }} (시험 렌더·자동 검수 통과)"
+          git push
+      - name: 시험 영상 보관
+        if: always() && steps.v.outputs.changed == 'true'
+        uses: actions/upload-artifact@v5
+        with:
+          name: showreel-test-${{ steps.v.outputs.new }}
+          path: |
+            out/reels/*.mp4
+            out/reels/work/*/qa/qa_report.md
+          if-no-files-found: ignore
+      - name: 알림
+        if: always() && steps.v.outputs.changed == 'true'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          LOG: ${{ steps.v.outputs.log }}
+        run: |
+          [ -n "$TELEGRAM_BOT_TOKEN" ] || exit 0
+          if [ "${{ job.status }}" = "success" ]; then
+            head="🎬 집값레이더 릴스 엔진 업데이트 반영 (${{ steps.v.outputs.old }} → ${{ steps.v.outputs.new }}) — 시험 렌더·검수 통과"
+          else
+            head="⚠️ 집값레이더 릴스 엔진 새 버전(${{ steps.v.outputs.new }})이 시험 렌더·검수를 통과하지 못해 반영하지 않았습니다. 지금 엔진(${{ steps.v.outputs.old }})으로 계속 게시합니다."
+          fi
+          curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
+            --data-urlencode "chat_id=$TELEGRAM_CHAT_ID" \
+            --data-urlencode "text=$head
+          $LOG
+          ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >/dev/null

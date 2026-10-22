@@ -1,0 +1,26 @@
+{% extends '_base.html' %}
+{% block css %}
+body { background: radial-gradient(120% 90% at 85% 10%, #2A2F37 0%, #111316 62%); color:#fff; }
+.wrap { position:absolute; inset:0; padding:64px; }
+.logo { color:#fff; }
+h1 { font-size:70px; font-weight:900; line-height:1.18; letter-spacing:-0.05em; margin-top:56px; }
+h1 em { font-style:normal; color:var(--lime); }
+.phone { position:absolute; left:50%; top:372px; width:452px; height:716px; transform:translateX(-50%) rotate(-3deg);
+         border-radius:62px; background:#0B0C0E; padding:16px; box-shadow:0 40px 80px rgba(0,0,0,.55), 0 0 0 3px rgba(255,255,255,.14); }
+.screen { width:100%; height:100%; border-radius:48px; overflow:hidden; background:#fff center 46px / 100% auto no-repeat; }
+.notch { position:absolute; left:50%; top:26px; width:124px; height:30px; transform:translateX(-50%); border-radius:20px; background:#0B0C0E; }
+.tag { position:absolute; right:92px; top:420px; transform:rotate(6deg); background:var(--yellow); color:var(--ink); font-size:30px; font-weight:900;
+       padding:12px 24px; border-radius:999px; box-shadow:0 10px 0 rgba(0,0,0,.35); }
+.cta { position:absolute; left:64px; right:64px; bottom:64px; background:var(--lime); color:var(--ink); border-radius:34px; padding:30px 40px;
+       font-size:46px; font-weight:900; }
+.cta small { display:block; font-size:27px; font-weight:700; opacity:.7; margin-top:6px; word-break:break-all; }
+{% endblock %}
+{% block body %}
+<div class="wrap">
+  <div class="logo"><img src="{{ logo }}">집값레이더</div>
+  <h1>{{ lead }}<br><em>여기서 전부</em> 볼 수 있어요</h1>
+  <div class="phone"><div class="screen" style="background-image:url('{{ shot }}')"></div><div class="notch"></div></div>
+  <div class="tag">실제 화면</div>
+  <div class="cta">프로필 링크 → jipgapradar.kr<small>{{ url }}</small></div>
+</div>
+{% endblock %}

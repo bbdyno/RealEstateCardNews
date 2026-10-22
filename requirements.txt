@@ -6,3 +6,5 @@ pytest
 # 선택: 재개발 XLSX 파일을 읽을 때
 # openpyxl
 pillow
+# 모션 릴스(reels/, third_party/showreel): 배경음 합성·검수
+numpy

@@ -1,0 +1,11 @@
+# 맥미니 인스타 게시 일정(한국 시각). 시각 시리즈 — 여기만 고쳐 올리면 맥미니가 매시 정각 무렵 받아 와 그대로 따른다.
+# GitHub 예약(.github/workflows/post.yml 의 cron)은 맥미니가 꺼졌을 때의 대비라 같은 일정을 거기에도 둔다.
+08:10	rank
+10:10	dong
+12:10	budget
+12:40	motion
+14:40	dong2
+15:40	rank2
+18:10	reelday
+19:40	cash
+21:40	budget2
