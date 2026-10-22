@@ -56,13 +56,19 @@ def upload(paths: list[Path], slug: str) -> list[str]:
         slug = re.sub(r"[^A-Za-z0-9-]+", "", slug).strip("-") or "card"
         folder = root / f"{dt.date.today():%Y%m%d}-{slug}-{int(time.time())}"
         folder.mkdir()
-        for p in paths:
-            shutil.copy2(p, folder / p.name)
+        names = []                                             # 파일 이름도 마찬가지(한글 이름 영상은 컨테이너 ERROR)
+        for i, p in enumerate(paths):
+            stem = re.sub(r"[^A-Za-z0-9._-]+", "", p.stem).strip("-.") or "file"
+            name = f"{stem}{p.suffix.lower()}"
+            if name in names:
+                name = f"{stem}-{i}{p.suffix.lower()}"
+            names.append(name)
+            shutil.copy2(p, folder / name)
         _git("add", "-A", cwd=wd)
         _git("commit", "-q", "-m", f"카드 이미지 {folder.name}", cwd=wd)
         _git("push", "-q", "origin", "media", cwd=wd)
         sha = _git("rev-parse", "HEAD", cwd=wd)
-    return [f"https://raw.githubusercontent.com/{REPO}/{sha}/media/{folder.name}/{p.name}" for p in paths]
+    return [f"https://raw.githubusercontent.com/{REPO}/{sha}/media/{folder.name}/{n}" for n in names]
 
 
 # ── 게시 기록(media 브랜치 log.json) — 같은 날 같은 시리즈를 두 번 올리지 않게 ──────────────

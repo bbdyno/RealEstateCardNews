@@ -410,6 +410,7 @@ def make_motion(today: dt.date, recent: list[str], tried: list[str], fmt: str | 
         if bad:
             return title, [], "", bad, None, None
         mp4 = motion.build("rank", fmt, sido, today, strict=True, rows=motion.rows_for(fmt, sido, today, 5))
+        mp4 = mp4.replace(mp4.with_name(f"motion-{fmt}-{SLUG.get(sido, 'region')}.mp4"))   # 올릴 이름은 영문만
         cap = rank_caption(fmt, sido, rows[:5], today) + "\n\n▶ 전체 순위와 단지별 지도는 프로필 링크(jipgapradar.kr)에서"
         bad = check.check_video(mp4)
         return title, [mp4], cap, bad, f"motion-{fmt}-{SLUG.get(sido, 'region')}", "reel"
