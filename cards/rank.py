@@ -167,7 +167,8 @@ def rows_gu(sido: str, today: dt.date) -> list[dict]:
         if not st.change_sure or st.ppp_change is None:
             continue
         n3 = sum(n for m, n, _, _ in st.months if m <= st.base and m >= core.add_months(st.base, -2))
-        out.append(dict(gu=r["name"], gu_one=r["name"], name=r["name"], up=st.ppp_change, ppp=st.median_ppp, n3=n3))
+        out.append(dict(gu=r["name"], gu_one=r["name"], name=r["name"], up=st.ppp_change, ppp=st.median_ppp, n3=n3,
+                        href=f"/r/{r['code']}/"))
     out.sort(key=lambda x: -x["up"])
     mx = max((abs(x["up"]) for x in out), default=0) or 1
     for x in out:
