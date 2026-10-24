@@ -354,9 +354,8 @@ def make_dong_pair(today: dt.date, recent: list[str], tried: list[str]):
 
 
 def reel_of_day(today: dt.date, recent: list[str], tried: list[str]):
-    """저녁 릴스: 화·토는 지도 릴스, 나머지는 모션 순위 릴스 — 점심(12:40 motion)과 반대 형식으로 해서 하루에 신고가·하락 둘 다 나간다."""
-    if today.weekday() in (1, 5):
-        return make_dong_reel(today, recent, tried)
+    """저녁 릴스: 매일 모션 순위 릴스 — 점심(12:40 motion)과 반대 형식으로 해서 하루에 신고가·하락 둘 다 나간다.
+    동별 대표 아파트 카드를 넘기는 지도 릴스는 쓰지 않는다(2026-10-24 사용자: 카드 넘기는 릴스는 하지 말자)."""
     return make_motion(today, recent, tried, fmt="drops" if today.weekday() % 2 == 0 else "highs")
 
 
