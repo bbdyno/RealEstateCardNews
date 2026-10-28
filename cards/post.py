@@ -462,7 +462,7 @@ def commute_caption(ep: commute.Episode, rows: list[dict], pool: list[dict], tod
               "✔ 출퇴근 시간은 출근 시간대 지하철 기준 대략이에요(역까지 도보·환승 대기 별도)",
               "✔ 추천이 아니라 조건에 맞는 단지를 실거래로 정리한 거예요. 계약 전엔 꼭 직접 확인하세요",
               "",
-              "👉 단지별 층별 가격·모든 거래는 프로필 링크(jipgapradar.kr)",
+              "👉 실거래는 매일 바뀌어요. 오늘 최신 거래·단지별 층별 가격은 프로필 링크(jipgapradar.kr)",
               "💬 다음 편으로 보고 싶은 업무지구·예산을 댓글로 남겨 주세요!",
               ""]
     h = commute.hub(ep.hub)

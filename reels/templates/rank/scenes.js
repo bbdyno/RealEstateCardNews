@@ -212,7 +212,7 @@ if (D.site) REEL.scene({
     this.c1 = split(this.l1, 'char', { mask: true });
     this.l2 = h('div', 'a display', el, `<span style="color:${AC}">여기서 전부</span> 볼 수 있어요`);
     css(this.l2, { left: '60px', top: '350px', fontSize: '70px' });
-    this.cta = h('div', 'a chip', el, '프로필 링크 → jipgapradar.kr');
+    this.cta = h('div', 'a chip', el, '오늘 최신 실거래 → jipgapradar.kr');   // 실거래는 매일 바뀐다 — 최신은 사이트로
     css(this.cta, { left: '60px', top: '460px', fontSize: '40px', background: 'var(--lime)', transformOrigin: '0 50%' });
     this.ph = h('div', 'a', el);
     // 휴대폰은 카드와 같은 흰 바탕 + 검은 선 — 검은 휴대폰이 밝은 바탕을 가로지르면 섬광 기준을 넘는다(실측)
