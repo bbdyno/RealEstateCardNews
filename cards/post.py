@@ -418,7 +418,8 @@ def make_motion(today: dt.date, recent: list[str], tried: list[str], fmt: str | 
     f = rank.FORMATS[fmt]
     for sido in ([sido_only] if sido_only else rotate(RANK_SIDOS, today + dt.timedelta(days=2))):
         title = f"{sido} {f['head']} TOP 5 영상"
-        if posted(title, recent):
+        # 캡션 첫 줄은 '세종 하락 순위 📉' 라 위 제목으로는 최근 게시물(같은 시도의 카드·릴스)을 못 찾는다 — 첫 줄 기준으로도 거른다
+        if posted(title, recent) or posted(f"{sido} {f['head']}", recent):
             tried.append(f"{title}(최근에 올림)")
             continue
         rows = rank.pick(fmt, sido, today)
