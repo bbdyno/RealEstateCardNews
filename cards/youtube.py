@@ -3,7 +3,7 @@
 환경변수 YT_CLIENT_ID · YT_CLIENT_SECRET · YT_REFRESH_TOKEN 이 모두 있을 때만 돈다. 없으면 조용히 건너뛴다.
 채널 만들기와 토큰 발급은 사람 몫: 집값레이더 채널로 로그인한 브라우저에서
 
-  .venv/bin/python -m cards.youtube auth <OAuth 데스크톱 클라이언트 JSON>
+  .venv/bin/python -m cards.youtube auth <OAuth 데스크톱 클라이언트 JSON> --github
 
 을 한 번 돌리면 새로 고침 토큰이 나온다. 세 값을 깃허브 저장소 비밀값에 넣으면 다음 업무지구 릴스부터 함께 올라간다.
 실패해도 인스타 게시는 그대로 둔다(알림만).
@@ -66,7 +66,7 @@ def upload_short(mp4: Path, caption: str, privacy: str = "public") -> str | None
         return f"https://youtube.com/shorts/{r.json()['id']}"
 
 
-def auth(client_json: str) -> None:
+def auth(client_json: str, to_github: bool = False) -> None:
     """한 번만: 브라우저로 동의를 받아 새로 고침 토큰을 출력한다(내 컴퓨터 127.0.0.1 로 돌아온다)."""
     cfg = json.loads(Path(client_json).read_text())
     cfg = cfg.get("installed") or cfg.get("web") or cfg
@@ -88,21 +88,27 @@ def auth(client_json: str) -> None:
         def log_message(self, *a):
             pass
 
-    print("브라우저에서 집값레이더 채널 계정으로 동의해 주세요:\n" + url)
+    print("브라우저에서 계정을 고르는 화면이 나오면 '집값레이더' 채널을 골라 동의해 주세요:\n" + url)
     webbrowser.open(url)
     with http.server.HTTPServer(("127.0.0.1", port), H) as srv:
         srv.handle_request()
     r = httpx.post(TOKEN_URL, data={"code": got["code"][0], "client_id": cfg["client_id"], "client_secret": cfg["client_secret"],
                                     "redirect_uri": redirect, "grant_type": "authorization_code"})
     r.raise_for_status()
+    vals = {"YT_CLIENT_ID": cfg["client_id"], "YT_CLIENT_SECRET": cfg["client_secret"], "YT_REFRESH_TOKEN": r.json()["refresh_token"]}
+    if to_github:                      # 값을 화면에 찍지 않고 바로 저장소 비밀값으로
+        import subprocess
+        for k, v in vals.items():
+            subprocess.run(["gh", "secret", "set", k, "--repo", "bbdyno/RealEstateCardNews"], input=v, text=True, check=True)
+        print("깃허브 저장소 비밀값 세 개를 넣었습니다:", ", ".join(vals))
+        return
     print("\n깃허브 저장소 비밀값에 넣을 세 값:")
-    print("YT_CLIENT_ID =", cfg["client_id"])
-    print("YT_CLIENT_SECRET =", cfg["client_secret"])
-    print("YT_REFRESH_TOKEN =", r.json()["refresh_token"])
+    for k, v in vals.items():
+        print(k, "=", v)
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 3 and sys.argv[1] == "auth":
-        auth(sys.argv[2])
+    if len(sys.argv) >= 3 and sys.argv[1] == "auth":
+        auth(sys.argv[2], "--github" in sys.argv)
     else:
-        print("사용법: python -m cards.youtube auth <클라이언트 JSON>")
+        print("사용법: python -m cards.youtube auth <클라이언트 JSON> [--github]")
