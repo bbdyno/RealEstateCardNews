@@ -442,10 +442,13 @@ COMMUTE_TARGET = {"59형": "#신혼부부아파트", "84형": "#국민평형"}
 
 
 def commute_caption(ep: commute.Episode, rows: list[dict], pool: list[dict], today: dt.date) -> str:
-    n = len(rows)
-    head = {"budget": f"{ep.title}, 실제로 가장 많이 산 아파트 TOP {n} 🏢",
-            "new": f"{ep.title}, {commute.NEW_FROM}년 이후 지은 아파트 중 가격 낮은 TOP {n} 🏗️",
-            "dual": f"{ep.title}, 한 명은 {ep.hub} 한 명은 {ep.hub2}{commute.josa(ep.hub2, '이라면', '라면')}? TOP {n} 🚇"}[ep.kind]
+    n = "다섯 곳" if len(rows) == 5 else f"{len(rows)}곳"     # 캡션은 한글만(영어 검수) — 영상 화면의 'TOP 5' 는 순위 릴스와 같은 표기
+    if ep.kind == "budget":
+        head = f"{ep.title}, 실제로 가장 많이 산 아파트 {n} 🏢"
+    elif ep.kind == "new":
+        head = f"{ep.title}, {commute.NEW_FROM}년 이후 지은 아파트 중 가격 낮은 {n} 🏗️"
+    else:
+        head = f"{ep.title}, 한 명은 {ep.hub} 한 명은 {ep.hub2}{commute.josa(ep.hub2, '이라면', '라면')}? 두 곳 다 다닐 만한 {n} 🚇"
     how = "6개월 중앙값이 낮은" if ep.kind == "new" else "거래가 많은"
     lines = [head, f"최근 6개월 실제로 계약된 단지 {len(pool)}곳 중 {how} 순이에요.", ""]
     for x in rows:

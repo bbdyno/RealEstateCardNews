@@ -124,3 +124,15 @@ def test_youtube_helpers_and_off_without_keys(monkeypatch, tmp_path):
     assert youtube.upload_short(tmp_path / "x.mp4", "제목") is None            # 키가 없으면 아무것도 안 한다
     assert youtube.title_from("가" * 120 + "\n둘째 줄").endswith("…") and len(youtube.title_from("가" * 120)) == 100
     assert youtube.tags_from("본문 #여의도출퇴근 #8억대아파트") == ["여의도출퇴근", "8억대아파트"]
+
+
+def test_caption_every_kind():
+    from cards import post
+    rows = [row(i, f"단지{i}", 85000, n=10 - i) for i in range(1, 6)]
+    dual = [dict(r, to2="강남·삼성", line2="2호선", lines2=["2"], min2=[15, 25]) for r in rows]
+    for ep, rs in [(Episode("budget", "여의도", "8~9억", "59형"), rows), (Episode("new", "성수", size="84형"), rows),
+                   (Episode("dual", "여의도", size="59형", hub2="강남"), dual)]:
+        cap = post.commute_caption(ep, rs, rs, TODAY)
+        assert cap.startswith(ep.title) and check.check_caption(cap, []) == []
+        assert check.check_korean([("캡션", cap)], [x[k] for x in rs for k in ("name", "gu", "umd")]) == []
+    assert "강남이라면?" in post.commute_caption(Episode("dual", "여의도", size="59형", hub2="강남"), dual, dual, TODAY)

@@ -80,6 +80,8 @@ def line_label(lines: list) -> str:
 
 def josa(word: str, with_batchim: str, without: str) -> str:
     """받침이 있으면 앞, 없으면 뒤('가산' → '이라면', '여의도' → '라면')."""
+    if not word:
+        return without
     c = ord(word[-1]) - 0xAC00
     return with_batchim if 0 <= c < 11172 and c % 28 else without
 
