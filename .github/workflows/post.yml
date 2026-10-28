@@ -56,6 +56,14 @@ on:
         description: "최근에 올린 제목도 다시(수정판 재게시)"
         type: boolean
         default: false
+      yt_only:
+        description: "유튜브에만 올리기(인스타 안 올림) — count 편"
+        type: boolean
+        default: false
+      count:
+        description: "유튜브에만 올릴 때 편 수(1~6)"
+        type: string
+        default: "1"
       dry_run:
         description: "만들고 검수까지만(게시 안 함)"
         type: boolean
@@ -76,7 +84,7 @@ env:
 jobs:
   post:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v7
         with:
@@ -139,6 +147,10 @@ jobs:
           if [ -n "${{ inputs.eok }}" ]; then X="$X --eok ${{ inputs.eok }} --band ${{ inputs.band }}"; fi
           if [ -z "$S" ]; then S=commute; fi
           EP="${{ inputs.ep }}"
+          if [ "${{ inputs.yt_only }}" = "true" ]; then
+            python -m cards.post --series "$S" --yt-only --count "${{ inputs.count }}"
+            exit $?
+          fi
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.dry_run }}" = "true" ]; then
             python -m cards.post --series "$S" --dry-run $X ${EP:+--ep "$EP"}
           else

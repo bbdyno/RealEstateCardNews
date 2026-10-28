@@ -524,6 +524,38 @@ MAKERS = {"rank": make_rank, "cash": make_cash, "reel": make_reel, "motion": mak
           "budget2": make_budget_pair}
 
 
+def yt_batch(series: str, count: int, today: dt.date) -> int:
+    """유튜브에만 여러 편 올린다(인스타 일정은 그대로). 채널을 처음 채울 때 쓴다. 기록은 '<시리즈>-yt' 로 남겨
+    업무지구 편 순환(commute.order)이 같은 편을 곧바로 다시 고르지 않게 한다."""
+    from . import youtube
+    if not youtube.ready():
+        print("유튜브 비밀값이 없어 건너뜀")
+        return 1
+    done, fails, titles = [], [], []
+    for _ in range(count):
+        tried: list[str] = []
+        try:
+            made = MAKERS[series](today, list(titles), tried)      # 이번에 올린 제목은 '최근 게시'로 쳐서 다시 안 고른다
+        except Exception as e:  # noqa: BLE001 — 한 편이 실패해도 다음 편으로
+            fails.append(f"{type(e).__name__}: {str(e)[:120]}")
+            continue
+        if not made:
+            break
+        title, files, cap, bad, slug, *_ = made
+        titles.append(title)
+        if bad or not files:
+            fails.append(f"{title}: {'; '.join(bad[:3])}")
+            continue
+        url = youtube.upload_short(files[0], cap)
+        publish.add_log({"date": today.isoformat(), "series": f"{series}-yt", "title": title, "id": url, "link": url,
+                         "at": dt.datetime.now().isoformat(timespec="minutes")})
+        done.append(f"{title}\n{url}")
+        print("유튜브:", title, url)
+    publish.notify(f"▶️ 집값레이더 유튜브 쇼츠 {len(done)}편 올림\n\n" + "\n\n".join(done)
+                   + (f"\n\n실패 {len(fails)}건\n- " + "\n- ".join(fails) if fails else ""))
+    return 0 if done else 1
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--series", choices=sorted(MAKERS), default="budget")
@@ -536,9 +568,13 @@ def main() -> int:
     ap.add_argument("--band", default="30평대", help="예산표 평형대(30평대·20평대)")
     ap.add_argument("--slot", help="예약 시각(HH:MM) — 이보다 2시간 넘게 늦게 돌면 건너뛴다(GitHub 예약 지연)")
     ap.add_argument("--persona", choices=sorted(cash.PERSONAS), help="현금 카드 가구 유형(--sido 와 함께)")
+    ap.add_argument("--yt-only", action="store_true", help="유튜브에만 올린다(인스타 안 올림) — 채널 처음 채우기")
+    ap.add_argument("--count", type=int, default=1, help="--yt-only 로 올릴 편 수")
     ap.add_argument("--ep", help="업무지구 릴스 편(수동): '여의도 8~9억 59형' · 'new 성수 84형' · 'dual 여의도+강남 59형'")
     a = ap.parse_args()
     today = dt.date.today()
+    if a.yt_only:
+        return yt_batch(a.series, max(1, min(a.count, 6)), today)
     live = not a.dry_run and bool(os.environ.get("IG_ACCESS_TOKEN") and os.environ.get("IG_USER_ID"))
     try:
         recent = publish.recent_captions() if live else []
