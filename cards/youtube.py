@@ -23,7 +23,8 @@ import httpx
 
 TOKEN_URL = "https://oauth2.googleapis.com/token"
 UPLOAD_URL = "https://www.googleapis.com/upload/youtube/v3/videos"
-SCOPE = "https://www.googleapis.com/auth/youtube.upload"
+SCOPE = "https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.readonly"   # 읽기는 연결된 채널 이름 확인용
+CHANNEL = "집값레이더"
 CATEGORY = "22"              # 인물·블로그(부동산 정보 채널이 흔히 쓰는 분류)
 
 
@@ -95,7 +96,14 @@ def auth(client_json: str, to_github: bool = False) -> None:
     r = httpx.post(TOKEN_URL, data={"code": got["code"][0], "client_id": cfg["client_id"], "client_secret": cfg["client_secret"],
                                     "redirect_uri": redirect, "grant_type": "authorization_code"})
     r.raise_for_status()
-    vals = {"YT_CLIENT_ID": cfg["client_id"], "YT_CLIENT_SECRET": cfg["client_secret"], "YT_REFRESH_TOKEN": r.json()["refresh_token"]}
+    tok = r.json()
+    me = httpx.get("https://www.googleapis.com/youtube/v3/channels", params={"part": "snippet", "mine": "true"},
+                   headers={"Authorization": f"Bearer {tok['access_token']}"}).json()
+    names = [x["snippet"]["title"] for x in me.get("items", [])]
+    if CHANNEL not in names:           # 다른 채널을 고르면 비밀값을 건드리지 않는다
+        raise SystemExit(f"연결된 채널이 {names or '없음'} 입니다. 동의 화면에서 '{CHANNEL}' 채널을 골라 다시 해 주세요.")
+    print("연결된 채널:", CHANNEL)
+    vals = {"YT_CLIENT_ID": cfg["client_id"], "YT_CLIENT_SECRET": cfg["client_secret"], "YT_REFRESH_TOKEN": tok["refresh_token"]}
     if to_github:                      # 값을 화면에 찍지 않고 바로 저장소 비밀값으로
         import subprocess
         for k, v in vals.items():
