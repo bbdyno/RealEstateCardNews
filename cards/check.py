@@ -148,3 +148,41 @@ def check_video(path: Path) -> list[str]:
     if path.stat().st_size > 100 * 1024 * 1024:
         bad.append("100MB 초과")
     return bad
+
+
+def check_commute(rows: list[dict], ep, today: dt.date, top_n: int = 5) -> list[str]:
+    """업무지구 릴스: TOP 5 가 다 찼는지, 숫자가 조건(예산·신축·기간·건수) 안인지, 같은 단지가 두 번 나오지 않는지."""
+    from . import commute as cm
+    bad = []
+    if len(rows) < top_n:
+        bad.append(f"단지가 {len(rows)}곳뿐({top_n}곳 미만)")
+    if [x["rank"] for x in rows] != list(range(1, len(rows) + 1)):
+        bad.append("순위 번호가 어긋남")
+    since = (today - dt.timedelta(days=cm.MONTHS_DAYS)).isoformat()
+    lo_hi = next(((lo, hi) for b, lo, hi in cm.BANDS if b == ep.band), None)
+    seen = set()
+    for x in rows:
+        if x["n"] < cm.MIN_SAME:
+            bad.append(f"{x['name']} 6개월 거래 {x['n']}건(3건 미만)")
+        if x["last_ymd"] < since or x["last_ymd"] > today.isoformat():
+            bad.append(f"{x['name']} 마지막 계약일 {x['last_ymd']} 이 최근 6개월 밖")
+        if not (x["lo"] <= x["median"] <= x["hi"]):
+            bad.append(f"{x['name']} 중앙값 {x['median']} 이 범위({x['lo']}~{x['hi']}) 밖")
+        if ep.kind == "budget" and lo_hi and not (lo_hi[0] <= x["median"] < lo_hi[1]):
+            bad.append(f"{x['name']} 중앙값 {x['median']} 이 {ep.band} 밖")
+        if ep.kind == "new" and (x.get("built") or 0) < cm.NEW_FROM:
+            bad.append(f"{x['name']} 준공 {x.get('built')} — 신축 조건 밖")
+        if x["size"] != ep.size:
+            bad.append(f"{x['name']} 평형 {x['size']} ≠ {ep.size}")
+        if cm.EXCLUDE.search(x["name"]):
+            bad.append(f"{x['name']} 임대 단지")
+        m = x["min"]
+        if not (0 < m[0] <= m[1] <= 60):
+            bad.append(f"{x['name']} 출퇴근 시간 {m} 이상")
+        if ep.kind == "dual" and not x.get("min2"):
+            bad.append(f"{x['name']} 두 번째 업무지구 시간 없음")
+        k = (x["gu"], x["name"])
+        if k in seen:
+            bad.append(f"{x['name']} 중복")
+        seen.add(k)
+    return bad

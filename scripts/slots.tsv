@@ -2,10 +2,10 @@
 # GitHub 예약(.github/workflows/post.yml 의 cron)은 맥미니가 꺼졌을 때의 대비라 같은 일정을 거기에도 둔다.
 08:10	rank
 10:10	dong
-12:10	budget
+12:10	commute
 12:40	motion
 14:40	dong2
 15:40	rank2
 18:10	reelday
 19:40	cash
-21:40	budget2
+21:40	commute

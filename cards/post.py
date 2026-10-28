@@ -17,7 +17,8 @@ import sys
 import traceback
 
 from collector import db as db_module
-from . import sitecard, budget, cash, check, dongmap, loan, publish, rank, reel
+from web import fmt as wfmt
+from . import sitecard, budget, cash, check, commute, dongmap, loan, publish, rank, reel
 
 db_regions = db_module.regions
 
@@ -435,6 +436,79 @@ def make_motion(today: dt.date, recent: list[str], tried: list[str], fmt: str | 
     return None
 
 
+# ── 업무지구 출퇴근 릴스(12:10 · 21:40) ────────────────────────────────────────
+
+COMMUTE_TARGET = {"59형": "#신혼부부아파트", "84형": "#국민평형"}
+
+
+def commute_caption(ep: commute.Episode, rows: list[dict], pool: list[dict], today: dt.date) -> str:
+    n = len(rows)
+    head = {"budget": f"{ep.title}, 실제로 가장 많이 산 아파트 TOP {n} 🏢",
+            "new": f"{ep.title}, {commute.NEW_FROM}년 이후 지은 아파트 중 가격 낮은 TOP {n} 🏗️",
+            "dual": f"{ep.title}, 한 명은 {ep.hub} 한 명은 {ep.hub2}{commute.josa(ep.hub2, '이라면', '라면')}? TOP {n} 🚇"}[ep.kind]
+    how = "6개월 중앙값이 낮은" if ep.kind == "new" else "거래가 많은"
+    lines = [head, f"최근 6개월 실제로 계약된 단지 {len(pool)}곳 중 {how} 순이에요.", ""]
+    for x in rows:
+        lines.append(f"{x['rank']}위 {x['name']} ({x['gu']} {x['umd']}" + (f"·{x['built']}년" if x.get("built") else "") + f"·전용 {x['area']}㎡)")
+        lines.append(f"   6개월 중앙값 {wfmt.won(x['median'])} · {x['n']}건 · 🚇 {x['line']} → {x['to']} {commute.minutes_label(x['min'])}"
+                     + (f" / {x['line2']} → {x['to2']} {commute.minutes_label(x['min2'])}" if x.get("min2") else ""))
+    from reels.build import summary
+    lines += ["", "📍 " + " / ".join(f"{s['k']}: {s['v']}" for s in summary(rows)), "",
+              f"✔ 호가 아닌 국토부 실거래({today.month}월 {today.day}일 신고분까지) · 해제·직거래·임대 제외",
+              "✔ 출퇴근 시간은 출근 시간대 지하철 기준 대략이에요(역까지 도보·환승 대기 별도)",
+              "✔ 추천이 아니라 조건에 맞는 단지를 실거래로 정리한 거예요. 계약 전엔 꼭 직접 확인하세요",
+              "",
+              "👉 단지별 층별 가격·모든 거래는 프로필 링크(jipgapradar.kr)",
+              "💬 다음 편으로 보고 싶은 업무지구·예산을 댓글로 남겨 주세요!",
+              ""]
+    h = commute.hub(ep.hub)
+    sido = "서울" if h["areas"][0]["sgg"].startswith("11") else "경기"
+    tags = [f"#{h['tag']}"]
+    if ep.kind == "dual":
+        tags.append(f"#{commute.hub(ep.hub2)['tag']}")
+        tags.append("#맞벌이부부")
+    elif ep.kind == "new":
+        tags.append("#신축아파트")
+    else:
+        tags.append(f"#{re.match(r'\d+', ep.band)[0]}억대아파트")
+    tags += [COMMUTE_TARGET[ep.size], f"#{sido}아파트", "#출퇴근", "#실거래가", "#내집마련", "#집값레이더"]
+    lines.append(" ".join(tags))
+    return "\n".join(lines)
+
+
+def make_commute(today: dt.date, recent: list[str], tried: list[str], only: commute.Episode | None = None):
+    """업무지구 출퇴근 릴스. 편은 한 바퀴를 다 돌아야 다시 나온다(게시 기록 기준). TOP 5 를 못 채운 편은 건너뛴다."""
+    from reels import build as motion
+    eps = [only] if only else commute.order(publish.posted_log())
+    renders = 0
+    for ep in eps[:MAX_TRIES * 2]:
+        title = ep.title
+        if posted(title, recent):
+            tried.append(f"{title}(최근에 올림)")
+            continue
+        rows, pool = commute.select(ep, today)
+        if len(rows) < commute.TOP_N:
+            tried.append(f"{title}({len(pool)}곳)")
+            continue
+        bad = check.check_commute(rows, ep, today, commute.TOP_N)
+        if bad:
+            return title, [], "", bad, None, None
+        renders += 1
+        try:
+            mp4 = motion.build_commute(ep, today, strict=True, picked=(rows, pool))
+        except RuntimeError as e:                      # 영상 검수(섬광 등)에 걸리면 다음 편으로 한 번 더 — 렌더는 두 번까지
+            if only or renders >= 2:
+                raise
+            tried.append(f"{title}(영상 검수 미통과: {str(e).splitlines()[-1][:80]})")
+            continue
+        cap = commute_caption(ep, rows, pool, today)
+        names = [x[k] for x in rows for k in ("name", "gu", "umd")]
+        bad = check.check_video(mp4) + check.check_korean([("캡션", cap)], names)
+        SITE.update(path=rows[0]["href"], lead=f"{rows[0]['name']} 실거래,")
+        return title, [mp4], cap, bad, mp4.stem, "reel"
+    return None
+
+
 MAKERS = {"rank": make_rank, "cash": make_cash, "reel": make_reel, "motion": make_motion,
           "dong": lambda t, r, tr: make_dong(t, r, tr, "30평대"),
           "dong2": make_dong_pair,
@@ -442,6 +516,7 @@ MAKERS = {"rank": make_rank, "cash": make_cash, "reel": make_reel, "motion": mak
           "budget": lambda t, r, tr: make_budget(t, r, tr, band_only="30평대"),
           "rank2": lambda t, r, tr: make_rank(t, r, tr, fmt=second_fmt(t), offset=4),
           "reelday": reel_of_day,
+          "commute": make_commute,
           "budget2": make_budget_pair}
 
 
@@ -457,16 +532,17 @@ def main() -> int:
     ap.add_argument("--band", default="30평대", help="예산표 평형대(30평대·20평대)")
     ap.add_argument("--slot", help="예약 시각(HH:MM) — 이보다 2시간 넘게 늦게 돌면 건너뛴다(GitHub 예약 지연)")
     ap.add_argument("--persona", choices=sorted(cash.PERSONAS), help="현금 카드 가구 유형(--sido 와 함께)")
+    ap.add_argument("--ep", help="업무지구 릴스 편(수동): '여의도 8~9억 59형' · 'new 성수 84형' · 'dual 여의도+강남 59형'")
     a = ap.parse_args()
     today = dt.date.today()
     live = not a.dry_run and bool(os.environ.get("IG_ACCESS_TOKEN") and os.environ.get("IG_USER_ID"))
     try:
         recent = publish.recent_captions() if live else []
-        if live and today.weekday() == 0 and a.series == "budget":   # 월요일마다 토큰 유효기간을 늘리고 남은 날을 확인
+        if live and today.weekday() == 0 and a.series == "commute" and dt.datetime.now().hour < 15:   # 월요일 점심마다 토큰 유효기간을 늘리고 남은 날을 확인
             days = publish.refresh_token()
             if days is not None and days < 20:
                 publish.notify(f"⚠️ 집값레이더 인스타 토큰이 {days:.0f}일 남았습니다. 메타 개발자 화면에서 다시 발급해 주세요.")
-        manual = bool(a.fmt or a.sido or a.eok or a.persona or a.gu)
+        manual = bool(a.fmt or a.sido or a.eok or a.persona or a.gu or a.ep)
         if a.slot:                                      # 몇 시간 밀린 예약 실행이 다음 슬롯을 먹지 않게
             now = dt.datetime.now()
             h, mi = map(int, a.slot.split(":"))
@@ -486,7 +562,10 @@ def main() -> int:
                 print(f"{a.series} 은 최근 6시간 안에 이미 올렸습니다 — 건너뜀")
                 return 0
         tried: list[str] = []
-        if a.series == "dongreel" and a.gu:
+        if a.series == "commute" and a.ep:
+            from reels.build import parse_commute
+            made = make_commute(today, [] if a.repeat else recent, tried, parse_commute(a.ep.split()))
+        elif a.series == "dongreel" and a.gu:
             made = make_dong_reel(today, [] if a.repeat else recent, tried, a.gu)
         elif a.series.startswith("dong") and a.gu:
             made = make_dong(today, [] if a.repeat else recent, tried, "20평대" if a.series == "dong2" else "30평대", a.gu)
@@ -534,6 +613,14 @@ def main() -> int:
         except Exception as e:  # noqa: BLE001 — 기록 실패로 게시 알림을 막지 않는다
             print("게시 기록 실패:", e)
         publish.notify(f"✅ 집값레이더 인스타 게시 완료\n{title} · {len(files)}장 · 검수 통과\n{link}", files[0])
+        if kind == "reel" and slug and slug.startswith(("commute", "motion")):   # 모션 릴스는 집값레이더 유튜브에도 쇼츠로(설정이 있을 때만)
+            from . import youtube
+            try:
+                yt = youtube.upload_short(files[0], cap)
+                if yt:
+                    publish.notify(f"▶️ 집값레이더 유튜브 쇼츠도 올림\n{title}\n{yt}")
+            except Exception as e:  # noqa: BLE001 — 유튜브 실패가 인스타 게시를 되돌리지 않는다
+                publish.notify(f"⚠️ 집값레이더 유튜브 업로드 실패(인스타는 올라감)\n{type(e).__name__}: {str(e)[:300]}")
         return 0
     except Exception as e:  # noqa: BLE001 — 실패는 반드시 알린다
         traceback.print_exc()
