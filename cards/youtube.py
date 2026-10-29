@@ -53,7 +53,7 @@ def upload_short(mp4: Path, caption: str, privacy: str = "public") -> str | None
     """올리고 영상 주소를 돌려준다. 설정이 없으면 None."""
     if not ready():
         return None
-    meta = {"snippet": {"title": title_from(caption), "description": caption.replace("프로필 링크(jipgapradar.kr)", "jipgapradar.kr"),
+    meta = {"snippet": {"title": title_from(caption), "description": re.sub(r"[<>]", lambda m: "＜" if m[0] == "<" else "＞", caption.replace("프로필 링크(jipgapradar.kr)", "jipgapradar.kr")),
                         "tags": tags_from(caption), "categoryId": CATEGORY, "defaultLanguage": "ko"},
             "status": {"privacyStatus": privacy, "selfDeclaredMadeForKids": False}}
     with httpx.Client(timeout=120) as c:
