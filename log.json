@@ -2,14 +2,6 @@
  {
   "date": "2026-10-04",
   "series": "rank-manual",
-  "title": "서울 하락 TOP",
-  "id": "18165689002487314",
-  "link": "https://www.instagram.com/p/DeD5TJZEe2P/",
-  "at": "2026-10-04T14:35"
- },
- {
-  "date": "2026-10-04",
-  "series": "rank-manual",
   "title": "서울 신고가 TOP",
   "id": "18135600835646248",
   "link": "https://www.instagram.com/p/DeD6FdIgPkI/",
@@ -2398,5 +2390,13 @@
   "id": "18487950202117317",
   "link": "https://www.instagram.com/p/DfwmC3-m8-H/",
   "at": "2026-11-15T19:44"
+ },
+ {
+  "date": "2026-11-16",
+  "series": "rank",
+  "title": "경기 신고가 순위",
+  "id": "18049038554827548",
+  "link": "https://www.instagram.com/p/Dfx79JPEdta/",
+  "at": "2026-11-16T08:14"
  }
 ]
