@@ -1,14 +1,6 @@
 [
  {
   "date": "2026-10-04",
-  "series": "rank-manual",
-  "title": "서울 하락 TOP",
-  "id": "18108694502269963",
-  "link": "https://www.instagram.com/p/DeD6f1uG1vs/",
-  "at": "2026-10-04T14:45"
- },
- {
-  "date": "2026-10-04",
   "series": "budget",
   "title": "서울 12억대 20평형",
   "id": "18494857153128882",
@@ -2398,5 +2390,13 @@
   "id": "18025870430939035",
   "link": "https://www.instagram.com/p/DfyJtsfDlU7/",
   "at": "2026-11-16T10:15"
+ },
+ {
+  "date": "2026-11-16",
+  "series": "dong2",
+  "title": "강남구 동별 대표 아파트 20평형",
+  "id": "18132518101831773",
+  "link": "https://www.instagram.com/p/DfyojLNlf1w/",
+  "at": "2026-11-16T14:44"
  }
 ]
