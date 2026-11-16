@@ -1,14 +1,6 @@
 [
  {
   "date": "2026-10-04",
-  "series": "cash",
-  "title": "현금 2억 신혼부부 · 서울",
-  "id": "18090501332678463",
-  "link": "https://www.instagram.com/p/DeEcYdSG7pL/",
-  "at": "2026-10-04T19:41"
- },
- {
-  "date": "2026-10-04",
   "series": "budget-manual",
   "title": "서울 8억대 30평형",
   "id": "18116688490990983",
@@ -2398,5 +2390,13 @@
   "id": "18078316187765018",
   "link": "https://www.instagram.com/p/DfyvdsaFXBe/",
   "at": "2026-11-16T15:44"
+ },
+ {
+  "date": "2026-11-16",
+  "series": "cash",
+  "title": "현금 2억 신혼부부 · 경기",
+  "id": "18134167477825773",
+  "link": "https://www.instagram.com/p/DfzLDOOFY4R/",
+  "at": "2026-11-16T19:45"
  }
 ]
