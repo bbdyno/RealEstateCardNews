@@ -1,14 +1,6 @@
 [
  {
   "date": "2026-10-05",
-  "series": "budget-manual",
-  "title": "서울 9억대 20평형",
-  "id": "18116064616946146",
-  "link": "https://www.instagram.com/p/DeE603LmglJ/",
-  "at": "2026-10-05T00:07"
- },
- {
-  "date": "2026-10-05",
   "series": "cash",
   "title": "현금 5억 갈아타기 가족 · 경기",
   "id": "18106320311247766",
@@ -2398,5 +2390,13 @@
   "id": "17995156164026288",
   "link": "https://www.instagram.com/p/Df1v__REZ6y/",
   "at": "2026-11-17T19:47"
+ },
+ {
+  "date": "2026-11-18",
+  "series": "rank",
+  "title": "서울 거래량 순위",
+  "id": "18097595537175075",
+  "link": "https://www.instagram.com/p/Df3FULtloNa/",
+  "at": "2026-11-18T08:12"
  }
 ]
