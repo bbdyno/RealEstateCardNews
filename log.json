@@ -1,14 +1,6 @@
 [
  {
   "date": "2026-10-05",
-  "series": "cash",
-  "title": "현금 5억 갈아타기 가족 · 경기",
-  "id": "18106320311247766",
-  "link": "https://www.instagram.com/p/DeE9gGEm1Hb/",
-  "at": "2026-10-05T00:31"
- },
- {
-  "date": "2026-10-05",
   "series": "rank-manual",
   "title": "서울 거래량 순위",
   "id": "18135942217658717",
@@ -2398,5 +2390,13 @@
   "id": "18097595537175075",
   "link": "https://www.instagram.com/p/Df3FULtloNa/",
   "at": "2026-11-18T08:12"
+ },
+ {
+  "date": "2026-11-18",
+  "series": "dong",
+  "title": "종로구 동별 대표 아파트 30평형",
+  "id": "18258239359308581",
+  "link": "https://www.instagram.com/p/Df3THm6HfWm/",
+  "at": "2026-11-18T10:13"
  }
 ]
