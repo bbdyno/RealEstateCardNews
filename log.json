@@ -1,14 +1,6 @@
 [
  {
   "date": "2026-10-05",
-  "series": "rank-manual",
-  "title": "서울 거래량 순위",
-  "id": "18135942217658717",
-  "link": "https://www.instagram.com/p/DeE_7H3oIQl/",
-  "at": "2026-10-05T00:52"
- },
- {
-  "date": "2026-10-05",
   "series": "cash-manual",
   "title": "현금 1억 사회초년생 · 서울",
   "id": "18116232121795207",
@@ -2398,5 +2390,13 @@
   "id": "18258239359308581",
   "link": "https://www.instagram.com/p/Df3THm6HfWm/",
   "at": "2026-11-18T10:13"
+ },
+ {
+  "date": "2026-11-18",
+  "series": "dong2",
+  "title": "종로구 동별 대표 아파트 20평형",
+  "id": "18115878374105933",
+  "link": "https://www.instagram.com/p/Df3x8WPgKOD/",
+  "at": "2026-11-18T14:42"
  }
 ]
