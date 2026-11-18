@@ -1,14 +1,6 @@
 [
  {
   "date": "2026-10-05",
-  "series": "budget-manual",
-  "title": "서울 10억대 20평형",
-  "id": "18409852615095083",
-  "link": "https://www.instagram.com/p/DeFNp8AGVPf/",
-  "at": "2026-10-05T02:52"
- },
- {
-  "date": "2026-10-05",
   "series": "cash-manual",
   "title": "현금 2억 신혼부부 · 경기",
   "id": "17865532257672460",
@@ -2398,5 +2390,13 @@
   "id": "18120089585009037",
   "link": "https://www.instagram.com/p/Df4UbuRoYBC/",
   "at": "2026-11-18T19:44"
+ },
+ {
+  "date": "2026-11-19",
+  "series": "rank",
+  "title": "경기 해제된 신고가",
+  "id": "18193945336410448",
+  "link": "https://www.instagram.com/p/Df5qXfFnVi5/",
+  "at": "2026-11-19T08:15"
  }
 ]
