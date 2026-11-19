@@ -2,14 +2,6 @@
  {
   "date": "2026-10-05",
   "series": "budget-manual",
-  "title": "서울 7억대 30평형",
-  "id": "17970813945175043",
-  "link": "https://www.instagram.com/p/DeFpIpSjydA/",
-  "at": "2026-10-05T06:52"
- },
- {
-  "date": "2026-10-05",
-  "series": "budget-manual",
   "title": "서울 7억대 20평형",
   "id": "18038217806839431",
   "link": "https://www.instagram.com/p/DeFtt_ij8r7/",
@@ -2398,5 +2390,13 @@
   "id": "18115685345328538",
   "link": "https://www.instagram.com/p/Df6XW7GGyUC/",
   "at": "2026-11-19T14:48"
+ },
+ {
+  "date": "2026-11-19",
+  "series": "rank2",
+  "title": "울산 거래량 순위",
+  "id": "18069462911795087",
+  "link": "https://www.instagram.com/p/Df6ea_nGyYR/",
+  "at": "2026-11-19T15:49"
  }
 ]
