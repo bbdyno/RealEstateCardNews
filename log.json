@@ -1,14 +1,6 @@
 [
  {
   "date": "2026-10-05",
-  "series": "budget-manual",
-  "title": "서울 7억대 20평형",
-  "id": "18038217806839431",
-  "link": "https://www.instagram.com/p/DeFtt_ij8r7/",
-  "at": "2026-10-05T07:32"
- },
- {
-  "date": "2026-10-05",
   "series": "rank",
   "title": "대구 신고가 순위",
   "id": "18114271637020116",
@@ -2398,5 +2390,13 @@
   "id": "18069462911795087",
   "link": "https://www.instagram.com/p/Df6ea_nGyYR/",
   "at": "2026-11-19T15:49"
+ },
+ {
+  "date": "2026-11-19",
+  "series": "cash",
+  "title": "현금 1억 사회초년생 · 경기",
+  "id": "18061593917557900",
+  "link": "https://www.instagram.com/p/Df65xD6EauY/",
+  "at": "2026-11-19T19:48"
  }
 ]
