@@ -1,14 +1,6 @@
 [
  {
   "date": "2026-10-05",
-  "series": "cash-manual",
-  "title": "현금 2억 신혼부부 · 경기",
-  "id": "17865532257672460",
-  "link": "https://www.instagram.com/p/DeFf-NKCcxH/",
-  "at": "2026-10-05T05:32"
- },
- {
-  "date": "2026-10-05",
   "series": "rank-manual",
   "title": "부산 하락 순위",
   "id": "18075284663460885",
@@ -2398,5 +2390,13 @@
   "id": "18193945336410448",
   "link": "https://www.instagram.com/p/Df5qXfFnVi5/",
   "at": "2026-11-19T08:15"
+ },
+ {
+  "date": "2026-11-19",
+  "series": "dong",
+  "title": "성북구 동별 대표 아파트 30평형",
+  "id": "17975976087180559",
+  "link": "https://www.instagram.com/p/Df54GHYiVEs/",
+  "at": "2026-11-19T10:14"
  }
 ]
