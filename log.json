@@ -1,14 +1,6 @@
 [
  {
   "date": "2026-10-05",
-  "series": "rank-manual",
-  "title": "부산 하락 순위",
-  "id": "18075284663460885",
-  "link": "https://www.instagram.com/p/DeFkh0BExvR/",
-  "at": "2026-10-05T06:12"
- },
- {
-  "date": "2026-10-05",
   "series": "budget-manual",
   "title": "서울 7억대 30평형",
   "id": "17970813945175043",
@@ -2398,5 +2390,13 @@
   "id": "17975976087180559",
   "link": "https://www.instagram.com/p/Df54GHYiVEs/",
   "at": "2026-11-19T10:14"
+ },
+ {
+  "date": "2026-11-19",
+  "series": "dong2",
+  "title": "성북구 동별 대표 아파트 20평형",
+  "id": "18115685345328538",
+  "link": "https://www.instagram.com/p/Df6XW7GGyUC/",
+  "at": "2026-11-19T14:48"
  }
 ]
