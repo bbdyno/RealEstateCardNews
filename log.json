@@ -1,14 +1,6 @@
 [
  {
   "date": "2026-10-05",
-  "series": "rank",
-  "title": "대구 신고가 순위",
-  "id": "18114271637020116",
-  "link": "https://www.instagram.com/p/DeFyNPrH28p/",
-  "at": "2026-10-05T08:11"
- },
- {
-  "date": "2026-10-05",
   "series": "rank-manual",
   "title": "서울 시·구 집값 순위",
   "id": "18109330766629067",
@@ -2398,5 +2390,13 @@
   "id": "18061593917557900",
   "link": "https://www.instagram.com/p/Df65xD6EauY/",
   "at": "2026-11-19T19:48"
+ },
+ {
+  "date": "2026-11-20",
+  "series": "dong",
+  "title": "강서구 동별 대표 아파트 30평형",
+  "id": "18090890525300355",
+  "link": "https://www.instagram.com/p/Df8dC--kU2n/",
+  "at": "2026-11-20T10:16"
  }
 ]
