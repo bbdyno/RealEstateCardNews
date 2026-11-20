@@ -1,14 +1,6 @@
 [
  {
   "date": "2026-10-05",
-  "series": "budget-manual",
-  "title": "경기 6억대 20평형",
-  "id": "17994549240043937",
-  "link": "https://www.instagram.com/p/DeGG4yBFE7G/",
-  "at": "2026-10-05T11:12"
- },
- {
-  "date": "2026-10-05",
   "series": "budget",
   "title": "서울 6억대 30평형",
   "id": "18130476313774196",
@@ -2398,5 +2390,13 @@
   "id": "18130450273871062",
   "link": "https://www.instagram.com/p/Df9dzT_mzrj/",
   "at": "2026-11-20T19:42"
+ },
+ {
+  "date": "2026-11-21",
+  "series": "rank",
+  "title": "전남광주 신고가 순위",
+  "id": "17937618447408344",
+  "link": "https://www.instagram.com/p/Df-ztSHI_Zu/",
+  "at": "2026-11-21T08:12"
  }
 ]
