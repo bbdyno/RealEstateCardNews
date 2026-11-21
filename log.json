@@ -1,14 +1,6 @@
 [
  {
   "date": "2026-10-05",
-  "series": "budget",
-  "title": "서울 6억대 30평형",
-  "id": "18130476313774196",
-  "link": "https://www.instagram.com/p/DeGNrmEm4F7/",
-  "at": "2026-10-05T12:11"
- },
- {
-  "date": "2026-10-05",
   "series": "rank2",
   "title": "대전 거래량 순위",
   "id": "17879945028627258",
@@ -2398,5 +2390,13 @@
   "id": "17937618447408344",
   "link": "https://www.instagram.com/p/Df-ztSHI_Zu/",
   "at": "2026-11-21T08:12"
+ },
+ {
+  "date": "2026-11-21",
+  "series": "dong",
+  "title": "은평구 동별 대표 아파트 30평형",
+  "id": "17869029075675416",
+  "link": "https://www.instagram.com/p/Df_BdM2GIs4/",
+  "at": "2026-11-21T10:12"
  }
 ]
