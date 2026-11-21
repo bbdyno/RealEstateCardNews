@@ -1,14 +1,6 @@
 [
  {
   "date": "2026-10-05",
-  "series": "rank2",
-  "title": "대전 거래량 순위",
-  "id": "17879945028627258",
-  "link": "https://www.instagram.com/p/DeGlrOVljUI/",
-  "at": "2026-10-05T15:41"
- },
- {
-  "date": "2026-10-05",
   "series": "budget-manual",
   "title": "인천 4억대 30평형",
   "id": "18043797806822796",
@@ -2398,5 +2390,13 @@
   "id": "17869029075675416",
   "link": "https://www.instagram.com/p/Df_BdM2GIs4/",
   "at": "2026-11-21T10:12"
+ },
+ {
+  "date": "2026-11-21",
+  "series": "dong2",
+  "title": "은평구 동별 대표 아파트 20평형",
+  "id": "17922961122452439",
+  "link": "https://www.instagram.com/p/Df_gc3okbah/",
+  "at": "2026-11-21T14:43"
  }
 ]
