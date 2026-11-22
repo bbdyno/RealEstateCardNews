@@ -1,14 +1,6 @@
 [
  {
   "date": "2026-10-06",
-  "series": "rank",
-  "title": "서울 하락 순위",
-  "id": "18102782831563870",
-  "link": "https://www.instagram.com/p/DeIW_lmGC8E/",
-  "at": "2026-10-06T08:11"
- },
- {
-  "date": "2026-10-06",
   "series": "budget",
   "title": "경기 4억대 30평형",
   "id": "18116446256073584",
@@ -2398,5 +2390,13 @@
   "id": "17970729804215824",
   "link": "https://www.instagram.com/p/DgCn0UilvN7/",
   "at": "2026-11-22T19:45"
+ },
+ {
+  "date": "2026-11-23",
+  "series": "rank",
+  "title": "울산 신고가 순위",
+  "id": "17977174356159117",
+  "link": "https://www.instagram.com/p/DgD9sw_FrRh/",
+  "at": "2026-11-23T08:16"
  }
 ]
