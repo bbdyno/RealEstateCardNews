@@ -1,14 +1,6 @@
 [
  {
   "date": "2026-10-05",
-  "series": "budget-manual",
-  "title": "경기 7억대 30평형",
-  "id": "18117475424076122",
-  "link": "https://www.instagram.com/p/DeHG9ZFlWoW/",
-  "at": "2026-10-05T20:32"
- },
- {
-  "date": "2026-10-05",
   "series": "budget2",
   "title": "서울 6억대 20평형",
   "id": "18107302685232820",
@@ -2398,5 +2390,13 @@
   "id": "18242065618320070",
   "link": "https://www.instagram.com/p/DgBYtMWETSe/",
   "at": "2026-11-22T08:14"
+ },
+ {
+  "date": "2026-11-22",
+  "series": "dong",
+  "title": "영등포구 동별 대표 아파트 30평형",
+  "id": "18142974082621154",
+  "link": "https://www.instagram.com/p/DgBmhw-GFDN/",
+  "at": "2026-11-22T10:15"
  }
 ]
