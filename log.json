@@ -1,14 +1,6 @@
 [
  {
   "date": "2026-10-05",
-  "series": "budget2",
-  "title": "서울 6억대 20평형",
-  "id": "18107302685232820",
-  "link": "https://www.instagram.com/p/DeHO5kjlQxr/",
-  "at": "2026-10-05T21:41"
- },
- {
-  "date": "2026-10-05",
   "series": "rank-manual",
   "title": "경기 거래량 순위",
   "id": "18080406686353723",
@@ -2398,5 +2390,13 @@
   "id": "18142974082621154",
   "link": "https://www.instagram.com/p/DgBmhw-GFDN/",
   "at": "2026-11-22T10:15"
+ },
+ {
+  "date": "2026-11-22",
+  "series": "dong2",
+  "title": "영등포구 동별 대표 아파트 20평형",
+  "id": "17919880476499438",
+  "link": "https://www.instagram.com/p/DgCFXHQjuDr/",
+  "at": "2026-11-22T14:44"
  }
 ]
