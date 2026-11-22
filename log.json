@@ -1,13 +1,5 @@
 [
  {
-  "date": "2026-10-05",
-  "series": "cash-manual",
-  "title": "현금 3억 맞벌이 부부 · 인천",
-  "id": "18023805323864491",
-  "link": "https://www.instagram.com/p/DeHawFwGxcr/",
-  "at": "2026-10-05T23:25"
- },
- {
   "date": "2026-10-06",
   "series": "rank",
   "title": "서울 하락 순위",
@@ -2398,5 +2390,13 @@
   "id": "18043607438650210",
   "link": "https://www.instagram.com/p/DgCMSHHDj3K/",
   "at": "2026-11-22T15:45"
+ },
+ {
+  "date": "2026-11-22",
+  "series": "cash",
+  "title": "현금 5억 갈아타기 가족 · 경기",
+  "id": "17970729804215824",
+  "link": "https://www.instagram.com/p/DgCn0UilvN7/",
+  "at": "2026-11-22T19:45"
  }
 ]
