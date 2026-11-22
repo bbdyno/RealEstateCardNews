@@ -1,14 +1,6 @@
 [
  {
   "date": "2026-10-05",
-  "series": "rank-manual",
-  "title": "경기 거래량 순위",
-  "id": "18080406686353723",
-  "link": "https://www.instagram.com/p/DeHUt6KG3wj/",
-  "at": "2026-10-05T22:32"
- },
- {
-  "date": "2026-10-05",
   "series": "cash-manual",
   "title": "현금 3억 맞벌이 부부 · 인천",
   "id": "18023805323864491",
@@ -2398,5 +2390,13 @@
   "id": "17919880476499438",
   "link": "https://www.instagram.com/p/DgCFXHQjuDr/",
   "at": "2026-11-22T14:44"
+ },
+ {
+  "date": "2026-11-22",
+  "series": "rank2",
+  "title": "서울 해제된 신고가",
+  "id": "18043607438650210",
+  "link": "https://www.instagram.com/p/DgCMSHHDj3K/",
+  "at": "2026-11-22T15:45"
  }
 ]
