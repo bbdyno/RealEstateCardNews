@@ -1,13 +1,5 @@
 [
  {
-  "date": "2026-10-06",
-  "series": "budget2",
-  "title": "경기 4억대 20평형",
-  "id": "18040066271834022",
-  "link": "https://www.instagram.com/p/DeJzxpuoGNG/",
-  "at": "2026-10-06T21:42"
- },
- {
   "date": "2026-10-07",
   "series": "budget",
   "title": "인천 5억대 30평형",
@@ -2398,5 +2390,13 @@
   "id": "17926459182224851",
   "link": "https://www.instagram.com/p/DgFMNeaFV39/",
   "at": "2026-11-23T19:42"
+ },
+ {
+  "date": "2026-11-24",
+  "series": "rank",
+  "title": "경기 하락 순위",
+  "id": "18123581792068837",
+  "link": "https://www.instagram.com/p/DgGiRtuDlqk/",
+  "at": "2026-11-24T08:14"
  }
 ]
