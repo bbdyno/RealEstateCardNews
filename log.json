@@ -1,14 +1,6 @@
 [
  {
   "date": "2026-10-06",
-  "series": "cash",
-  "title": "현금 2억 신혼부부 · 인천",
-  "id": "18465190504139391",
-  "link": "https://www.instagram.com/p/DeJl-5LFV_9/",
-  "at": "2026-10-06T19:41"
- },
- {
-  "date": "2026-10-06",
   "series": "budget2",
   "title": "경기 4억대 20평형",
   "id": "18040066271834022",
@@ -2398,5 +2390,13 @@
   "id": "17871992802659931",
   "link": "https://www.instagram.com/p/DgEqbPomx3E/",
   "at": "2026-11-23T14:47"
+ },
+ {
+  "date": "2026-11-23",
+  "series": "cash",
+  "title": "현금 2억 신혼부부 · 인천",
+  "id": "17926459182224851",
+  "link": "https://www.instagram.com/p/DgFMNeaFV39/",
+  "at": "2026-11-23T19:42"
  }
 ]
