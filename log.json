@@ -1,14 +1,6 @@
 [
  {
   "date": "2026-10-07",
-  "series": "reel-manual",
-  "title": "서울 신고가 순위 릴스",
-  "id": "18103471043310560",
-  "link": "https://www.instagram.com/reel/DeLiZ7oDF2A/",
-  "at": "2026-10-07T13:49"
- },
- {
-  "date": "2026-10-07",
   "series": "dong-manual",
   "title": "강남구 동별 대표 아파트 30평형",
   "id": "18176554756384525",
@@ -2398,5 +2390,13 @@
   "id": "17968520445234533",
   "link": "https://www.instagram.com/p/DgGv1wSDCTo/",
   "at": "2026-11-24T10:12"
+ },
+ {
+  "date": "2026-11-24",
+  "series": "dong2",
+  "title": "중랑구 동별 대표 아파트 20평형",
+  "id": "18120006863043890",
+  "link": "https://www.instagram.com/p/DgHOzN5kWAl/",
+  "at": "2026-11-24T14:43"
  }
 ]
