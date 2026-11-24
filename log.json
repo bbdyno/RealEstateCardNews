@@ -1,14 +1,6 @@
 [
  {
   "date": "2026-10-07",
-  "series": "budget",
-  "title": "인천 5억대 30평형",
-  "id": "18011831159763778",
-  "link": "https://www.instagram.com/p/DeLXRC_HMfJ/",
-  "at": "2026-10-07T12:11"
- },
- {
-  "date": "2026-10-07",
   "series": "reel-manual",
   "title": "서울 신고가 순위 릴스",
   "id": "18103471043310560",
@@ -2398,5 +2390,13 @@
   "id": "18123581792068837",
   "link": "https://www.instagram.com/p/DgGiRtuDlqk/",
   "at": "2026-11-24T08:14"
+ },
+ {
+  "date": "2026-11-24",
+  "series": "dong",
+  "title": "중랑구 동별 대표 아파트 30평형",
+  "id": "17968520445234533",
+  "link": "https://www.instagram.com/p/DgGv1wSDCTo/",
+  "at": "2026-11-24T10:12"
  }
 ]
