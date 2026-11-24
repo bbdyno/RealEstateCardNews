@@ -1,14 +1,6 @@
 [
  {
   "date": "2026-10-07",
-  "series": "rank2",
-  "title": "경기 시·구 집값 순위",
-  "id": "18071753819764783",
-  "link": "https://www.instagram.com/p/DeLvYZ4Gw_T/",
-  "at": "2026-10-07T15:42"
- },
- {
-  "date": "2026-10-07",
   "series": "budget2",
   "title": "인천 5억대 20평형",
   "id": "17983966395087453",
@@ -2398,5 +2390,13 @@
   "id": "17921376939523899",
   "link": "https://www.instagram.com/p/DgHxPu4myfW/",
   "at": "2026-11-24T19:44"
+ },
+ {
+  "date": "2026-11-25",
+  "series": "rank",
+  "title": "세종 거래량 순위",
+  "id": "18115430591165485",
+  "link": "https://www.instagram.com/p/DgJHIRcmfJd/",
+  "at": "2026-11-25T08:14"
  }
 ]
