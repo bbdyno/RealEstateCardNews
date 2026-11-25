@@ -1,14 +1,6 @@
 [
  {
   "date": "2026-10-08",
-  "series": "budget",
-  "title": "서울 11억대 30평형",
-  "id": "18020382476930288",
-  "link": "https://www.instagram.com/p/DeN8FB4FeiA/",
-  "at": "2026-10-08T12:12"
- },
- {
-  "date": "2026-10-08",
   "series": "dong2",
   "title": "광진구 동별 대표 아파트 20평형",
   "id": "18119056537883986",
@@ -2398,5 +2390,13 @@
   "id": "18358088143270048",
   "link": "https://www.instagram.com/p/DgJ6seQkbNc/",
   "at": "2026-11-25T15:45"
+ },
+ {
+  "date": "2026-11-25",
+  "series": "cash",
+  "title": "현금 3억 맞벌이 부부 · 경기",
+  "id": "18120699727956648",
+  "link": "https://www.instagram.com/p/DgKWNiUFWbn/",
+  "at": "2026-11-25T19:45"
  }
 ]
