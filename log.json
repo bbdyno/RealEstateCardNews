@@ -1,14 +1,6 @@
 [
  {
   "date": "2026-10-08",
-  "series": "dong",
-  "title": "광진구 동별 대표 아파트 30평형",
-  "id": "17876978541572662",
-  "link": "https://www.instagram.com/p/DeNuVwpHZab/",
-  "at": "2026-10-08T10:11"
- },
- {
-  "date": "2026-10-08",
   "series": "budget",
   "title": "서울 11억대 30평형",
   "id": "18020382476930288",
@@ -2398,5 +2390,13 @@
   "id": "18021784940952670",
   "link": "https://www.instagram.com/p/DgJzv9IlYk1/",
   "at": "2026-11-25T14:44"
+ },
+ {
+  "date": "2026-11-25",
+  "series": "rank2",
+  "title": "부산 하락 순위",
+  "id": "18358088143270048",
+  "link": "https://www.instagram.com/p/DgJ6seQkbNc/",
+  "at": "2026-11-25T15:45"
  }
 ]
