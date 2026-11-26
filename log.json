@@ -1,14 +1,6 @@
 [
  {
   "date": "2026-10-08",
-  "series": "cash",
-  "title": "현금 3억 맞벌이 부부 · 경기",
-  "id": "17991060021063924",
-  "link": "https://www.instagram.com/p/DeOvo1Dm849/",
-  "at": "2026-10-08T19:42"
- },
- {
-  "date": "2026-10-08",
   "series": "budget2",
   "title": "서울 11억대 20평형",
   "id": "18147700654563743",
@@ -2398,5 +2390,13 @@
   "id": "18176685979415705",
   "link": "https://www.instagram.com/p/DgMfKhUEfva/",
   "at": "2026-11-26T15:42"
+ },
+ {
+  "date": "2026-11-26",
+  "series": "cash",
+  "title": "현금 1억 사회초년생 · 인천",
+  "id": "18002013695827663",
+  "link": "https://www.instagram.com/p/DgM6lGNlcA-/",
+  "at": "2026-11-26T19:42"
  }
 ]
