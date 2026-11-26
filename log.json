@@ -1,13 +1,5 @@
 [
  {
-  "date": "2026-10-08",
-  "series": "budget2",
-  "title": "서울 11억대 20평형",
-  "id": "18147700654563743",
-  "link": "https://www.instagram.com/p/DeO9XdVFokT/",
-  "at": "2026-10-08T21:42"
- },
- {
   "date": "2026-10-09",
   "series": "rank",
   "title": "전남광주 시·구 집값 순위",
@@ -2398,5 +2390,13 @@
   "id": "18002013695827663",
   "link": "https://www.instagram.com/p/DgM6lGNlcA-/",
   "at": "2026-11-26T19:42"
+ },
+ {
+  "date": "2026-11-27",
+  "series": "rank",
+  "title": "서울 시·구 집값 순위",
+  "id": "18347533234261847",
+  "link": "https://www.instagram.com/p/DgOQePcDkyM/",
+  "at": "2026-11-27T08:12"
  }
 ]
