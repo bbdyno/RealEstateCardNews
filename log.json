@@ -1,14 +1,6 @@
 [
  {
   "date": "2026-10-08",
-  "series": "rank2",
-  "title": "인천 신고가 순위",
-  "id": "17916554112463180",
-  "link": "https://www.instagram.com/p/DeOUIfzkX5S/",
-  "at": "2026-10-08T15:42"
- },
- {
-  "date": "2026-10-08",
   "series": "reelday",
   "title": "대전 신고가 순위 릴스",
   "id": "18145079779568702",
@@ -2398,5 +2390,13 @@
   "id": "17915641719557995",
   "link": "https://www.instagram.com/p/DgL50GzDsiR/",
   "at": "2026-11-26T10:16"
+ },
+ {
+  "date": "2026-11-26",
+  "series": "dong2",
+  "title": "용산구 동별 대표 아파트 20평형",
+  "id": "18453797731120828",
+  "link": "https://www.instagram.com/p/DgMYKJ8FoEh/",
+  "at": "2026-11-26T14:41"
  }
 ]
