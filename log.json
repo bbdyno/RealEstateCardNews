@@ -1,14 +1,6 @@
 [
  {
   "date": "2026-10-09",
-  "series": "rank2",
-  "title": "전남광주 신고가 순위",
-  "id": "18125237479894303",
-  "link": "https://www.instagram.com/p/DeQ45vxkXdQ/",
-  "at": "2026-10-09T15:42"
- },
- {
-  "date": "2026-10-09",
   "series": "reelday",
   "title": "부산 신고가 순위 릴스",
   "id": "18124979890907861",
@@ -2398,5 +2390,13 @@
   "id": "18108833861333745",
   "link": "https://www.instagram.com/p/DgPfjMXkaw6/",
   "at": "2026-11-27T19:43"
+ },
+ {
+  "date": "2026-11-28",
+  "series": "rank",
+  "title": "서울 신고가 순위",
+  "id": "17970570924215841",
+  "link": "https://www.instagram.com/p/DgQ1cTNlWRW/",
+  "at": "2026-11-28T08:14"
  }
 ]
