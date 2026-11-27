@@ -1,14 +1,6 @@
 [
  {
   "date": "2026-10-09",
-  "series": "dong",
-  "title": "은평구 동별 대표 아파트 30평형",
-  "id": "18355163452172660",
-  "link": "https://www.instagram.com/p/DeQTJvunT2X/",
-  "at": "2026-10-09T10:12"
- },
- {
-  "date": "2026-10-09",
   "series": "budget",
   "title": "경기 11억대 30평형",
   "id": "18085753634330409",
@@ -2398,5 +2390,13 @@
   "id": "18102925487642835",
   "link": "https://www.instagram.com/p/DgOeNUPmugK/",
   "at": "2026-11-27T10:12"
+ },
+ {
+  "date": "2026-11-27",
+  "series": "dong2",
+  "title": "서초구 동별 대표 아파트 20평형",
+  "id": "18137733602499269",
+  "link": "https://www.instagram.com/p/DgO9IHpIax2/",
+  "at": "2026-11-27T14:42"
  }
 ]
