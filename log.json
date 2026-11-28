@@ -1,13 +1,5 @@
 [
  {
-  "date": "2026-10-09",
-  "series": "budget2",
-  "title": "경기 11억대 20평형",
-  "id": "18374740696214527",
-  "link": "https://www.instagram.com/p/DeRiKPjFkfk/",
-  "at": "2026-10-09T21:42"
- },
- {
   "date": "2026-10-10",
   "series": "dong",
   "title": "영등포구 동별 대표 아파트 30평형",
@@ -2398,5 +2390,13 @@
   "id": "18148353733684554",
   "link": "https://www.instagram.com/p/DgRiGucAGF1/",
   "at": "2026-11-28T14:44"
+ },
+ {
+  "date": "2026-11-28",
+  "series": "rank2",
+  "title": "경기 거래량 순위",
+  "id": "18112270463629126",
+  "link": "https://www.instagram.com/p/DgRpE2-jg_B/",
+  "at": "2026-11-28T15:45"
  }
 ]
